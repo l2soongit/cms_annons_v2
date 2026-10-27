@@ -46,12 +46,15 @@ class SourceDriver implements ServerQueryDriver
     {
         $offset = 6; // заголовок + протокол
         $name = self::readString($data, $offset);
-        self::readString($data, $offset); // map
+        $map = self::readString($data, $offset);
         self::readString($data, $offset); // folder
         self::readString($data, $offset); // game
         $offset += 2; // app id
 
-        return new QueryResult(true, ord($data[$offset] ?? "\0"), ord($data[$offset + 1] ?? "\0"), $name, $ping);
+        // players, max players, bots, server type, environment, visibility, VAC
+        $vac = isset($data[$offset + 6]) ? ord($data[$offset + 6]) === 1 : null;
+
+        return new QueryResult(true, ord($data[$offset] ?? "\0"), ord($data[$offset + 1] ?? "\0"), $name, $ping, $map ?: null, $vac);
     }
 
     private function parseGoldSource(string $data, int $ping): QueryResult
@@ -59,11 +62,26 @@ class SourceDriver implements ServerQueryDriver
         $offset = 5;
         self::readString($data, $offset); // address
         $name = self::readString($data, $offset);
-        self::readString($data, $offset); // map
+        $map = self::readString($data, $offset);
         self::readString($data, $offset); // folder
         self::readString($data, $offset); // game
 
-        return new QueryResult(true, ord($data[$offset] ?? "\0"), ord($data[$offset + 1] ?? "\0"), $name, $ping);
+        $players = ord($data[$offset] ?? "\0");
+        $max = ord($data[$offset + 1] ?? "\0");
+
+        // protocol, server type, environment, visibility, mod; для модів — ще блок з описом, потім VAC
+        $cursor = $offset + 6;
+        if (ord($data[$cursor] ?? "\0") === 1) {
+            $cursor++;
+            self::readString($data, $cursor); // link
+            self::readString($data, $cursor); // download link
+            $cursor += 1 + 4 + 4 + 1 + 1; // null, version, size, type, dll
+        } else {
+            $cursor++;
+        }
+        $vac = isset($data[$cursor]) ? ord($data[$cursor]) === 1 : null;
+
+        return new QueryResult(true, $players, $max, $name, $ping, $map ?: null, $vac);
     }
 
     private static function readString(string $data, int &$offset): string

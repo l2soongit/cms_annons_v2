@@ -10,6 +10,9 @@ final class QueryResult
         public readonly int $maxPlayers = 0,
         public readonly ?string $name = null,
         public readonly ?int $pingMs = null,
+        // Лише протоколи, що їх повідомляють (Steam A2S): поточна карта й захист VAC
+        public readonly ?string $map = null,
+        public readonly ?bool $vac = null,
     ) {}
 
     public static function offline(): self

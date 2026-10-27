@@ -28,7 +28,6 @@ setTimeout(() => $$('[data-count]').forEach(el => countUp(el, Number(el.dataset.
 
 // ── Список: фільтри, сортування, пошук і «Показати ще» без перезавантаження ──
 const results = $('#results');
-const filters = $('.filters');
 
 // Рядки й картки «переїжджають» на нові місця, нові з'являються каскадом
 const flip = (before) => {
@@ -52,8 +51,10 @@ const load = async (url, { push = true } = {}) => {
     if (!res.ok) throw new Error(res.status);
     const doc = new DOMParser().parseFromString(await res.text(), 'text/html');
     // Фільтри мають нові посилання й лічильники; поле пошуку не чіпаємо, щоб не збити введення
-    $$('.frow', filters).forEach((row, i) => { const next = $$('.frow', doc)[i]; if (next) row.replaceWith(next); });
-    const sorts = $('.sorts', doc); if (sorts) $('.sorts', filters).replaceWith(sorts);
+    $$('.frow').forEach((row, i) => { const next = $$('.frow', doc)[i]; if (next) row.replaceWith(next); });
+    const sorts = $('.sorts', doc); if (sorts) $('.sorts')?.replaceWith(sorts);
+    // Інші блоки фільтрів теми (перемикач версії, меню закупівлі CS) позначені data-swap
+    $$('[data-swap]').forEach(el => { const next = $(`[data-swap="${el.dataset.swap}"]`, doc); if (next) el.replaceWith(next); });
     $$('#search-form input[type=hidden]').forEach(i => i.remove());
     $$('#search-form input[type=hidden]', doc).forEach(i => $('#search-form').append(i));
     results.innerHTML = $('#results', doc)?.innerHTML ?? '';
@@ -140,9 +141,11 @@ tick(); setInterval(tick, 1000);
   if (!feed.url) return;
   const box = $('#toasts');
   let after = feed.after ?? 0;
+  // Тема може показувати голоси по-своєму (CS — стрічкою вбивств)
   const queue = [];
   let showing = false;
   const toast = v => {
+    if (customToast) { customToast(v); return; }
     const t = document.createElement('div');
     t.className = 'toast';
     const letter = (v.nick || v.server || '?').trim().charAt(0).toUpperCase();
@@ -162,7 +165,7 @@ tick(); setInterval(tick, 1000);
       if (json.votes?.length) {
         const votesEl = $('#g-votes');
         if (votesEl) { countUp(votesEl, Number(votesEl.dataset.now || votesEl.dataset.count) + json.votes.length, 700); bump(votesEl); }
-        if (feed.enabled && !calm && box) { queue.push(...json.votes); if (!showing) drain(); }
+        if (feed.enabled && !calm && (box || customToast)) { queue.push(...json.votes); if (!showing) drain(); }
       }
       Object.entries(json.servers ?? {}).forEach(([id, n]) => $$(`[data-server-votes="${id}"]`).forEach(el => { if (el.textContent !== fmt(n)) { el.textContent = fmt(n); bump(el); } }));
       const onlineEl = $('#g-online');
@@ -185,4 +188,8 @@ tick(); setInterval(tick, 1000);
 
 addEventListener('scroll', () => $('header')?.classList.toggle('scrolled', scrollY > 24), { passive: true });
 
-export { $, $$, calm };
+let customToast = null;
+/** Свій вигляд сповіщення про голос: fn({ nick, server, url, theme }) */
+const setToastRenderer = fn => { customToast = fn; };
+
+export { $, $$, calm, esc, setToastRenderer, load };

@@ -1,0 +1,1131 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>graj.club — рейтинг ігрових серверів</title>
+<meta name="description" content="Рейтинг серверів Lineage 2, GTA, Minecraft, DayZ, Rust і Counter-Strike: живий онлайн, чесні голоси, нові сервери.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<!-- Шрифти ігор (усі з кирилицею) -->
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&display=swap" rel="stylesheet">
+<style>
+/*
+ * graj.club — головна. Об'єднання трьох демо: п'єдестал і відлік з «Арени»,
+ * пошук і галерея з «Неону», таблиця й тарифи з «Даних».
+ * Токени — значення палітри й шкали Tailwind: zinc для нейтралей, один акцент amber→orange,
+ * emerald/rose лише для даних (зростання/падіння, онлайн/офлайн). Відступи кратні 4px.
+ */
+:root {
+  --bg: #09090b;          /* zinc-950 */
+  --bg-2: #0f0f12;
+  --card: #18181b;        /* zinc-900 */
+  --card-2: #1f1f23;
+  --line: #27272a;        /* zinc-800 */
+  --line-2: #3f3f46;      /* zinc-700 */
+  --text: #f4f4f5;        /* zinc-100 */
+  --muted: #a1a1aa;       /* zinc-400 */
+  --faint: #71717a;       /* zinc-500 */
+  --amber: #fbbf24;       /* amber-400 */
+  --orange: #f97316;      /* orange-500 */
+  --gold-ink: #1c1003;
+  --silver: #d4d4d8;      /* zinc-300 */
+  --bronze: #c2410c;      /* orange-700 */
+  --up: #34d399;          /* emerald-400 */
+  --down: #fb7185;        /* rose-400 */
+  --grad: linear-gradient(90deg, #fbbf24, #f97316);
+  --display: 'Unbounded', sans-serif;
+  --font: 'Manrope', system-ui, sans-serif;
+  --r-sm: 8px; --r: 12px; --r-lg: 16px; --r-xl: 24px;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font: 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+.num { font-variant-numeric: tabular-nums; }
+.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.glow { position: absolute; border-radius: 50%; filter: blur(100px); pointer-events: none; z-index: 0; }
+
+.label { display: inline-flex; align-items: center; gap: 8px; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--amber); background: #fbbf2414; border: 1px solid #fbbf2438; }
+.label.live { color: var(--up); background: #34d39912; border-color: #34d39940; }
+.label.live::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--up); animation: ping 2s infinite; }
+@keyframes ping { 0% { box-shadow: 0 0 0 0 #34d399aa; } 70%, 100% { box-shadow: 0 0 0 8px #34d39900; } }
+
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 20px; border-radius: var(--r); font-weight: 800; font-size: 15px; cursor: pointer; border: 1px solid transparent; transition: transform .2s ease-out, box-shadow .2s ease-out, border-color .2s ease-out, background-color .2s ease-out; white-space: nowrap; }
+.btn-hot { background: var(--grad); color: var(--gold-ink); box-shadow: 0 8px 32px -12px #f97316aa; }
+.btn-hot:hover { transform: translateY(-1px); box-shadow: 0 12px 36px -12px #f97316cc; }
+.btn-ghost { border-color: var(--line-2); background: #ffffff06; }
+.btn-ghost:hover { border-color: var(--amber); }
+.btn-sm { padding: 8px 16px; font-size: 14px; border-radius: var(--r-sm); }
+
+/* ── Шапка ─────────────────────────────────────────── */
+header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
+.bar { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 16px; border-radius: var(--r-lg); background: #18181bcc; backdrop-filter: blur(16px); border: 1px solid var(--line); }
+.logo { display: flex; align-items: center; gap: 12px; font: 700 17px var(--display); letter-spacing: -0.02em; }
+.logo i { width: 32px; height: 32px; border-radius: var(--r-sm); background: var(--grad); display: grid; place-items: center; }
+.bar nav { display: flex; gap: 24px; margin: 0 auto; font-size: 14px; font-weight: 600; color: var(--muted); }
+.bar nav a { transition: color .15s; }
+.bar nav a:hover { color: var(--text); }
+.bar .actions { display: flex; gap: 8px; }
+
+/* ── Перший екран ──────────────────────────────────── */
+.hero { position: relative; padding: 64px 0 96px; }
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; position: relative; z-index: 1; }
+h1 { margin-top: 20px; font: 800 56px/1.05 var(--display); letter-spacing: -0.035em; }
+.hero p.sub { margin-top: 20px; font-size: 18px; color: var(--muted); max-width: 46ch; }
+.search { margin-top: 32px; display: flex; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--card); border: 1px solid var(--line-2); max-width: 560px; transition: border-color .2s, box-shadow .2s; }
+.search:focus-within { border-color: var(--amber); box-shadow: 0 0 0 4px #fbbf241f; }
+.search input { flex: 1; min-width: 0; background: none; border: 0; color: var(--text); padding: 0 12px; font: 16px var(--font); }
+.search input::placeholder { color: var(--faint); }
+.search input:focus { outline: none; }
+.quick { margin-top: 12px; display: flex; flex-wrap: wrap; gap: 8px; font-size: 13px; color: var(--faint); }
+.quick a { color: var(--muted); border-bottom: 1px dashed var(--line-2); }
+.quick a:hover { color: var(--text); border-color: var(--amber); }
+.kpis { margin-top: 40px; display: flex; gap: 40px; }
+.kpis dd { font: 700 28px var(--display); letter-spacing: -0.02em; }
+.kpis dt { color: var(--muted); font-size: 13px; }
+
+/* П'єдестал */
+.arena { background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--line); border-radius: var(--r-xl); padding: 24px; box-shadow: 0 32px 80px -40px #f9731655; }
+.arena-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; }
+.arena-head h2 { font: 700 16px var(--display); letter-spacing: -0.01em; }
+.seg { display: flex; gap: 4px; padding: 4px; border-radius: var(--r-sm); background: var(--bg); }
+.seg button { border: 0; background: none; color: var(--muted); font-weight: 700; font-size: 12px; padding: 4px 12px; border-radius: 6px; cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--card-2); color: var(--text); }
+/* Топ місяця: чемпіон, срібло й бронза, погоня 4–6 */
+@property --angle { syntax: '<angle>'; initial-value: 0deg; inherits: false; }
+.arena-head .title { display: flex; align-items: center; gap: 12px; }
+.live-badge { display: inline-flex; align-items: center; gap: 6px; padding: 2px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; letter-spacing: .08em; color: #fecdd3; background: #e11d4826; border: 1px solid #e11d4855; }
+.live-badge::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: #fb7185; animation: blink 1.2s ease-in-out infinite; }
+@keyframes blink { 50% { opacity: .25; } }
+.season { margin-top: 4px; font-size: 12px; color: var(--faint); }
+.season b { color: var(--amber); font-weight: 800; }
+
+/* Обертова рамка: conic-градієнт у border-box + маска */
+.ring { display: block; position: relative; border-radius: var(--r-lg); padding: 1.5px; background: conic-gradient(from var(--angle), var(--c1), var(--c2), var(--c1) 40%, transparent 55%, var(--c1) 85%); animation: spin 5s linear infinite; }
+@keyframes spin { to { --angle: 360deg; } }
+.ring > .inner { position: relative; border-radius: calc(var(--r-lg) - 1.5px); background: var(--card); overflow: hidden; height: 100%; }
+
+.champ { --c1: #fbbf24; --c2: #f97316; margin-top: 20px; box-shadow: 0 0 60px -20px #fbbf2499; }
+.champ .inner { padding: 20px; min-height: 172px; display: grid; grid-template-columns: 1fr auto; gap: 16px; align-items: end; isolation: isolate; }
+.champ .art { position: absolute; inset: 0; z-index: -2; opacity: .55; background-size: 160% 160%; animation: art-shift 12s ease-in-out infinite alternate; }
+.champ .inner::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(100deg, #18181bf2 30%, #18181b88 70%, #18181b33); }
+.champ .rank { position: absolute; top: 16px; left: 20px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 800; letter-spacing: .08em; color: var(--amber); text-transform: uppercase; }
+.crown { color: var(--amber); display: inline-block; filter: drop-shadow(0 0 8px #fbbf24aa); animation: crown 2.6s ease-in-out infinite; }
+@keyframes crown { 0%, 100% { transform: translateY(0) rotate(0); } 30% { transform: translateY(-4px) rotate(-10deg); } 60% { transform: translateY(0) rotate(5deg); } }
+.champ h3 { margin-top: 36px; font: 800 26px/1.1 var(--display); letter-spacing: -0.02em; }
+.champ .sub { margin-top: 4px; color: #d4d4d8; font-size: 13px; display: flex; gap: 12px; flex-wrap: wrap; }
+.champ .sub .on::before { content: ''; display: inline-block; width: 7px; height: 7px; border-radius: 50%; background: var(--up); margin-right: 6px; box-shadow: 0 0 8px var(--up); }
+.champ .score { text-align: right; }
+.champ .score b { display: block; font: 800 40px/1 var(--display); letter-spacing: -0.03em; background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.champ .score small { color: var(--muted); font-size: 12px; }
+.champ .trend { margin-top: 6px; display: inline-block; padding: 2px 8px; border-radius: 999px; font-size: 12px; font-weight: 800; color: var(--up); background: #34d3991a; }
+
+.runners { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-top: 12px; }
+.runner.silver { --c1: #e4e4e7; --c2: #71717a; --medal: linear-gradient(135deg, #f4f4f5, #a1a1aa); --bar: linear-gradient(90deg, #a1a1aa, #e4e4e7); }
+.runner.bronze { --c1: #fb923c; --c2: #9a3412; --medal: linear-gradient(135deg, #fdba74, #c2410c); --bar: linear-gradient(90deg, #c2410c, #fb923c); }
+.runner { animation-duration: 7s; }
+.runner .inner { padding: 16px; }
+.runner .top { display: flex; align-items: center; gap: 12px; }
+.medal-badge { flex: none; width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font: 800 16px var(--display); color: #18181b; background: var(--medal); box-shadow: inset 0 -2px 0 #0003; }
+.runner b.n { display: block; font-weight: 800; font-size: 15px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.runner .g { color: var(--muted); font-size: 12px; }
+.runner .votes { margin-top: 12px; display: flex; justify-content: space-between; align-items: baseline; font-size: 12px; color: var(--muted); }
+.runner .votes strong { font: 700 20px var(--display); color: var(--text); }
+.gap-bar { margin-top: 8px; height: 6px; border-radius: 999px; background: var(--bg); overflow: hidden; }
+.gap-bar i { display: block; height: 100%; border-radius: inherit; background: var(--bar, var(--grad)); width: 0; transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+
+.chasers { margin-top: 12px; display: grid; gap: 6px; }
+.chaser { position: relative; display: grid; grid-template-columns: 28px 1fr 96px 44px; gap: 12px; align-items: center; padding: 10px 12px; border-radius: var(--r-sm); background: var(--bg-2); border: 1px solid var(--line); font-size: 14px; transition: border-color .15s, background-color .4s; }
+.chaser:hover { border-color: var(--line-2); }
+.chaser .n { font: 700 13px var(--display); color: var(--faint); text-align: center; }
+.chaser b { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: block; }
+.chaser .g { color: var(--faint); font-size: 12px; }
+.chaser .gap-bar { margin-top: 0; height: 4px; }
+.chaser .gap-bar i { background: #f9731688; }
+.chaser .tr { font-weight: 800; font-size: 13px; text-align: right; }
+.arena-body { transition: opacity .25s ease, transform .25s ease; }
+.arena-body.switching { opacity: 0; transform: translateY(8px); }
+.arena-foot { margin-top: 16px; display: flex; justify-content: space-between; font-size: 12px; color: var(--faint); }
+.up { color: var(--up); } .down { color: var(--down); }
+
+/* ── Секції ───────────────────────────────────────── */
+section.block { position: relative; padding: 96px 0; }
+section.alt { background: var(--bg-2); border-block: 1px solid var(--line); }
+.head { display: flex; justify-content: space-between; align-items: flex-end; gap: 24px; margin-bottom: 40px; flex-wrap: wrap; position: relative; z-index: 1; }
+.head h2 { margin-top: 12px; font: 700 40px/1.1 var(--display); letter-spacing: -0.03em; }
+.head p { color: var(--muted); max-width: 44ch; }
+.head .more { font-weight: 700; font-size: 14px; color: var(--amber); }
+
+/* Галерея ігор */
+.gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 224px 224px; gap: 16px; position: relative; z-index: 1; }
+.tile { position: relative; border-radius: var(--r-lg); overflow: hidden; padding: 20px; display: flex; flex-direction: column; justify-content: flex-end; isolation: isolate; transition: transform .25s ease-out; }
+.tile:hover { transform: translateY(-4px); }
+.tile::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 30%, #09090bdd); }
+.tile.big { grid-row: span 2; }
+.tile.wide { grid-column: span 2; }
+.tile h3 { font: 700 22px var(--display); letter-spacing: -0.02em; }
+.tile .tmeta { display: flex; gap: 16px; font-size: 13px; color: #e4e4e7; margin-top: 4px; }
+.tile .lead { margin-top: 8px; font-size: 13px; color: #d4d4d8; }
+.tile .lead b { color: var(--amber); }
+.art-l2 { background: radial-gradient(circle at 30% 28%, #ffd58a 0, transparent 30%), conic-gradient(from 200deg at 60% 60%, #6b2b0a, #c2741a, #2a1405, #6b2b0a); }
+.art-gta { background: radial-gradient(circle at 70% 20%, #ffb3d9, transparent 40%), linear-gradient(160deg, #ff3fa4 0%, #7b2cff 50%, #0d0b2b 100%); }
+.art-mc { background: repeating-linear-gradient(90deg, #3c8a24 0 20px, #4ea12f 20px 40px), repeating-linear-gradient(0deg, #00000026 0 20px, transparent 20px 40px); background-blend-mode: multiply; }
+.art-dayz { background: radial-gradient(circle at 50% 120%, #a3a35a, transparent 60%), linear-gradient(180deg, #1b1f14, #3e4524); }
+.art-rust { background: radial-gradient(circle at 70% 30%, #ffb070 0, transparent 26%), linear-gradient(135deg, #3a1607, #c2410c 60%, #7c2d12); }
+.art-cs { background: radial-gradient(circle at 50% 45%, transparent 26%, #0b1324 27%, #0b1324 31%, transparent 32%), radial-gradient(circle at 50% 45%, #22d3ee 0, #1e3a8a 50%, #0b1020 100%); }
+
+/* Таблиця топу */
+.table-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 8px 24px 16px; }
+.table-top { display: flex; justify-content: space-between; align-items: center; gap: 16px; padding: 16px 0; flex-wrap: wrap; }
+.table-top h3 { font: 700 17px var(--display); }
+.chips { display: flex; gap: 8px; flex-wrap: wrap; }
+.chips button { border: 1px solid var(--line-2); background: none; color: var(--muted); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
+.chips button:hover { color: var(--text); }
+.chips button[aria-pressed="true"] { background: var(--grad); border-color: transparent; color: var(--gold-ink); }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; font-size: 12px; font-weight: 700; color: var(--faint); padding: 8px; border-bottom: 1px solid var(--line); }
+td { padding: 16px 8px; border-bottom: 1px solid var(--line); font-size: 15px; }
+tbody tr { transition: background-color .15s; }
+tbody tr:hover { background: #ffffff04; }
+tr:last-child td { border-bottom: 0; }
+.r { text-align: right; }
+.medal { display: inline-grid; place-items: center; width: 32px; height: 32px; border-radius: var(--r-sm); font: 800 14px var(--display); color: var(--faint); background: var(--bg-2); }
+.medal.m1 { background: var(--grad); color: var(--gold-ink); }
+.medal.m2 { background: #d4d4d8; color: #18181b; }
+.medal.m3 { background: #c2410c; color: #fff7ed; }
+.sname { font-weight: 800; }
+.sname small { display: block; color: var(--muted); font-weight: 500; font-size: 13px; }
+.status { display: inline-flex; align-items: center; gap: 8px; }
+.status::before { content: ''; width: 8px; height: 8px; border-radius: 50%; background: var(--up); }
+.status.off::before { background: var(--down); }
+.spark { width: 96px; height: 28px; display: block; }
+
+/* Скоро відкриття */
+.soon { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.soon-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; transition: border-color .2s; }
+.soon-card:hover { border-color: color-mix(in srgb, var(--c) 60%, transparent); }
+.soon-card .gname { font-size: 12px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--c); }
+.soon-card h3 { margin-top: 4px; font-size: 18px; font-weight: 800; }
+.soon-card p { color: var(--muted); font-size: 13px; }
+.count { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 16px; text-align: center; perspective: 300px; }
+.count b { font-size: 20px !important; }
+.count div { background: var(--bg); border-radius: var(--r-sm); padding: 8px 0; }
+.count b { display: block; font: 700 22px var(--display); }
+.count span { font-size: 11px; color: var(--faint); }
+.soon-card .btn { width: 100%; margin-top: 16px; }
+
+/* Власникам */
+.owners { display: grid; grid-template-columns: 1.1fr 1fr; gap: 56px; align-items: center; position: relative; z-index: 1; }
+.owners h2 { margin-top: 12px; font: 700 40px/1.1 var(--display); letter-spacing: -0.03em; }
+.owners > div > p { margin-top: 16px; color: var(--muted); max-width: 46ch; }
+.steps { list-style: none; padding: 0; margin: 32px 0; display: grid; gap: 12px; }
+.steps li { display: flex; gap: 16px; padding: 16px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); }
+.steps .n { flex: none; width: 36px; height: 36px; border-radius: var(--r-sm); display: grid; place-items: center; font: 700 13px var(--display); color: var(--amber); background: #fbbf241a; }
+.steps b { font-weight: 800; }
+.steps p { color: var(--muted); font-size: 14px; }
+.stat-card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-xl); padding: 24px; position: relative; }
+.stat-card .tag { position: absolute; top: -12px; right: 24px; }
+.stat-card h3 { font: 700 15px var(--display); }
+.stat-card .finding { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.bars { display: flex; align-items: flex-end; gap: 4px; height: 160px; margin-top: 24px; }
+.bars span { flex: 1; border-radius: 4px 4px 0 0; background: #f9731633; }
+.bars span.hi { background: var(--grad); }
+.axis { display: flex; justify-content: space-between; margin-top: 8px; font-size: 12px; color: var(--faint); }
+.stat-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 20px; }
+.stat-row div { background: var(--bg); border-radius: var(--r); padding: 12px 16px; }
+.stat-row small { color: var(--muted); font-size: 12px; }
+.stat-row b { display: block; font: 700 20px var(--display); }
+
+.features { margin-top: 64px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; position: relative; z-index: 1; }
+.feature { padding: 24px; border-radius: var(--r-lg); background: var(--card); border: 1px solid var(--line); transition: border-color .2s, transform .2s ease-out; }
+.feature:hover { border-color: #fbbf2455; transform: translateY(-2px); }
+.feature .ico { width: 44px; height: 44px; border-radius: var(--r); display: grid; place-items: center; color: var(--amber); background: #fbbf2414; margin-bottom: 16px; }
+.feature h3 { font-size: 17px; font-weight: 800; }
+.feature p { margin-top: 8px; color: var(--muted); font-size: 14px; }
+
+/* Тарифи */
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; align-items: stretch; }
+.plan { position: relative; display: flex; flex-direction: column; padding: 32px; border-radius: var(--r-xl); background: var(--card); border: 1px solid var(--line); }
+.plan.pop { border-color: transparent; background: linear-gradient(var(--card), var(--card)) padding-box, var(--grad) border-box; border: 1px solid transparent; box-shadow: 0 32px 80px -40px #f9731688; }
+.plan .badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); padding: 4px 12px; border-radius: 999px; background: var(--grad); color: var(--gold-ink); font-size: 12px; font-weight: 800; white-space: nowrap; }
+.plan h3 { font: 700 20px var(--display); }
+.plan .for { color: var(--muted); font-size: 14px; }
+.price { margin: 20px 0; font: 800 40px var(--display); letter-spacing: -0.03em; }
+.price small { font: 500 15px var(--font); color: var(--muted); letter-spacing: 0; }
+.plan ul { list-style: none; padding: 0; margin-bottom: 32px; display: grid; gap: 12px; font-size: 15px; }
+.plan li { display: flex; gap: 12px; }
+.plan li svg { flex: none; margin-top: 4px; color: var(--up); }
+.plan .btn { margin-top: auto; }
+
+/* Заклик */
+.cta { position: relative; overflow: hidden; border-radius: var(--r-xl); padding: 56px; background: radial-gradient(560px 280px at 10% 0%, #fbbf242e, transparent), radial-gradient(520px 300px at 95% 100%, #f9731633, transparent), var(--card); border: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; }
+.cta h2 { font: 700 34px/1.15 var(--display); letter-spacing: -0.03em; max-width: 18ch; }
+.cta p { margin-top: 12px; color: var(--muted); }
+
+footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 56px 0 32px; }
+.fgrid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 40px; }
+.fgrid p { margin-top: 12px; color: var(--muted); font-size: 14px; max-width: 32ch; }
+.fgrid h4 { font: 700 13px var(--display); margin-bottom: 16px; }
+.fgrid ul { list-style: none; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+.fgrid ul a:hover { color: var(--text); }
+.fbottom { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--faint); font-size: 13px; }
+
+/* ═══ Рух ═════════════════════════════════════════════════════════════ */
+
+/* Живий фон: світіння повільно дрейфує, поверх — сітка, що згасає донизу */
+.aurora { position: fixed; inset: 0; z-index: -1; overflow: hidden; pointer-events: none; }
+.aurora i { position: absolute; border-radius: 50%; filter: blur(110px); opacity: .5; animation: drift 22s ease-in-out infinite alternate; }
+.aurora i:nth-child(1) { width: 620px; height: 620px; background: #f97316; top: -220px; right: -120px; opacity: .28; }
+.aurora i:nth-child(2) { width: 520px; height: 520px; background: #fbbf24; top: 40%; left: -260px; opacity: .14; animation-duration: 28s; animation-delay: -6s; }
+.aurora i:nth-child(3) { width: 460px; height: 460px; background: #db2777; bottom: -240px; right: 20%; opacity: .12; animation-duration: 32s; animation-delay: -12s; }
+@keyframes drift { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(80px, 60px) scale(1.15); } 100% { transform: translate(-60px, 120px) scale(.95); } }
+/* Фон першого екрана: промені прожекторів і іскри, що здіймаються */
+.hero-fx { position: absolute; inset: -80px 0 0; z-index: 0; pointer-events: none; overflow: hidden; mask-image: linear-gradient(180deg, #000 70%, transparent); }
+.beam { position: absolute; top: -10%; width: 420px; height: 130%; transform-origin: 50% 0; filter: blur(18px); opacity: .55;
+  background: conic-gradient(from 180deg at 50% 0%, transparent 168deg, #fbbf2430 176deg, #f9731622 180deg, #fbbf2430 184deg, transparent 192deg); }
+.beam.b1 { left: 8%; animation: sway 11s ease-in-out infinite alternate; }
+.beam.b2 { right: 6%; animation: sway 13s ease-in-out -4s infinite alternate-reverse; opacity: .45; }
+@keyframes sway { from { transform: rotate(-14deg); } to { transform: rotate(16deg); } }
+#embers { position: absolute; inset: 0; width: 100%; height: 100%; }
+.glow { display: none; }
+
+/* Шапка стискається під час прокрутки */
+header .bar { transition: padding .3s ease, background-color .3s ease, box-shadow .3s ease; }
+header.scrolled .bar { padding-block: 4px; background: #18181bf0; box-shadow: 0 12px 40px -16px #000; }
+
+/* Заголовок з'являється по словах */
+.reveal-words .w { display: inline-block; opacity: 0; transform: translateY(.6em) rotate(3deg); filter: blur(6px); animation: word-in .8s cubic-bezier(.2,.8,.2,1) forwards; animation-delay: calc(var(--i) * 70ms + 150ms); }
+@keyframes word-in { to { opacity: 1; transform: none; filter: none; } }
+/* Градієнтне слово переливається */
+.grad.shimmer { background: linear-gradient(90deg, #fbbf24, #f97316, #f43f5e, #f97316, #fbbf24); background-size: 300% 100%; -webkit-background-clip: text; background-clip: text; animation: word-in .8s cubic-bezier(.2,.8,.2,1) forwards, shimmer 6s linear infinite; animation-delay: calc(var(--i) * 70ms + 150ms), 1s; }
+@keyframes shimmer { to { background-position: 300% 0; } }
+
+/* Поява блоків під час прокрутки */
+[data-reveal] { opacity: 0; transform: translateY(32px); transition: opacity .8s cubic-bezier(.2,.8,.2,1), transform .8s cubic-bezier(.2,.8,.2,1); transition-delay: calc(var(--d, 0) * 90ms); }
+[data-reveal].in { opacity: 1; transform: none; }
+
+/* Кнопки: відблиск, що пробігає */
+.btn-hot { position: relative; overflow: hidden; }
+.btn-hot::after { content: ''; position: absolute; inset: 0; background: linear-gradient(110deg, transparent 30%, #ffffff88 50%, transparent 70%); transform: translateX(-120%); transition: transform .7s ease; }
+.btn-hot:hover::after { transform: translateX(120%); }
+.btn-hot.pulse { animation: pulse 2.8s ease-in-out infinite; }
+@keyframes pulse { 0%, 100% { box-shadow: 0 8px 32px -12px #f97316aa, 0 0 0 0 #f9731655; } 50% { box-shadow: 0 8px 32px -12px #f97316cc, 0 0 0 10px #f9731600; } }
+
+/* Підсвітка під курсором на картках */
+.spot { position: relative; }
+.spot::before { content: ''; position: absolute; inset: 0; border-radius: inherit; pointer-events: none; opacity: 0; transition: opacity .3s; background: radial-gradient(360px circle at var(--mx, 50%) var(--my, 50%), #fbbf241c, transparent 45%); }
+.spot:hover::before { opacity: 1; }
+
+/* Пошук: блимаючий курсор у підказці, що друкується */
+.search input.typing::placeholder { color: var(--muted); }
+
+/* Топ: картки з'являються каскадом, по чемпіону пробігає відблиск */
+.arena-body .champ, .arena-body .runner, .arena-body .chaser { animation: card-in .7s cubic-bezier(.2,.8,.2,1) both; animation-delay: calc(var(--k, 0) * 90ms + 200ms); }
+.arena-body .runner { animation-name: card-in, spin; animation-duration: .7s, 7s; animation-timing-function: cubic-bezier(.2,.8,.2,1), linear; animation-iteration-count: 1, infinite; }
+.arena-body .champ { animation-name: card-in, spin; animation-duration: .7s, 5s; animation-timing-function: cubic-bezier(.2,.8,.2,1), linear; animation-iteration-count: 1, infinite; }
+@keyframes card-in { from { opacity: 0; transform: translateY(16px) scale(.98); } }
+.champ .inner > .sweep { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: linear-gradient(115deg, transparent 40%, #fff2 50%, transparent 60%); transform: translateX(-100%); animation: sweep 4.5s ease-in-out 1.5s infinite; }
+@keyframes sweep { 55%, 100% { transform: translateX(100%); } }
+.chaser.flash { background: #fbbf2414; border-color: #fbbf2455; }
+.vote-pop { position: absolute; right: 20px; top: 16px; font-weight: 800; font-size: 13px; color: var(--up); animation: pop-up 1.2s ease-out forwards; pointer-events: none; }
+@keyframes pop-up { from { opacity: 0; transform: translateY(8px); } 20% { opacity: 1; } to { opacity: 0; transform: translateY(-18px); } }
+.tick { display: inline-block; animation: tick .5s ease; }
+@keyframes tick { 0% { transform: translateY(-6px); opacity: 0; } }
+
+/* Лічильник «онлайн» коротко світиться при зміні */
+.bump { animation: bump .6s ease; }
+@keyframes bump { 30% { color: var(--up); text-shadow: 0 0 16px #34d39988; } }
+
+/* Безперервна стрічка серверів */
+.marquee { position: relative; border-block: 1px solid var(--line); background: #0f0f12cc; overflow: hidden; mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent); }
+.marquee-track { display: flex; width: max-content; animation: marquee 50s linear infinite; }
+.marquee:hover .marquee-track { animation-play-state: paused; }
+@keyframes marquee { to { transform: translateX(-50%); } }
+.mq { display: flex; align-items: center; gap: 12px; padding: 14px 28px; border-right: 1px solid var(--line); white-space: nowrap; font-size: 14px; }
+.mq b { font-weight: 800; }
+.mq .g { color: var(--faint); font-size: 12px; text-transform: uppercase; letter-spacing: .06em; }
+.mq .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 10px var(--up); }
+
+/* Сповіщення «щойно проголосували» */
+.toasts { position: fixed; left: 24px; bottom: 24px; z-index: 40; display: grid; gap: 8px; pointer-events: none; }
+.toast { display: flex; align-items: center; gap: 12px; padding: 12px 16px; border-radius: var(--r); background: #18181bf2; backdrop-filter: blur(12px); border: 1px solid var(--line-2); box-shadow: 0 16px 40px -16px #000; font-size: 14px; animation: toast-in .5s cubic-bezier(.2,.9,.3,1.2) both; }
+.toast.out { animation: toast-out .4s ease forwards; }
+.toast .av { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 13px; color: var(--gold-ink); background: var(--grad); flex: none; }
+.toast small { display: block; color: var(--muted); font-size: 12px; }
+@keyframes toast-in { from { opacity: 0; transform: translateX(-40px) scale(.95); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(12px); } }
+
+/* Галерея: 3D-нахил, відблиск, живі «арти» */
+.gallery { perspective: 1000px; }
+.tile { transform-style: preserve-3d; transition: transform .2s ease-out, box-shadow .3s; will-change: transform; }
+.tile:hover { transform: none; box-shadow: 0 30px 60px -30px #000, 0 0 0 1px #ffffff1a; }
+.tile .shine { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(400px circle at var(--mx, 50%) var(--my, 50%), #ffffff30, transparent 45%); opacity: 0; transition: opacity .3s; mix-blend-mode: overlay; }
+.tile:hover .shine { opacity: 1; }
+.tile h3, .tile .tmeta, .tile .lead { transform: translateZ(40px); }
+.art-l2, .art-gta, .art-rust, .art-cs, .art-dayz { background-size: 160% 160%; animation: art-shift 14s ease-in-out infinite alternate; }
+.art-mc { animation: mc-scroll 18s linear infinite; }
+@keyframes art-shift { 0% { background-position: 0% 0%; } 100% { background-position: 100% 100%; } }
+@keyframes mc-scroll { to { background-position: 40px 40px, 40px 40px; } }
+
+/* Графіки малюються, коли з'являються на екрані */
+.spark path { stroke-dasharray: 220; stroke-dashoffset: 220; }
+.in .spark path, tr.in .spark path { animation: draw 1.4s ease forwards; }
+@keyframes draw { to { stroke-dashoffset: 0; } }
+.bars span { transform: scaleY(0); transform-origin: bottom; transition: transform .7s cubic-bezier(.2,.9,.2,1.05); transition-delay: calc(var(--i) * 25ms); }
+.in .bars span { transform: none; }
+tbody tr { opacity: 0; transform: translateX(-16px); transition: opacity .5s ease, transform .5s ease, background-color .15s; transition-delay: calc(var(--i) * 70ms); }
+tbody tr.in { opacity: 1; transform: none; }
+
+/* Відлік: цифра «перевертається» при зміні */
+.count b.flip { animation: flip .45s ease; }
+@keyframes flip { 0% { transform: rotateX(90deg); opacity: .2; } 100% { transform: none; } }
+
+/* Іконки можливостей оживають при наведенні */
+.feature .ico { transition: transform .4s cubic-bezier(.2,.9,.3,1.4), background-color .3s; }
+.feature:hover .ico { transform: rotate(-8deg) scale(1.12); background: #fbbf2430; }
+
+/* ═══ Стилізація ігор ═════════════════════════════════════════════════
+ * .g-<гра> задає колір, шрифт і тінь заголовка; .scene-<гра> — анімовану сцену картки.
+ * Однакові класи працюють у галереї, топі, таблиці, стрічці й «Старт скоро».
+ */
+.g-l2   { --gc: #e8b04a; --gc2: #7a3e0b; --gfont: 'Cormorant', serif;      --gtrack: .06em; --gcase: uppercase; --gshadow: 0 0 18px #e8b04a88; }
+.g-gta  { --gc: #ff4fa3; --gc2: #6d28d9; --gfont: 'Russo One', sans-serif; --gtrack: 0;     --gcase: none;      --gshadow: 3px 3px 0 #6d28d9, 0 0 20px #ff4fa388; }
+.g-mc   { --gc: #6cc644; --gc2: #8b5a2b; --gfont: 'Press Start 2P', monospace; --gtrack: 0; --gcase: none;      --gshadow: 3px 3px 0 #1f3d0f; }
+.g-dayz { --gc: #b8c48a; --gc2: #2f3a22; --gfont: 'Stalinist One', sans-serif; --gtrack: .02em; --gcase: uppercase; --gshadow: 0 2px 0 #0008; }
+.g-rust { --gc: #e2652f; --gc2: #5a2412; --gfont: 'Rubik Dirt', sans-serif; --gtrack: .01em; --gcase: uppercase; --gshadow: 0 0 14px #e2652f66; }
+.g-cs   { --gc: #4fc3f7; --gc2: #0b2a4a; --gfont: 'Exo 2', sans-serif;      --gtrack: .02em; --gcase: uppercase; --gshadow: 0 0 16px #4fc3f788; }
+.gtitle { font-family: var(--gfont) !important; letter-spacing: var(--gtrack) !important; text-transform: var(--gcase); text-shadow: var(--gshadow); }
+.g-mc .gtitle, .g-mc.gtitle { font-size: .72em; line-height: 1.5; }
+.g-cs .gtitle, .g-cs.gtitle { font-style: italic; }
+.gtag { display: inline-block; padding: 1px 8px; border-radius: 6px; font-size: 11px; font-weight: 800; letter-spacing: .04em; color: var(--gc); background: color-mix(in srgb, var(--gc) 14%, transparent); border: 1px solid color-mix(in srgb, var(--gc) 35%, transparent); }
+
+/* Нова галерея: шість рівноправних «світів» */
+.worlds { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; perspective: 1200px; position: relative; z-index: 1; }
+.world { position: relative; height: 280px; border-radius: var(--r-lg); overflow: hidden; isolation: isolate; display: flex; flex-direction: column; justify-content: flex-end; padding: 22px; border: 1px solid color-mix(in srgb, var(--gc) 30%, transparent); transform-style: preserve-3d; transition: transform .2s ease-out, box-shadow .3s, border-color .3s; }
+.world:hover { border-color: color-mix(in srgb, var(--gc) 70%, transparent); box-shadow: 0 30px 70px -30px color-mix(in srgb, var(--gc) 60%, transparent); }
+.world::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 35%, #000c 100%); pointer-events: none; }
+.world .scene { position: absolute; inset: 0; z-index: -2; overflow: hidden; }
+.world h3 { font-size: 26px; line-height: 1.1; transform: translateZ(40px); }
+.world .wmeta { margin-top: 8px; display: flex; gap: 14px; font-size: 13px; color: #e4e4e7; transform: translateZ(30px); }
+.world .wmeta b { color: var(--gc); }
+.world .wlead { margin-top: 6px; font-size: 13px; color: #d4d4d8; transform: translateZ(30px); }
+.world .shine { position: absolute; inset: 0; z-index: 1; pointer-events: none; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), #ffffff26, transparent 45%); opacity: 0; transition: opacity .3s; mix-blend-mode: overlay; }
+.world:hover .shine { opacity: 1; }
+
+/* Lineage 2: рунне коло над замком, золоті іскри */
+.scene-l2 { background: radial-gradient(ellipse at 50% 30%, #6b3a10 0%, #2a1406 55%, #120903 100%); }
+.scene-l2 .rune { position: absolute; left: 50%; top: 38%; width: 210px; height: 210px; margin: -105px 0 0 -105px; animation: rot 40s linear infinite; opacity: .55; filter: drop-shadow(0 0 10px #e8b04a); }
+.scene-l2 .castle { position: absolute; bottom: 0; left: 0; width: 100%; height: 46%; }
+.scene-l2 .mote { position: absolute; width: 4px; height: 4px; border-radius: 50%; background: #ffd58a; box-shadow: 0 0 8px #ffb84a; animation: rise-mote 6s linear infinite; }
+@keyframes rot { to { transform: rotate(360deg); } }
+@keyframes rise-mote { from { transform: translateY(0); opacity: 0; } 20% { opacity: 1; } to { transform: translateY(-200px); opacity: 0; } }
+
+/* GTA: ретровейв-сонце, місто, пальма */
+.scene-gta { background: linear-gradient(180deg, #1a0533 0%, #5b1a7a 45%, #ff4fa3 75%, #ffb36b 100%); }
+.scene-gta .sun { position: absolute; left: 50%; top: 18%; width: 170px; height: 170px; margin-left: -85px; border-radius: 50%; background: linear-gradient(180deg, #ffe066, #ff4fa3);
+  -webkit-mask: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 18px); mask: repeating-linear-gradient(180deg, #000 0 14px, transparent 14px 18px); animation: sun-pulse 5s ease-in-out infinite; box-shadow: 0 0 60px #ff4fa3; }
+@keyframes sun-pulse { 50% { transform: translateY(6px) scale(1.04); filter: brightness(1.15); } }
+.scene-gta .city { position: absolute; bottom: 0; left: 0; width: 100%; height: 48%; }
+.scene-gta .palm { position: absolute; bottom: 0; right: 6%; height: 70%; transform-origin: bottom center; animation: palm 6s ease-in-out infinite; }
+@keyframes palm { 50% { transform: rotate(-3deg); } }
+
+/* Minecraft: обертовий блок трави, піксельні хмари, шари ґрунту */
+.scene-mc { background: linear-gradient(180deg, #6fb7ff 0%, #a9d8ff 60%, #6cc644 60%, #4e9a2a 70%, #8b5a2b 70%, #6b4320 100%); image-rendering: pixelated; }
+.scene-mc .cloud { position: absolute; height: 18px; background: #fff; box-shadow: 18px -12px 0 #fff, 36px 0 0 #fff; opacity: .9; animation: cloud 26s linear infinite; }
+@keyframes cloud { from { transform: translateX(-140px); } to { transform: translateX(560px); } }
+.scene-mc .cube-wrap { position: absolute; left: 50%; top: 30%; width: 64px; height: 64px; margin: -32px 0 0 -32px; perspective: 400px; animation: bob 3s ease-in-out infinite; }
+.scene-mc .cube { position: relative; width: 64px; height: 64px; transform-style: preserve-3d; animation: cube 9s linear infinite; }
+.scene-mc .cube i { position: absolute; inset: 0; background: linear-gradient(180deg, #6cc644 0 30%, #8b5a2b 30% 100%); box-shadow: inset 0 0 0 2px #0002; }
+.scene-mc .cube i:nth-child(1) { transform: translateZ(32px); }
+.scene-mc .cube i:nth-child(2) { transform: rotateY(90deg) translateZ(32px); }
+.scene-mc .cube i:nth-child(3) { transform: rotateY(180deg) translateZ(32px); }
+.scene-mc .cube i:nth-child(4) { transform: rotateY(-90deg) translateZ(32px); }
+.scene-mc .cube i:nth-child(5) { transform: rotateX(90deg) translateZ(32px); background: #6cc644; }
+.scene-mc .cube i:nth-child(6) { transform: rotateX(-90deg) translateZ(32px); background: #6b4320; }
+@keyframes cube { from { transform: rotateX(-22deg) rotateY(0); } to { transform: rotateX(-22deg) rotateY(360deg); } }
+@keyframes bob { 50% { transform: translateY(-10px); } }
+
+/* DayZ: ліс у тумані */
+.scene-dayz { background: linear-gradient(180deg, #4a5440 0%, #2a3122 55%, #141a10 100%); }
+.scene-dayz .trees { position: absolute; bottom: 0; left: 0; width: 100%; height: 72%; }
+.scene-dayz .fog { position: absolute; left: -50%; width: 200%; height: 90px; background: radial-gradient(ellipse at center, #d9e0c855 0%, transparent 65%); filter: blur(8px); animation: fog 18s linear infinite; }
+.scene-dayz .fog.f2 { bottom: 10%; animation-duration: 26s; animation-direction: reverse; opacity: .7; }
+.scene-dayz .fog.f1 { bottom: 34%; }
+@keyframes fog { from { transform: translateX(-12%); } to { transform: translateX(12%); } }
+
+/* Rust: іржаві плити із заклепками, багаття */
+.scene-rust { background:
+  radial-gradient(circle at 20% 30%, #00000040 0 2px, transparent 3px) 0 0 / 60px 60px,
+  radial-gradient(circle at 80% 70%, #7c2d1288 0%, transparent 40%),
+  repeating-linear-gradient(90deg, #00000033 0 1px, transparent 1px 120px),
+  repeating-linear-gradient(0deg, #00000033 0 1px, transparent 1px 90px),
+  linear-gradient(135deg, #5a2412, #9a3c15 40%, #6b2a10 70%, #3a170a); }
+.scene-rust .fire { position: absolute; left: 50%; bottom: 26%; width: 70px; height: 90px; margin-left: -35px; }
+.scene-rust .flame { position: absolute; bottom: 0; left: 50%; width: 36px; height: 70px; margin-left: -18px; border-radius: 50% 50% 35% 35% / 60% 60% 40% 40%; background: radial-gradient(ellipse at 50% 80%, #fff3b0 0%, #ffb02e 35%, #e2652f 65%, transparent 70%); filter: blur(1px); transform-origin: bottom center; animation: flame .5s ease-in-out infinite alternate; }
+.scene-rust .flame.f2 { width: 26px; margin-left: -4px; height: 50px; animation-duration: .7s; opacity: .8; }
+@keyframes flame { to { transform: scaleY(1.15) skewX(4deg); } }
+.scene-rust .glowfire { position: absolute; left: 50%; bottom: 18%; width: 220px; height: 120px; margin-left: -110px; background: radial-gradient(ellipse, #ff8a3d55, transparent 70%); animation: flicker 1.6s ease-in-out infinite; }
+@keyframes flicker { 50% { opacity: .6; } }
+
+/* Counter-Strike: тактичний HUD */
+.scene-cs { background: radial-gradient(circle at 50% 40%, #12325a 0%, #071629 70%); }
+.scene-cs .radar { position: absolute; left: 50%; top: 38%; width: 170px; height: 170px; margin: -85px 0 0 -85px; border-radius: 50%; border: 1px solid #4fc3f755;
+  background: radial-gradient(circle, transparent 32%, #4fc3f722 33%, transparent 34%, transparent 65%, #4fc3f722 66%, transparent 67%), conic-gradient(from 0deg, #4fc3f766, transparent 60deg); animation: rot 4s linear infinite; }
+.scene-cs .cross { position: absolute; left: 50%; top: 38%; width: 40px; height: 40px; margin: -20px 0 0 -20px; }
+.scene-cs .blip { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #ff5a5a; box-shadow: 0 0 8px #ff5a5a; animation: blip 4s ease-out infinite; }
+@keyframes blip { 0%, 60% { opacity: 0; } 65% { opacity: 1; } 100% { opacity: 0; } }
+.scene-cs .scan { position: absolute; inset: 0; background: repeating-linear-gradient(0deg, #ffffff06 0 1px, transparent 1px 4px); animation: scan 8s linear infinite; }
+@keyframes scan { to { background-position: 0 200px; } }
+
+/* Чемпіон і призери в топі отримують сцену й шрифт своєї гри */
+.champ .scene { position: absolute; inset: 0; z-index: -2; opacity: .6; }
+.champ h3.gtitle { font-size: 28px; }
+.soon-card h3.gtitle { font-size: 19px; }
+.soon-card.g-mc h3.gtitle { font-size: 12px; line-height: 1.6; }
+.mq .gtag, .sname .gtag { margin-right: 4px; }
+.champ.g-mc h3.gtitle { font-size: 18px; }
+.champ.ring { --c1: var(--gc); --c2: #fbbf24; }
+.runner .n.gtitle { font-size: 15px; }
+.runner.g-mc .n.gtitle { font-size: 10px; }
+
+@media (max-width: 1024px) { .worlds { grid-template-columns: 1fr 1fr; } }
+@media (max-width: 640px) { .worlds { grid-template-columns: 1fr; } .world { height: 220px; } }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }
+  [data-reveal], tbody tr, .reveal-words .w { opacity: 1 !important; transform: none !important; filter: none !important; }
+  .bars span, .podium .stand { transform: none !important; }
+  .spark path { stroke-dashoffset: 0 !important; }
+  .toasts { display: none; }
+}
+@media (max-width: 1024px) {
+  .hero-grid, .owners { grid-template-columns: 1fr; }
+  .bar nav { display: none; }
+  .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(4, 200px); }
+  .tile.big { grid-row: span 1; grid-column: span 2; }
+  .soon, .features, .plans { grid-template-columns: 1fr 1fr; }
+  .fgrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  h1 { font-size: 36px; }
+  .head h2, .owners h2 { font-size: 28px; }
+  section.block { padding: 64px 0; }
+  .kpis { gap: 24px; flex-wrap: wrap; }
+  .kpis dd { font-size: 22px; }
+  .gallery { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 180px; }
+  .tile.big, .tile.wide { grid-column: span 1; }
+  .soon, .features, .plans { grid-template-columns: 1fr; }
+  .hide-sm { display: none; }
+  .chaser { grid-template-columns: 24px 1fr 40px; }
+  .chaser .g { display: none; }
+  .cta { padding: 32px 24px; }
+  .bar .login { display: none; }
+  .search { flex-direction: column; }
+}
+</style>
+</head>
+<body>
+<div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="logo" href="#"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="#1c1003" aria-hidden="true"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg></i>graj.club</a>
+      <nav aria-label="Розділи"><a href="#top">Рейтинг</a><a href="#games">Ігри</a><a href="#soon">Скоро відкриття</a><a href="#owners">Власникам</a><a href="#plans">Тарифи</a></nav>
+      <div class="actions">
+        <a class="btn btn-ghost btn-sm login" href="#">Увійти</a>
+        <a class="btn btn-hot btn-sm" href="#">Додати сервер</a>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+  <!-- Перший екран: пошук і живий топ місяця -->
+  <section class="hero">
+    <div class="hero-fx" aria-hidden="true"><span class="beam b1"></span><span class="beam b2"></span><canvas id="embers"></canvas></div>
+    <div class="wrap hero-grid">
+      <div>
+        <span class="label live">312 серверів під моніторингом</span>
+        <h1 class="reveal-words" id="h1">Знайди сервер, де справді <span class="grad shimmer">грають</span></h1>
+        <p class="sub">Чесний рейтинг Lineage 2, GTA, Minecraft, DayZ, Rust і Counter-Strike. Онлайн перевіряємо кожні 5 хвилин, голоси — без накрутки.</p>
+        <form class="search" role="search" onsubmit="return false">
+          <label class="sr" for="q">Пошук сервера</label>
+          <input id="q" type="search" placeholder="Назва, IP або «Interlude x50»">
+          <button class="btn btn-hot">Знайти</button>
+        </form>
+        <div class="quick">Часто шукають: <a href="#">Interlude x50</a><a href="#">FiveM RP</a><a href="#">Анархія 1.21</a><a href="#">Rust Solo</a></div>
+        <dl class="kpis">
+          <div><dd class="num" id="online" data-count="48213">0</dd><dt>гравців онлайн</dt></div>
+          <div><dd class="num grad" id="votes" data-count="96410">0</dd><dt>голосів у жовтні</dt></div>
+          <div><dd class="num">4 дні</dd><dt>до фіналу сезону</dt></div>
+        </dl>
+      </div>
+
+      <aside class="arena" aria-labelledby="arena-h">
+        <div class="arena-head">
+          <div>
+            <div class="title"><h2 id="arena-h">Топ жовтня</h2><span class="live-badge">LIVE</span></div>
+            <div class="season">Фінал сезону через <b class="num" id="season-left">4д 00:00:00</b></div>
+          </div>
+          <div class="seg" role="group" aria-label="Гра" id="arena-tabs">
+            <button aria-pressed="true" data-game="all">Усі</button><button aria-pressed="false" data-game="l2">L2</button><button aria-pressed="false" data-game="gta">GTA</button><button aria-pressed="false" data-game="mc">MC</button>
+          </div>
+        </div>
+        <!-- Вміст будує скрипт з даних вкладки -->
+        <div class="arena-body" id="arena-body" aria-live="polite"></div>
+        <div class="arena-foot"><span id="arena-updated">Оновлено щойно</span><a href="#top" class="grad" style="font-weight:800">Увесь рейтинг</a></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- Стрічка серверів онлайн; вміст дублюється для безшовної прокрутки -->
+  <div class="marquee" aria-label="Сервери онлайн зараз"><div class="marquee-track" id="marquee"></div></div>
+
+  <!-- Ігри -->
+  <section class="block alt" id="games">
+    <div class="wrap">
+      <div class="head"><div><span class="label">Шість ігор</span><h2>Обери свою гру</h2></div><p>Кожна гра має свій рейтинг і фільтри: хроніки, версія, режим, вайп.</p></div>
+      <!-- Шість «світів»: сцени будує скрипт (SCENES), щоб використати їх і в топі -->
+      <div class="worlds" id="worlds"></div>
+    </div>
+  </section>
+
+  <!-- Живий рейтинг -->
+  <section class="block" id="top">
+    <div class="wrap">
+      <div class="head"><div><span class="label">Рейтинг</span><h2>Лідери <span class="grad">зараз</span></h2></div><p>Місце визначають голоси гравців за місяць. Онлайн оновлюється автоматично.</p></div>
+      <div class="table-card">
+        <div class="table-top">
+          <h3>Жовтень 2026</h3>
+          <div class="chips" role="group" aria-label="Фільтр за грою">
+            <button aria-pressed="true">Усі ігри</button><button aria-pressed="false">Lineage 2</button><button aria-pressed="false">GTA</button><button aria-pressed="false">Minecraft</button><button aria-pressed="false" class="hide-sm">Rust</button><button aria-pressed="false" class="hide-sm">CS</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>Місце</th><th>Сервер</th><th class="hide-sm">Онлайн, 24 год</th><th class="r">Гравці</th><th class="r hide-sm">Голоси</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <!-- Скоро відкриття -->
+  <section class="block alt" id="soon">
+    <div class="wrap">
+      <div class="head"><div><span class="label">Нові сервери</span><h2>Старт <span class="grad">скоро</span></h2></div><p>Приходь на відкриття: на старті найкращі шанси на кланові замки й рідкісні предмети.</p></div>
+      <div class="soon" id="soon-grid"></div>
+    </div>
+  </section>
+
+  <!-- Власникам -->
+  <section class="block" id="owners">
+    <span class="glow" style="width:480px;height:480px;background:#f9731626;right:-160px;top:80px"></span>
+    <div class="wrap">
+      <div class="owners">
+        <div>
+          <span class="label">Власникам серверів</span>
+          <h2>Від реєстрації до <span class="grad">першого місця</span></h2>
+          <p>Додавання безкоштовне. Портал сам перевіряє онлайн і приводить гравців, які голосують саме за вас.</p>
+          <ol class="steps">
+            <li><span class="n">01</span><div><b>Додайте сервер</b><p>Гра, адреса, опис і скриншоти — поля підлаштовуються під гру.</p></div></li>
+            <li><span class="n">02</span><div><b>Підтвердіть власність</b><p>Код у MOTD, DNS-запис або файл на сайті — і позначка «перевірено».</p></div></li>
+            <li><span class="n">03</span><div><b>Увімкніть бонуси за голос</b><p>Vote-callback видає гравцю нагороду в грі одразу після голосу.</p></div></li>
+            <li><span class="n">04</span><div><b>Ростіть у рейтингу</b><p>Голоси місяця визначають місце, VIP закріплює над усіма.</p></div></li>
+          </ol>
+          <a class="btn btn-hot" href="#">Додати сервер безкоштовно</a>
+        </div>
+        <div class="stat-card" aria-label="Приклад статистики сервера в кабінеті">
+          <span class="label live tag">У кабінеті</span>
+          <h3>Kyiv RP піднявся з 9-го на 1-ше місце</h3>
+          <p class="finding">Голоси за 30 днів після ввімкнення бонусів за голос</p>
+          <div class="bars" id="bars" aria-hidden="true"></div>
+          <div class="axis"><span>28 вер</span><span>увімкнено callback</span><span>27 жов</span></div>
+          <div class="stat-row">
+            <div><small>Місце</small><b class="grad">№ 1</b></div>
+            <div><small>Голоси</small><b class="num">612</b></div>
+            <div><small>Аптайм</small><b class="num">99,2%</b></div>
+          </div>
+        </div>
+      </div>
+      <div class="features" id="features"></div>
+    </div>
+  </section>
+
+  <!-- Тарифи -->
+  <section class="block alt" id="plans">
+    <div class="wrap">
+      <div class="head"><div><span class="label">Тарифи</span><h2>Просування без підписок</h2></div><p>Платите за конкретний термін — послуга вимикається сама, нагадаємо за 3 дні.</p></div>
+      <div class="plans" id="plans-grid"></div>
+    </div>
+  </section>
+
+  <div class="wrap" style="margin-top:96px">
+    <div class="cta">
+      <div><h2>Твій сервер заслуговує на гравців</h2><p>Додай його за 3 хвилини. Модерація зазвичай займає до доби.</p></div>
+      <a class="btn btn-hot" href="#">Додати сервер</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div><a class="logo" href="#"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="#1c1003" aria-hidden="true"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg></i>graj.club</a><p>Рейтинг ігрових серверів, де місце виборюють гравці.</p></div>
+      <div><h4>Ігри</h4><ul><li><a href="#">Lineage 2</a></li><li><a href="#">Grand Theft Auto</a></li><li><a href="#">Minecraft</a></li><li><a href="#">DayZ, Rust, CS</a></li></ul></div>
+      <div><h4>Власникам</h4><ul><li><a href="#">Додати сервер</a></li><li><a href="#">Тарифи</a></li><li><a href="#">API і vote-callback</a></li></ul></div>
+      <div><h4>Портал</h4><ul><li><a href="#">Правила</a></li><li><a href="#">Зал слави</a></li><li><a href="#">Контакти</a></li></ul></div>
+    </div>
+    <div class="fbottom"><span>© 2026 graj.club</span><span>Онлайн оновлюється кожні 5 хвилин</span></div>
+  </div>
+</footer>
+
+<script>
+const fmt = n => n.toLocaleString('uk-UA');
+const icon = p => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+const check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
+
+// Ключ стилізації гри за її назвою
+const gameKey = g => ({ 'Lineage 2': 'l2', 'Grand Theft Auto': 'gta', 'GTA': 'gta', 'Minecraft': 'mc', 'DayZ': 'dayz', 'Rust': 'rust', 'Counter-Strike': 'cs' })[g.split(' · ')[0]] ?? 'cs';
+
+// Рядки рейтингу з міні-графіком онлайну за добу
+const spark = (pts, up) => {
+  const max = Math.max(...pts), min = Math.min(...pts);
+  const d = pts.map((v, i) => `${i ? 'L' : 'M'}${(i / (pts.length - 1) * 96).toFixed(1)},${(26 - (v - min) / (max - min || 1) * 24).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 96 28" aria-hidden="true"><path d="${d}" fill="none" stroke="${up ? '#34d399' : '#fb7185'}" stroke-width="2" stroke-linecap="round"/></svg>`;
+};
+document.getElementById('rows').innerHTML = [
+  ['Kyiv RP', 'Grand Theft Auto · FiveM', 1820, 612, [9,10,12,11,14,16,15,18], true],
+  ['Карпати SMP', 'Minecraft · Java 1.21', 342, 598, [12,11,12,10,9,10,9,8], true],
+  ['Oren PvP', 'Lineage 2 · C4 x10000', 1104, 583, [6,8,7,9,11,10,13,14], true],
+  ['Public 24/7 Dust2', 'Counter-Strike · CS2', 30, 566, [20,22,21,25,24,26,27,30], true],
+  ['Elmore Classic', 'Lineage 2 · Gracia Final x5', 244, 546, [14,13,15,12,13,12,11,12], true],
+  ['Dnipro City RP', 'Grand Theft Auto · RAGE:MP', 730, 544, [5,6,8,7,9,9,11,12], true],
+  ['Odesa Life', 'Grand Theft Auto · FiveM', 0, 311, [12,11,9,6,3,0,0,0], false],
+].map(([n, g, p, v, s, on], i) => `<tr style="--i:${i}">
+  <td><span class="medal ${i < 3 ? 'm' + (i + 1) : ''}">${i + 1}</span></td>
+  <td><a class="sname" href="#">${n}<small><span class="gtag g-${gameKey(g)}">${g.split(' · ')[0]}</span> ${g.split(' · ')[1] ?? ''}</small></a></td>
+  <td class="hide-sm">${spark(s, s.at(-1) >= s[0])}</td>
+  <td class="r num"><span class="status ${on ? '' : 'off'}">${on ? fmt(p) : 'офлайн'}</span></td>
+  <td class="r num hide-sm">${fmt(v)}</td>
+  <td class="r"><a class="btn btn-ghost btn-sm" href="#">Голосувати</a></td></tr>`).join('');
+
+// Відлік до відкриття відносно поточного часу, щоб демо виглядало живим
+const soon = [['Aden Legacy', 'Lineage 2', 'Interlude x50 PvP', '#fbbf24', 2.4], ['Kharkiv RP', 'GTA', 'FiveM RP', '#f472b6', 4.1], ['Карпати Hard', 'Minecraft', 'Java 1.21 Hardcore', '#4ade80', 5.7], ['Chernobyl Zone', 'DayZ', 'Livonia PvE', '#a3a35a', 11.2]];
+const opensAt = soon.map(([, , , , days]) => Date.now() + days * 86400e3);
+document.getElementById('soon-grid').innerHTML = soon.map(([n, g, info, c], k) => `
+  <article class="soon-card g-${gameKey(g)}" style="--c:var(--gc)"><div class="gname">${g}</div><h3 class="gtitle">${n}</h3><p>${info}</p>
+    <div class="count num" role="timer" data-k="${k}"><div><b data-u="d">0</b><span>днів</span></div><div><b data-u="h">00</b><span>годин</span></div><div><b data-u="m">00</b><span>хвилин</span></div><div><b data-u="s">00</b><span>секунд</span></div></div>
+    <a class="btn btn-ghost btn-sm" href="#">Нагадати мені</a></article>`).join('');
+// Щосекунди оновлюємо лише ті цифри, що змінилися, — вони «перевертаються»
+const tickSoon = () => document.querySelectorAll('.count').forEach(box => {
+  const left = Math.max(0, (opensAt[box.dataset.k] - Date.now()) / 1000);
+  const v = { d: Math.floor(left / 86400), h: Math.floor(left % 86400 / 3600), m: Math.floor(left % 3600 / 60), s: Math.floor(left % 60) };
+  box.querySelectorAll('b').forEach(b => {
+    const text = b.dataset.u === 'd' ? String(v.d) : String(v[b.dataset.u]).padStart(2, '0');
+    if (b.textContent !== text) { b.textContent = text; b.classList.remove('flip'); void b.offsetWidth; b.classList.add('flip'); }
+  });
+  box.setAttribute('aria-label', `До відкриття ${v.d} дн ${v.h} год ${v.m} хв`);
+});
+tickSoon();
+setInterval(tickSoon, 1000);
+
+// Голоси за 30 днів: після ввімкнення callback (день 12) стовпчики підсвічені
+document.getElementById('bars').innerHTML = [6,7,5,8,7,9,8,7,9,8,10,9,14,16,15,18,19,17,21,22,20,24,25,23,27,26,29,30,28,32]
+  .map((v, i) => `<span class="${i >= 12 ? 'hi' : ''}" style="height:${v / 32 * 100}%;--i:${i}"></span>`).join('');
+
+document.getElementById('features').innerHTML = [
+  ['Живий моніторинг', 'Онлайн, пінг і аптайм кожні 5 хвилин: Minecraft, CS, Rust, DayZ, SA-MP, FiveM.', '<path d="M3 12h4l3-8 4 16 3-8h4"/>'],
+  ['Бонуси за голос', 'Підписаний vote-callback видає нагороду в грі одразу після голосу.', '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/>'],
+  ['Статистика', 'Графіки онлайну й голосів за добу, тиждень і місяць.', '<path d="M3 3v18h18M7 15l4-4 3 3 6-7"/>'],
+  ['Чесні голоси', 'Ліміти за IP, пристроєм і підмережею, перевірка VPN.', '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>'],
+  ['API для власників', 'Перевірка голосу за ніком і передача онлайну з вашого сервера.', '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>'],
+  ['Сповіщення', 'Email або Telegram: сервер офлайн, новий відгук, рішення модератора.', '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>'],
+].map(([t, d, p]) => `<article class="feature"><span class="ico">${icon(p)}</span><h3>${t}</h3><p>${d}</p></article>`).join('');
+
+document.getElementById('plans-grid').innerHTML = [
+  ['Базовий', 'Для старту', '0 ₴', 'назавжди', ['Місце в рейтингу гри', 'Моніторинг і статистика', 'Бонуси за голос'], 'Додати сервер', false],
+  ['VIP', 'Закріплення над рейтингом', '1 000 ₴', '/ 30 днів', ['Блок VIP над усіма серверами гри', 'Позначка VIP у списку', 'Лише 5 місць на гру', 'Нагадування за 3 дні'], 'Обрати VIP', true],
+  ['Виділення', 'Помітність у списку', '500 ₴', '/ 30 днів', ['Кольорова рамка і фон', 'На всіх сторінках рейтингу', 'Поєднується з VIP'], 'Обрати', false],
+].map(([t, f, p, per, items, cta, pop]) => `<article class="plan ${pop ? 'pop' : ''}">${pop ? '<span class="badge">Найпопулярніший</span>' : ''}
+  <h3>${t}</h3><div class="for">${f}</div><div class="price">${p}<small> ${per}</small></div>
+  <ul>${items.map(i => `<li>${check}${i}</li>`).join('')}</ul>
+  <a class="btn ${pop ? 'btn-hot' : 'btn-ghost'}" href="#">${cta}</a></article>`).join('');
+</script>
+
+<script>
+/* ═══ Рух і «життя» сторінки. Демо-події вигадані, на сайті їх даватиме API. ═══ */
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, root = document) => root.querySelector(s);
+const $$ = (s, root = document) => [...root.querySelectorAll(s)];
+const fmtN = n => Math.round(n).toLocaleString('uk-UA');
+
+// 0. Сцени ігор: розмітка анімованих світів (CSS-класи .scene-*)
+const rnd = (a, b) => a + Math.random() * (b - a);
+const SCENES = {
+  l2: () => `<div class="scene scene-l2">
+      <svg class="rune" viewBox="0 0 200 200" fill="none" stroke="#e8b04a" stroke-width="1.5" aria-hidden="true">
+        <circle cx="100" cy="100" r="96"/><circle cx="100" cy="100" r="78" stroke-dasharray="4 6"/><circle cx="100" cy="100" r="46"/>
+        <path d="M100 4 L100 196 M4 100 L196 100 M32 32 L168 168 M168 32 L32 168"/>
+        <path d="M100 54 L140 124 L60 124 Z M100 146 L60 76 L140 76 Z"/>
+      </svg>
+      <svg class="castle" viewBox="0 0 400 130" preserveAspectRatio="none" aria-hidden="true"><path fill="#120903" d="M0 130 V92 h18 v-12 h8 v12 h10 v-12 h8 v12 h16 V58 h10 v-10 h6 v10 h10 v-10 h6 v10 h10 V96 h40 V40 h12 V20 l12 -18 l12 18 V40 h12 V96 h40 V60 h10 v-10 h6 v10 h10 v-10 h6 v10 h10 v34 h16 v-12 h8 v12 h10 v-12 h8 v12 h18 v38 Z"/><rect x="194" y="70" width="12" height="20" rx="6" fill="#e8b04a" opacity=".8"/></svg>
+      ${Array.from({ length: 10 }, () => `<i class="mote" style="left:${rnd(5, 95)}%;bottom:${rnd(10, 40)}%;animation-delay:-${rnd(0, 6)}s;animation-duration:${rnd(4, 8)}s"></i>`).join('')}
+    </div>`,
+  gta: () => `<div class="scene scene-gta">
+      <span class="sun"></span>
+      <svg class="city" viewBox="0 0 400 140" preserveAspectRatio="none" aria-hidden="true"><path fill="#14031f" d="M0 140 V80 h20 V50 h18 v30 h12 V30 h22 v50 h10 V60 h16 v-20 h14 v40 h12 V20 h8 V8 h6 v12 h8 v60 h14 V44 h20 v36 h10 V64 h18 v-26 h16 v42 h14 V24 h24 v56 h10 V52 h20 v28 h14 V36 h18 v44 h16 v60 Z"/>
+        <g fill="#ff4fa3" opacity=".7">${Array.from({ length: 24 }, () => `<rect x="${Math.round(rnd(10, 390))}" y="${Math.round(rnd(40, 120))}" width="3" height="4"/>`).join('')}</g></svg>
+      <svg class="palm" viewBox="0 0 100 200" aria-hidden="true"><path d="M52 200 C50 150 46 100 54 60" stroke="#14031f" stroke-width="7" fill="none"/><g fill="#14031f"><path d="M54 60 C30 40 8 48 0 64 C20 52 38 54 54 62Z"/><path d="M54 60 C76 38 96 44 100 60 C82 50 68 52 54 62Z"/><path d="M54 60 C40 30 44 10 58 0 C52 22 56 40 56 60Z"/><path d="M54 60 C70 70 80 92 78 110 C70 90 62 76 52 64Z"/><path d="M54 60 C34 70 24 92 26 110 C34 90 44 76 56 64Z"/></g></svg>
+    </div>`,
+  mc: () => `<div class="scene scene-mc">
+      <span class="cloud" style="top:14%;width:54px;animation-delay:-4s"></span>
+      <span class="cloud" style="top:28%;width:36px;animation-delay:-15s;animation-duration:34s"></span>
+      <div class="cube-wrap"><div class="cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
+    </div>`,
+  dayz: () => `<div class="scene scene-dayz">
+      <span class="fog f1"></span>
+      <svg class="trees" viewBox="0 0 400 200" preserveAspectRatio="none" aria-hidden="true">
+        <g fill="#232b1b" opacity=".8">${[20, 70, 130, 190, 250, 310, 370].map(x => `<path d="M${x} 200 L${x - 18} 200 L${x} 70 L${x + 18} 200 Z M${x} 200 L${x - 24} 200 L${x} 110 L${x + 24} 200Z"/>`).join('')}</g>
+        <g fill="#141a10">${[0, 45, 100, 160, 215, 280, 340, 395].map(x => `<path d="M${x} 200 L${x - 26} 200 L${x} 40 L${x + 26} 200 Z"/>`).join('')}</g>
+      </svg>
+      <span class="fog f2"></span>
+    </div>`,
+  rust: () => `<div class="scene scene-rust">
+      <span class="glowfire"></span>
+      <div class="fire"><span class="flame"></span><span class="flame f2"></span></div>
+    </div>`,
+  cs: () => `<div class="scene scene-cs">
+      <span class="scan"></span><span class="radar"></span>
+      <svg class="cross" viewBox="0 0 40 40" stroke="#4fc3f7" stroke-width="2" aria-hidden="true"><path d="M20 0v14M20 26v14M0 20h14M26 20h14"/><circle cx="20" cy="20" r="1.5" fill="#4fc3f7"/></svg>
+      <i class="blip" style="left:58%;top:30%"></i><i class="blip" style="left:41%;top:46%;animation-delay:-1.6s"></i>
+    </div>`,
+};
+
+// Галерея світів
+(() => {
+  const worlds = [
+    ['l2', 'Lineage 2', 10, 3210, 'Oren PvP'], ['gta', 'Grand Theft Auto', 7, 2852, 'Kyiv RP'], ['mc', 'Minecraft', 7, 1214, 'Карпати SMP'],
+    ['dayz', 'DayZ', 5, 163, 'Polissia Zone'], ['rust', 'Rust', 5, 628, 'Rust Solo Weekly'], ['cs', 'Counter-Strike', 5, 87, 'Public 24/7 Dust2'],
+  ];
+  $('#worlds').innerHTML = worlds.map(([k, name, n, on, lead]) => `
+    <a class="world g-${k}" href="#">
+      ${SCENES[k]()}
+      <span class="shine" aria-hidden="true"></span>
+      <h3 class="gtitle">${name}</h3>
+      <div class="wmeta num"><span><b>${n}</b> серверів</span><span><b>${fmtN(on)}</b> онлайн</span></div>
+      <div class="wlead">Лідер: <b style="color:var(--gc)">${lead}</b></div>
+    </a>`).join('');
+})();
+
+// 1. Заголовок з'являється по словах
+(() => {
+  const h1 = $('#h1');
+  let i = 0;
+  [...h1.childNodes].forEach(node => {
+    if (node.nodeType === Node.TEXT_NODE) {
+      const frag = document.createDocumentFragment();
+      node.textContent.split(/(\s+)/).forEach(part => {
+        if (!part.trim()) { frag.append(part); return; }
+        const w = document.createElement('span');
+        w.className = 'w'; w.style.setProperty('--i', i++); w.textContent = part;
+        frag.append(w);
+      });
+      node.replaceWith(frag);
+    } else {
+      node.classList.add('w'); node.style.setProperty('--i', i++);
+    }
+  });
+})();
+
+// 2. Цифри рахують вгору; «онлайн» потім живе — коливається кожні кілька секунд
+const countUp = (el, to, ms = 1600) => {
+  if (calm) { el.textContent = fmtN(to); return; }
+  const from = Number(el.dataset.now || 0), t0 = performance.now();
+  const step = t => {
+    const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 4);
+    el.textContent = fmtN(from + (to - from) * e);
+    if (p < 1) requestAnimationFrame(step);
+  };
+  requestAnimationFrame(step);
+  el.dataset.now = to;
+};
+setTimeout(() => $$('[data-count]').forEach(el => countUp(el, Number(el.dataset.count), 1800)), 500);
+let online = 48213, votes = 96410;
+setInterval(() => {
+  online += Math.round((Math.random() - 0.4) * 60);
+  const el = $('#online');
+  countUp(el, online, 700);
+  el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump');
+}, 3500);
+
+// 3. Підказки в пошуку друкуються самі
+(() => {
+  const input = $('#q');
+  if (calm) return;
+  const hints = ['Interlude x50 PvP', 'FiveM RP з економікою', 'Minecraft анархія 1.21', 'Rust Solo, вайп щотижня', 'CS2 Retake 128 tick'];
+  let h = 0, c = 0, del = false;
+  input.classList.add('typing');
+  const type = () => {
+    if (document.activeElement === input || input.value) { setTimeout(type, 600); return; }
+    const word = hints[h];
+    c += del ? -1 : 1;
+    input.placeholder = 'Наприклад: ' + word.slice(0, c) + '▍';
+    let wait = del ? 28 : 55;
+    if (!del && c === word.length) { del = true; wait = 1600; }
+    else if (del && c === 0) { del = false; h = (h + 1) % hints.length; wait = 300; }
+    setTimeout(type, wait);
+  };
+  setTimeout(type, 1500);
+})();
+
+// 4. Топ місяця: чемпіон, срібло/бронза, погоня 4–6; вкладки ігор, живі голоси й перестановки
+const ARENA = {
+  // [назва, гра, деталі, голоси, онлайн, арт, зміна місця]
+  all: [['Kyiv RP', 'GTA', 'FiveM RP', 612, 1820, 'art-gta', 0], ['Карпати SMP', 'Minecraft', 'Java 1.21', 598, 342, 'art-mc', 1], ['Oren PvP', 'Lineage 2', 'C4 x10000', 583, 1104, 'art-l2', -1],
+        ['Public 24/7 Dust2', 'CS2', 'Public', 566, 30, 'art-cs', 2], ['Elmore Classic', 'Lineage 2', 'Gracia Final x5', 546, 244, 'art-l2', -1], ['Dnipro City RP', 'GTA', 'RAGE:MP', 544, 730, 'art-gta', 4]],
+  l2:  [['Oren PvP', 'Lineage 2', 'C4 x10000', 583, 1104, 'art-l2', 0], ['Elmore Classic', 'Lineage 2', 'Gracia Final x5', 546, 244, 'art-l2', 0], ['Heine Essence', 'Lineage 2', 'Interlude x50', 516, 849, 'art-l2', 2],
+        ['Talking Island x5', 'Lineage 2', 'Interlude x10', 488, 161, 'art-l2', -1], ['Goddard RvR', 'Lineage 2', 'Classic x1', 235, 401, 'art-l2', 0], ['Rune Interlude', 'Lineage 2', 'Classic x100', 196, 0, 'art-l2', -2]],
+  gta: [['Kyiv RP', 'GTA', 'FiveM RP', 612, 1820, 'art-gta', 0], ['Dnipro City RP', 'GTA', 'RAGE:MP RP', 544, 730, 'art-gta', 1], ['Lviv Streets', 'GTA', 'alt:V Freeroam', 402, 214, 'art-gta', -1],
+        ['Odesa Life', 'GTA', 'FiveM RP', 311, 0, 'art-gta', 0], ['Coastline Freeroam', 'GTA', 'SA-MP DM', 95, 88, 'art-gta', 1], ['Steppe Roleplay', 'GTA', 'SA-MP RP', 71, 40, 'art-gta', -1]],
+  mc:  [['Карпати SMP', 'Minecraft', 'Java 1.21', 598, 342, 'art-mc', 0], ['Minigames Hub', 'Minecraft', 'Java 1.20', 471, 611, 'art-mc', 0], ['Bedrock Village', 'Minecraft', 'Bedrock 1.21', 340, 97, 'art-mc', 1],
+        ['Blockforge', 'Minecraft', 'Java 1.12', 277, 120, 'art-mc', -1], ['SkyIsland', 'Minecraft', 'Java 1.8', 150, 44, 'art-mc', 0], ['Pixel Realm', 'Minecraft', 'Java 1.21', 132, 61, 'art-mc', 2]],
+};
+const votesWord = n => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? 'голос' : a >= 2 && a <= 4 && (b < 12 || b > 14) ? 'голоси' : 'голосів'; };
+const crownSvg = '<svg class="crown" width="18" height="18" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 12H5z"/></svg>';
+let arenaGame = 'all';
+
+const renderArena = (animateEntry = true) => {
+  const list = ARENA[arenaGame];
+  list.sort((a, b) => b[3] - a[3]);
+  const lead = list[0][3];
+  const [c, s, b] = list;
+  const box = $('#arena-body');
+  const before = new Map($$('[data-name]', box).map(el => [el.dataset.name, el.getBoundingClientRect().top]));
+  const pct = v => Math.max(4, Math.round(v / lead * 100));
+  const trend = t => t > 0 ? `<span class="tr up">▲ ${t}</span>` : t < 0 ? `<span class="tr down">▼ ${-t}</span>` : '<span class="tr" style="color:var(--faint)">—</span>';
+
+  const gk = r => r[5].replace('art-', '');
+  box.innerHTML = `
+    <a class="ring champ g-${gk(c)}" href="#" data-name="${c[0]}" style="--k:0">
+      <div class="inner">
+        ${SCENES[gk(c)]()}<span class="sweep" aria-hidden="true"></span>
+        <span class="rank">${crownSvg} Перше місце</span>
+        <div><h3 class="gtitle">${c[0]}</h3><div class="sub"><span>${c[1]} · ${c[2]}</span><span class="on num">${fmtN(c[4])} онлайн</span></div></div>
+        <div class="score"><b class="num" data-votes>${fmtN(c[3])}</b><small>${votesWord(c[3])} за місяць</small><br><span class="trend num">+${Math.round(c[3] / 30)} за добу</span></div>
+      </div>
+    </a>
+    <div class="runners">
+      ${[[s, 'silver', 2], [b, 'bronze', 3]].map(([r, cls, n], k) => `
+        <a class="ring runner ${cls} g-${gk(r)}" href="#" data-name="${r[0]}" style="--k:${k + 1}">
+          <div class="inner">
+            <div class="top"><span class="medal-badge">${n}</span><div style="min-width:0"><b class="n gtitle">${r[0]}</b><span class="gtag">${r[1]}</span></div></div>
+            <div class="votes"><strong class="num">${fmtN(r[3])}</strong><span class="num">−${fmtN(lead - r[3])} до лідера</span></div>
+            <div class="gap-bar"><i data-w="${pct(r[3])}"></i></div>
+          </div>
+        </a>`).join('')}
+    </div>
+    <div class="chasers">
+      ${list.slice(3, 6).map((r, k) => `
+        <a class="chaser g-${gk(r)}" href="#" data-name="${r[0]}" style="--k:${k + 3}">
+          <span class="n">${k + 4}</span>
+          <div style="min-width:0"><b>${r[0]}</b><span class="gtag">${r[1]}</span></div>
+          <div class="gap-bar"><i data-w="${pct(r[3])}"></i></div>
+          ${trend(r[6])}
+        </a>`).join('')}
+    </div>`;
+
+  // Смуги «до лідера» заповнюються після вставки
+  requestAnimationFrame(() => requestAnimationFrame(() => $$('.gap-bar i', box).forEach(i => { i.style.width = i.dataset.w + '%'; })));
+
+  if (!animateEntry) {
+    $$('.champ, .runner, .chaser', box).forEach(el => { el.style.animationName = el.classList.contains('chaser') ? 'none' : 'spin'; });
+    if (calm) return;
+    // FLIP: тим, хто змінив позицію, показуємо переміщення
+    $$('[data-name]', box).forEach(el => {
+      const was = before.get(el.dataset.name);
+      const dy = was === undefined ? 0 : was - el.getBoundingClientRect().top;
+      if (dy) {
+        el.animate([{ transform: `translateY(${dy}px)` }, { transform: 'none' }], { duration: 700, easing: 'cubic-bezier(.2,.8,.2,1)' });
+        if (el.classList.contains('chaser')) { el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 1400); }
+      }
+    });
+  }
+};
+
+// Перемикання вкладок з плавною зміною вмісту
+$$('#arena-tabs button').forEach(btn => btn.addEventListener('click', () => {
+  if (btn.dataset.game === arenaGame) return;
+  $$('#arena-tabs button').forEach(b => b.setAttribute('aria-pressed', String(b === btn)));
+  const body = $('#arena-body');
+  body.classList.add('switching');
+  setTimeout(() => { arenaGame = btn.dataset.game; renderArena(true); body.classList.remove('switching'); }, calm ? 0 : 250);
+}));
+renderArena(true);
+
+// Живі голоси: сервери з топу отримують голоси, іноді обганяють сусідів
+if (!calm) setInterval(() => {
+  const list = ARENA[arenaGame];
+  // Голоси отримує один із переслідувачів, щоб боротьба за місця була видимою
+  const target = list[1 + Math.floor(Math.random() * 5)];
+  const gain = 3 + Math.floor(Math.random() * 10);
+  const wasRank = list.indexOf(target);
+  target[3] += gain;
+  list.sort((a, b) => b[3] - a[3]);
+  const nowRank = list.indexOf(target);
+  if (nowRank < wasRank) {
+    target[6] = wasRank - nowRank;                       // піднявся
+    list.slice(nowRank + 1, wasRank + 1).forEach(r => { r[6] = -1; }); // ті, кого обігнали
+  }
+  renderArena(false);
+
+  // «+N» вилітає над карткою, що отримала голоси
+  const card = $(`#arena-body [data-name="${CSS.escape(target[0])}"]`);
+  if (card) {
+    const pop = document.createElement('span');
+    pop.className = 'vote-pop';
+    pop.textContent = `+${gain}`;
+    (card.querySelector('.inner') ?? card).append(pop);
+    setTimeout(() => pop.remove(), 1300);
+  }
+  $('#arena-updated').textContent = nowRank < wasRank ? `${target[0]} піднявся на ${nowRank + 1}-ше місце` : 'Оновлено щойно';
+}, 4000);
+
+// Відлік до фіналу сезону — до кінця поточного місяця
+const seasonEnd = (() => { const d = new Date(); return new Date(d.getFullYear(), d.getMonth() + 1, 1).getTime(); })();
+const tickSeason = () => {
+  const s = Math.max(0, Math.floor((seasonEnd - Date.now()) / 1000));
+  const p = n => String(n).padStart(2, '0');
+  $('#season-left').textContent = `${Math.floor(s / 86400)}д ${p(Math.floor(s % 86400 / 3600))}:${p(Math.floor(s % 3600 / 60))}:${p(s % 60)}`;
+};
+tickSeason(); setInterval(tickSeason, 1000);
+
+// 5. Стрічка серверів онлайн
+(() => {
+  const items = [['Kyiv RP', 'GTA', 1820], ['Oren PvP', 'L2', 1104], ['Minigames Hub', 'MC', 611], ['Карпати SMP', 'MC', 342], ['Wild Coast x2', 'Rust', 260], ['Elmore Classic', 'L2', 244], ['Lviv Streets', 'GTA', 214], ['Rust Solo Weekly', 'Rust', 184], ['Polissia Zone', 'DayZ', 58], ['Public 24/7 Dust2', 'CS', 30]];
+  const key = { GTA: 'gta', L2: 'l2', MC: 'mc', Rust: 'rust', DayZ: 'dayz', CS: 'cs' };
+  const html = items.map(([n, g, p]) => `<span class="mq g-${key[g]}"><i class="dot"></i><span class="gtag">${g}</span><b>${n}</b><span class="num">${fmtN(p)} онлайн</span></span>`).join('');
+  $('#marquee').innerHTML = html + html;
+})();
+
+// 6. «Щойно проголосували»
+(() => {
+  if (calm) return;
+  const nicks = ['DarkElf', 'Bohdan_UA', 'kotyhoroshko', 'NoScope', 'Lysa_Hora', 'Shadow', 'Taras228', 'Mavka', 'Kozak_PvP', 'creeper_ua'];
+  const servers = ['Kyiv RP', 'Oren PvP', 'Карпати SMP', 'Public 24/7 Dust2', 'Elmore Classic', 'Rust Solo Weekly'];
+  const box = $('#toasts');
+  const show = () => {
+    const nick = nicks[Math.floor(Math.random() * nicks.length)];
+    const server = servers[Math.floor(Math.random() * servers.length)];
+    const t = document.createElement('div');
+    t.className = 'toast';
+    t.innerHTML = `<span class="av">${nick[0].toUpperCase()}</span><div><b>${nick}</b> проголосував за <b>${server}</b><small>щойно</small></div>`;
+    box.append(t);
+    votes += 1; $('#votes').textContent = fmtN(votes); $('#votes').dataset.now = votes;
+    setTimeout(() => { t.classList.add('out'); setTimeout(() => t.remove(), 400); }, 4200);
+    setTimeout(show, 5000 + Math.random() * 4000);
+  };
+  setTimeout(show, 3500);
+})();
+
+// 7. Поява блоків під час прокрутки, з каскадом усередині групи
+(() => {
+  const groups = ['.head', '.world', '.table-card', '.soon-card', '.steps li', '.stat-card', '.feature', '.plan', '.cta', '.owners > div > h2', '.owners > div > p'];
+  groups.forEach(sel => $$(sel).forEach((el, i) => { el.dataset.reveal = ''; el.style.setProperty('--d', i % 6); }));
+  const targets = [...$$('[data-reveal]'), ...$$('tbody tr')];
+  if (calm || !('IntersectionObserver' in window)) { targets.forEach(el => el.classList.add('in')); return; }
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    io.unobserve(e.target);
+  }), { threshold: 0.15, rootMargin: '0px 0px -40px 0px' });
+  targets.forEach(el => io.observe(el));
+})();
+
+// 8. Підсвітка під курсором на картках
+$$('.feature, .plan, .soon-card, .stat-card, .table-card, .arena, .steps li').forEach(el => {
+  el.classList.add('spot');
+  el.addEventListener('pointermove', e => {
+    const r = el.getBoundingClientRect();
+    el.style.setProperty('--mx', `${e.clientX - r.left}px`);
+    el.style.setProperty('--my', `${e.clientY - r.top}px`);
+  });
+});
+
+// 9. 3D-нахил і відблиск на картках ігор
+$$('.world').forEach(tile => {
+  if (calm) return;
+  tile.addEventListener('pointermove', e => {
+    const r = tile.getBoundingClientRect();
+    const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
+    tile.style.transform = `rotateY(${(x - 0.5) * 10}deg) rotateX(${(0.5 - y) * 10}deg) translateZ(0)`;
+    tile.style.setProperty('--mx', `${x * 100}%`);
+    tile.style.setProperty('--my', `${y * 100}%`);
+  });
+  tile.addEventListener('pointerleave', () => { tile.style.transform = ''; });
+});
+
+// 10. Іскри першого екрана: легкий canvas, пауза у фоновій вкладці та поза екраном
+(() => {
+  const canvas = $('#embers');
+  if (calm || !canvas) return;
+  const ctx = canvas.getContext('2d');
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  let w, h, parts = [], visible = true;
+  const resize = () => {
+    w = canvas.clientWidth; h = canvas.clientHeight;
+    canvas.width = w * dpr; canvas.height = h * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const count = Math.round(Math.min(90, w / 16));
+    parts = Array.from({ length: count }, () => spawn(true));
+  };
+  const spawn = (anywhere) => ({
+    x: Math.random() * w,
+    y: anywhere ? Math.random() * h : h + 10,
+    r: 0.6 + Math.random() * 1.8,
+    vy: 0.15 + Math.random() * 0.45,
+    drift: Math.random() * Math.PI * 2,
+    hue: 25 + Math.random() * 25,   // від помаранчевого до бурштинового
+    life: 0.4 + Math.random() * 0.6,
+  });
+  const frame = t => {
+    if (!visible) return;
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+    for (const p of parts) {
+      p.y -= p.vy;
+      p.x += Math.sin(t / 1400 + p.drift) * 0.25;
+      if (p.y < -10) Object.assign(p, spawn(false));
+      const fade = Math.min(1, p.y / (h * 0.6)) * p.life;
+      const flicker = 0.75 + Math.sin(t / 180 + p.drift * 7) * 0.25;
+      const g = ctx.createRadialGradient(p.x, p.y, 0, p.x, p.y, p.r * 4);
+      g.addColorStop(0, `hsla(${p.hue}, 100%, 65%, ${fade * flicker})`);
+      g.addColorStop(1, `hsla(${p.hue}, 100%, 50%, 0)`);
+      ctx.fillStyle = g;
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r * 4, 0, Math.PI * 2); ctx.fill();
+    }
+    requestAnimationFrame(frame);
+  };
+  resize();
+  addEventListener('resize', resize);
+  new IntersectionObserver(([e]) => { const was = visible; visible = e.isIntersecting && !document.hidden; if (visible && !was) requestAnimationFrame(frame); }).observe(canvas);
+  document.addEventListener('visibilitychange', () => { const was = visible; visible = !document.hidden; if (visible && !was) requestAnimationFrame(frame); });
+  requestAnimationFrame(frame);
+})();
+
+// 11. Шапка стискається під час прокрутки; головна кнопка заклику «дихає»
+const header = $('header');
+addEventListener('scroll', () => header.classList.toggle('scrolled', scrollY > 24), { passive: true });
+$('.cta .btn-hot')?.classList.add('pulse');
+</script>
+</body>
+</html>

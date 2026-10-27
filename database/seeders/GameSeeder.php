@@ -94,11 +94,18 @@ class GameSeeder extends Seeder
             [
                 'slug' => 'counter-strike',
                 'name' => ['uk' => 'Counter-Strike', 'en' => 'Counter-Strike'],
+                'eyebrow' => ['uk' => 'Тактичний шутер · CS2 і CS 1.6', 'en' => 'Tactical shooter · CS2 and CS 1.6'],
+                'description' => [
+                    'uk' => 'Паблік, ретейк, DM чи серф — обери версію, режим і карту. Пінг, тикрейт і живий онлайн видно одразу.',
+                    'en' => 'Public, retake, DM or surf — pick a version, mode and map. Ping, tickrate and live player counts at a glance.',
+                ],
                 'query_driver' => 'source',
                 'default_port' => 27015,
                 'fields' => [
                     $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['CS 1.6', 'CS2'], inUrl: true),
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Public', 'Deathmatch', 'Surf', 'Zombie', 'Retake', 'Jailbreak']),
+                    // Сервер не повідомляє тикрейт у відповіді, тому його вказує власник; фільтр — пункт «128 tick» у меню закупівлі
+                    ['is_required' => false, 'is_filterable' => false] + $this->select('tickrate', ['uk' => 'Тикрейт', 'en' => 'Tickrate'], ['64', '100', '128']),
                 ],
             ],
         ];

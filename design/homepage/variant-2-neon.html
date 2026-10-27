@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>graj.club — варіант 2 «Неон»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #08080a; --card: #131316; --card-2: #1a1a1f; --line: #26262d;
+  --text: #f2f2f5; --muted: #8e8e9a; --pink: #e040fb; --cyan: #22d3ee; --lime: #a3e635; --gold: #facc15;
+  --grad: linear-gradient(90deg, #e040fb, #22d3ee);
+  --display: 'Unbounded', sans-serif; --font: 'Manrope', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 var(--font); overflow-x: hidden; -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--cyan); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+.grad { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.grad-2 { background: linear-gradient(90deg, #facc15, #fb923c); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.glow { position: absolute; border-radius: 50%; filter: blur(90px); pointer-events: none; z-index: 0; }
+.tag { display: inline-block; font: 600 11px var(--display); letter-spacing: .04em; padding: 5px 12px; border-radius: 999px; background: #e040fb1f; color: #f0a5ff; border: 1px solid #e040fb44; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 22px; border-radius: 10px; font: 700 14px var(--font); cursor: pointer; border: 1px solid transparent; transition: transform .15s, box-shadow .2s; }
+.btn-grad { background: var(--grad); color: #0b0b0d; }
+.btn-grad:hover { transform: translateY(-1px); box-shadow: 0 10px 30px -10px #e040fbaa; }
+.btn-line { border-color: #3a3a44; background: #ffffff05; }
+.btn-line:hover { border-color: var(--cyan); }
+.btn-sm { padding: 8px 16px; font-size: 13px; }
+
+header { position: sticky; top: 0; z-index: 20; padding: 14px 0; }
+.bar { display: flex; align-items: center; gap: 24px; background: #111114cc; backdrop-filter: blur(14px); border: 1px solid var(--line); border-radius: 16px; padding: 10px 12px 10px 18px; }
+.logo { display: flex; align-items: center; gap: 10px; font: 700 16px var(--display); }
+.logo i { width: 30px; height: 30px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; }
+.bar nav { display: flex; gap: 26px; margin: 0 auto; font-size: 14px; color: var(--muted); }
+.bar nav a:hover { color: var(--text); }
+
+/* Hero */
+.hero { position: relative; text-align: center; padding: 72px 0 96px; }
+.hero h1 { margin-top: 20px; font: 800 68px/1.04 var(--display); letter-spacing: -0.03em; }
+.hero p { margin: 22px auto 0; max-width: 54ch; color: var(--muted); font-size: 18px; }
+.hero .ctas { margin-top: 30px; display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; }
+.finder { position: relative; z-index: 1; margin: 56px auto 0; max-width: 880px; background: #121216ee; border: 1px solid var(--line); border-radius: 20px; padding: 18px; text-align: left; }
+.finder form { display: flex; gap: 10px; }
+.finder input { flex: 1; min-width: 0; background: #0c0c0f; border: 1px solid var(--line); border-radius: 12px; color: var(--text); padding: 13px 16px; font: 15px var(--font); }
+.finder input:focus { outline: none; border-color: var(--pink); }
+.tiles { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-top: 14px; }
+.tile { position: relative; aspect-ratio: 1; border-radius: 14px; overflow: hidden; display: flex; flex-direction: column; justify-content: flex-end; padding: 14px; transition: transform .25s; }
+.tile:hover { transform: scale(1.02); }
+.tile::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 40%, #000c); }
+.tile b, .tile span { position: relative; z-index: 1; }
+.tile b { font: 700 15px var(--display); }
+.tile span { font-size: 12px; color: #ddd; }
+.finder-foot { display: flex; justify-content: space-between; margin-top: 12px; font-size: 12px; color: var(--muted); }
+.finder-foot b { color: var(--cyan); }
+
+/* «Обкладинки» ігор — генеративні градієнти замість артів */
+.art-l2 { background: radial-gradient(circle at 30% 30%, #ffd58a 0, transparent 30%), conic-gradient(from 200deg at 60% 60%, #6b2b0a, #c2741a, #2a1405, #6b2b0a); }
+.art-gta { background: linear-gradient(160deg, #ff3fa4 0%, #7b2cff 45%, #0d0b2b 100%), radial-gradient(circle at 70% 20%, #ffb3d9, transparent 40%); background-blend-mode: screen; }
+.art-mc { background: repeating-linear-gradient(90deg, #3c8a24 0 18px, #4ea12f 18px 36px), repeating-linear-gradient(0deg, #00000022 0 18px, transparent 18px 36px); background-blend-mode: multiply; }
+.art-dayz { background: radial-gradient(circle at 50% 120%, #a3a35a, transparent 60%), linear-gradient(180deg, #1b1f14, #3e4524); }
+.art-rust { background: radial-gradient(circle at 70% 30%, #ffb070 0, transparent 25%), linear-gradient(135deg, #3a1607, #c2410c 60%, #7c2d12); }
+.art-cs { background: radial-gradient(circle at 50% 50%, transparent 30%, #0b1324 31%, #0b1324 34%, transparent 35%), radial-gradient(circle at 50% 50%, #22d3ee 0, #1e3a8a 50%, #0b1020 100%); }
+
+section.block { position: relative; padding: 96px 0; }
+.head { text-align: center; margin-bottom: 44px; position: relative; z-index: 1; }
+.head h2 { margin-top: 16px; font: 700 40px/1.12 var(--display); letter-spacing: -0.02em; }
+.head p { margin-top: 12px; color: var(--muted); }
+
+/* Галерея */
+.filters { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-bottom: 28px; }
+.filters button { background: #16161a; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 7px 14px; font: 600 13px var(--font); cursor: pointer; }
+.filters button[aria-pressed="true"] { background: var(--grad); color: #0b0b0d; border-color: transparent; }
+.gallery { display: grid; grid-template-columns: 2fr 1fr 1fr; grid-template-rows: 220px 220px; gap: 14px; position: relative; z-index: 1; }
+.gallery .tile { aspect-ratio: auto; border-radius: 18px; padding: 20px; }
+.gallery .tile.big { grid-row: span 2; }
+.gallery .tile.wide { grid-column: span 2; }
+.gallery .tile b { font-size: 20px; }
+.gallery .meta { position: relative; z-index: 1; display: flex; gap: 14px; font-size: 13px; color: #e5e5e5; margin-top: 4px; }
+
+/* Інструменти */
+.tools { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; position: relative; z-index: 1; }
+.tool { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 24px; transition: border-color .2s; }
+.tool:hover { border-color: color-mix(in srgb, var(--c) 60%, transparent); }
+.tool .ico { width: 42px; height: 42px; border-radius: 12px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); margin-bottom: 16px; }
+.tool h3 { font: 600 15px var(--display); }
+.tool p { margin-top: 8px; color: var(--muted); font-size: 14px; }
+.stats { display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; margin-top: 56px; gap: 16px; }
+.stats b { display: block; font: 700 34px var(--display); }
+.stats span { color: var(--muted); font-size: 13px; }
+
+/* Шлях власника */
+.flow { display: grid; grid-template-columns: 1.15fr 1fr; gap: 56px; align-items: center; position: relative; z-index: 1; }
+.flow h2 { font: 700 40px/1.12 var(--display); letter-spacing: -0.02em; margin-top: 16px; }
+.flow > div > p { color: var(--muted); margin-top: 14px; max-width: 46ch; }
+.steps { list-style: none; padding: 0; margin: 28px 0; display: grid; gap: 12px; }
+.steps li { display: flex; gap: 16px; background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; }
+.steps .n { flex: none; width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center; font: 700 13px var(--display); background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
+.steps b { font-weight: 700; }
+.steps p { color: var(--muted); font-size: 13px; margin-top: 2px; }
+.mock { position: relative; background: var(--card); border: 1px solid var(--line); border-radius: 22px; padding: 18px; }
+.mock .live { position: absolute; top: -12px; right: 18px; font: 600 11px var(--display); padding: 5px 12px; border-radius: 999px; background: #0d1f12; color: var(--lime); border: 1px solid #a3e63555; }
+.mock .cover { height: 190px; border-radius: 14px; display: flex; align-items: flex-end; padding: 16px; position: relative; overflow: hidden; }
+.mock .cover::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, transparent 30%, #000b); }
+.mock .cover b { position: relative; z-index: 1; font: 700 22px var(--display); }
+.field { margin-top: 14px; }
+.field small { font: 600 10px var(--display); color: var(--muted); letter-spacing: .05em; }
+.field div { margin-top: 6px; background: #0c0c0f; border: 1px solid var(--line); border-radius: 10px; padding: 10px 14px; font-size: 14px; }
+.pair { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 6px; }
+.seg span { text-align: center; border: 1px solid var(--line); border-radius: 10px; padding: 8px; font-size: 13px; }
+.seg span.on { background: var(--grad); color: #0b0b0d; font-weight: 700; border-color: transparent; }
+.mock .btn { width: 100%; justify-content: center; margin-top: 16px; }
+
+footer { border-top: 1px solid var(--line); padding: 56px 0 28px; }
+.fgrid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 40px; }
+.fgrid h4 { font: 600 13px var(--display); margin-bottom: 14px; }
+.fgrid ul { list-style: none; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+.fgrid p { color: var(--muted); font-size: 14px; margin-top: 12px; max-width: 32ch; }
+.fbottom { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); color: var(--muted); font-size: 13px; }
+
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+@media (max-width: 1000px) {
+  .hero h1 { font-size: 50px; }
+  .tools { grid-template-columns: 1fr 1fr; }
+  .flow { grid-template-columns: 1fr; }
+  .bar nav { display: none; }
+  .gallery { grid-template-columns: 1fr 1fr; grid-template-rows: repeat(3, 200px); }
+  .gallery .tile.big { grid-row: span 1; grid-column: span 2; }
+  .fgrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  .hero h1 { font-size: 34px; }
+  .tiles { grid-template-columns: 1fr 1fr; }
+  .tools { grid-template-columns: 1fr; }
+  .stats { grid-template-columns: 1fr 1fr; }
+  .head h2, .flow h2 { font-size: 28px; }
+  .finder form { flex-direction: column; }
+  .gallery { grid-template-columns: 1fr; grid-template-rows: none; grid-auto-rows: 180px; }
+  .gallery .tile.big, .gallery .tile.wide { grid-column: span 1; }
+  .bar .login { display: none; }
+}
+</style>
+</head>
+<body>
+<span class="glow" style="width:520px;height:520px;background:#e040fb55;top:-120px;right:-140px"></span>
+<span class="glow" style="width:420px;height:420px;background:#22d3ee33;top:380px;left:-200px"></span>
+
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b0b0d" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V4M19 20v-6"/></svg></i>graj.club</a>
+    <nav aria-label="Розділи"><a href="#gallery">Ігри</a><a href="#tools">Власникам</a><a href="#flow">Як додати</a><a href="#">Скоро відкриття</a></nav>
+    <a class="btn btn-line btn-sm login" href="#">Увійти</a>
+    <a class="btn btn-grad btn-sm" href="#">Додати сервер</a>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap">
+      <span class="tag">ЖИВИЙ РЕЙТИНГ ІГРОВИХ СЕРВЕРІВ</span>
+      <h1>Знайди сервер,<br>де <span class="grad">кипить</span> гра</h1>
+      <p>312 серверів Lineage 2, GTA, Minecraft, DayZ, Rust і Counter-Strike. Онлайн у реальному часі, голоси без накрутки.</p>
+      <div class="ctas"><a class="btn btn-grad" href="#gallery">Обрати гру →</a><a class="btn btn-line" href="#flow">Додати свій сервер</a></div>
+
+      <div class="finder">
+        <form role="search" onsubmit="return false">
+          <label for="q" style="position:absolute;left:-9999px">Пошук сервера</label>
+          <input id="q" type="search" placeholder="Що шукаєш? Наприклад: Interlude x50, RP-сервер, анархія 1.21…">
+          <button class="btn btn-grad">Знайти</button>
+        </form>
+        <div class="tiles">
+          <a class="tile art-l2" href="#"><b>Oren PvP</b><span>Lineage 2 · 1 104 онлайн</span></a>
+          <a class="tile art-gta" href="#"><b>Kyiv RP</b><span>GTA · 1 820 онлайн</span></a>
+          <a class="tile art-mc" href="#"><b>Карпати SMP</b><span>Minecraft · 342 онлайн</span></a>
+          <a class="tile art-rust" href="#"><b>Solo Weekly</b><span>Rust · 184 онлайн</span></a>
+        </div>
+        <div class="finder-foot"><span>Онлайн оновлено 2 хвилини тому</span><span>Лідери жовтня за версією <b>graj.club</b></span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="gallery">
+    <span class="glow" style="width:360px;height:360px;background:#a3e63522;bottom:0;left:30%"></span>
+    <div class="wrap">
+      <div class="head"><span class="tag">ШІСТЬ СВІТІВ</span><h2>Обери свою <span class="grad-2">гру</span></h2><p>Кожна гра — власний рейтинг із фільтрами за хроніками, версією, режимом чи вайпом.</p></div>
+      <div class="filters" role="group" aria-label="Жанр">
+        <button aria-pressed="true">Усі</button><button aria-pressed="false">MMORPG</button><button aria-pressed="false">Виживання</button><button aria-pressed="false">Шутери</button><button aria-pressed="false">Рольові</button>
+      </div>
+      <div class="gallery">
+        <a class="tile big art-l2" href="#"><b>Lineage 2</b><div class="meta"><span>10 серверів</span><span>3 210 онлайн</span></div></a>
+        <a class="tile art-gta" href="#"><b>GTA</b><div class="meta"><span>7 серверів</span></div></a>
+        <a class="tile art-cs" href="#"><b>Counter-Strike</b><div class="meta"><span>5 серверів</span></div></a>
+        <a class="tile wide art-mc" href="#"><b>Minecraft</b><div class="meta"><span>7 серверів</span><span>1 214 онлайн</span></div></a>
+      </div>
+      <div class="gallery" style="margin-top:14px;grid-template-rows:200px">
+        <a class="tile wide art-dayz" href="#"><b>DayZ</b><div class="meta"><span>5 серверів</span><span>163 онлайн</span></div></a>
+        <a class="tile art-rust" href="#" style="grid-column:span 1"><b>Rust</b><div class="meta"><span>5 серверів</span></div></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="tools">
+    <div class="wrap">
+      <div class="head"><span class="tag">ДЛЯ ВЛАСНИКІВ</span><h2>Інструменти, що <span class="grad">приводять гравців</span></h2><p>Додавання безкоштовне. Просування — коли захочете.</p></div>
+      <div class="tools" id="tools-grid"></div>
+      <div class="stats">
+        <div><b class="grad">48K+</b><span>гравців онлайн</span></div>
+        <div><b class="grad-2">96K</b><span>голосів у жовтні</span></div>
+        <div><b style="color:var(--lime)">5 хв</b><span>оновлення онлайну</span></div>
+        <div><b class="grad">99,5%</b><span>доступність порталу</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block" id="flow">
+    <span class="glow" style="width:480px;height:480px;background:#e040fb33;right:-120px;top:120px"></span>
+    <div class="wrap flow">
+      <div>
+        <span class="tag">ШЛЯХ ДО ТОПУ</span>
+        <h2>Від реєстрації<br>до <span class="grad-2">першого місця</span></h2>
+        <p>Додайте сервер за три хвилини: портал сам перевірить онлайн і приведе гравців, які голосують за вас.</p>
+        <ol class="steps">
+          <li style="--c:#e040fb"><span class="n">01</span><div><b>Додайте сервер</b><p>Гра, адреса, опис і скриншоти. Поля підлаштовуються під гру.</p></div></li>
+          <li style="--c:#22d3ee"><span class="n">02</span><div><b>Підтвердіть власність</b><p>Код у MOTD, DNS-запис або файл на сайті — і позначка «перевірено».</p></div></li>
+          <li style="--c:#a3e635"><span class="n">03</span><div><b>Увімкніть бонуси за голос</b><p>Vote-callback видає гравцям нагороду в грі одразу після голосу.</p></div></li>
+          <li style="--c:#facc15"><span class="n">04</span><div><b>Ростіть у рейтингу</b><p>Голоси місяця визначають місце. VIP закріплює вас над усіма.</p></div></li>
+        </ol>
+        <a class="btn btn-grad" href="#">Додати сервер →</a>
+      </div>
+      <div class="mock" aria-label="Приклад картки сервера">
+        <span class="live">● ОНЛАЙН</span>
+        <div class="cover art-gta"><b>Kyiv RP</b></div>
+        <div class="field"><small>АДРЕСА</small><div>play.kyivrp.example:30120</div></div>
+        <div class="pair">
+          <div class="field"><small>ГРАВЦІ</small><div>1 820 / 2 048</div></div>
+          <div class="field"><small>МІСЦЕ</small><div>№ 1 у GTA</div></div>
+        </div>
+        <div class="field"><small>ПЛАТФОРМА</small>
+          <div class="seg" style="background:none;border:0;padding:0"><span>SA-MP</span><span class="on">FiveM</span><span>alt:V</span></div>
+        </div>
+        <a class="btn btn-grad" href="#">Проголосувати за сервер</a>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div><a class="logo" href="#"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#0b0b0d" stroke-width="3" stroke-linecap="round" aria-hidden="true"><path d="M5 20V12M12 20V4M19 20v-6"/></svg></i>graj.club</a><p>Живий рейтинг ігрових серверів. Онлайн кожні 5 хвилин, голоси без накрутки.</p></div>
+      <div><h4>Ігри</h4><ul><li>Lineage 2</li><li>Grand Theft Auto</li><li>Minecraft</li><li>DayZ, Rust, CS</li></ul></div>
+      <div><h4>Власникам</h4><ul><li>Додати сервер</li><li>VIP і просування</li><li>API</li></ul></div>
+      <div><h4>Портал</h4><ul><li>Правила</li><li>Конфіденційність</li><li>Контакти</li></ul></div>
+    </div>
+    <div class="fbottom">© 2026 graj.club</div>
+  </div>
+</footer>
+
+<script>
+const icon = p => `<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+document.getElementById('tools-grid').innerHTML = [
+  ['Живий моніторинг', 'Онлайн, пінг і аптайм кожні 5 хвилин для всіх шести ігор.', '#22d3ee', '<path d="M3 12h4l3-8 4 16 3-8h4"/>'],
+  ['Бонуси за голос', 'Нагорода в грі одразу після голосу через підписаний callback.', '#e040fb', '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7"/>'],
+  ['Статистика', 'Графіки онлайну й голосів за добу, тиждень і місяць.', '#a3e635', '<path d="M3 3v18h18M7 15l4-4 3 3 6-7"/>'],
+  ['Чесні голоси', 'Ліміти за IP, пристроєм і підмережею, перевірка VPN.', '#facc15', '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>'],
+  ['API', 'Перевірка голосу за ніком і передача онлайну з вашого сервера.', '#fb923c', '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>'],
+  ['Сповіщення', 'Telegram чи email: сервер офлайн, новий відгук, модерація.', '#60a5fa', '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/>'],
+].map(([t, d, c, p]) => `<article class="tool" style="--c:${c}"><span class="ico">${icon(p)}</span><h3>${t}</h3><p>${d}</p></article>`).join('');
+</script>
+</body>
+</html>

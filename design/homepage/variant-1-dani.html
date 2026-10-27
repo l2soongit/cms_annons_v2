@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>graj.club — варіант 1 «Дані й довіра»</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #0a0f1d; --bg-2: #0e1528; --card: #131c33; --card-2: #182340; --line: #223052;
+  --text: #e8edf7; --muted: #8c9ab8; --blue: #3b82f6; --violet: #8b5cf6;
+  --up: #22c55e; --down: #ef4444; --amber: #f5b544;
+  --grad: linear-gradient(90deg, #3b82f6, #8b5cf6);
+  --font: 'Manrope', system-ui, sans-serif; --mono: 'JetBrains Mono', monospace;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+html { scroll-behavior: smooth; }
+body { background: var(--bg); color: var(--text); font: 15px/1.6 var(--font); -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+:focus-visible { outline: 2px solid var(--blue); outline-offset: 3px; border-radius: 6px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; }
+.grad-text { background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.pill { display: inline-flex; align-items: center; gap: 8px; padding: 5px 12px; border-radius: 999px; font-size: 13px; font-weight: 600; border: 1px solid #3b82f655; color: #93b4ff; background: #3b82f614; }
+.pill.live { border-color: #22c55e55; color: #4ade80; background: #22c55e12; }
+.pill.live::before { content: ''; width: 7px; height: 7px; border-radius: 50%; background: #4ade80; box-shadow: 0 0 0 0 #4ade80aa; animation: ping 2s infinite; }
+@keyframes ping { 70% { box-shadow: 0 0 0 7px #4ade8000; } 100% { box-shadow: 0 0 0 0 #4ade8000; } }
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 12px 22px; border-radius: 10px; font: 700 15px var(--font); cursor: pointer; border: 1px solid transparent; transition: transform .15s, box-shadow .2s, background .2s; }
+.btn-primary { background: var(--blue); color: #fff; box-shadow: 0 8px 24px -8px #3b82f6aa; }
+.btn-primary:hover { background: #2f74e6; transform: translateY(-1px); }
+.btn-outline { border-color: var(--line); background: #ffffff06; }
+.btn-outline:hover { border-color: #3b82f6aa; }
+.btn-sm { padding: 8px 14px; font-size: 13px; border-radius: 8px; }
+
+/* Шапка */
+header { position: sticky; top: 0; z-index: 10; background: #0a0f1dcc; backdrop-filter: blur(12px); border-bottom: 1px solid var(--line); }
+.bar { display: flex; align-items: center; gap: 32px; height: 68px; }
+.logo { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 19px; letter-spacing: -0.02em; }
+.logo-mark { width: 32px; height: 32px; border-radius: 9px; background: var(--grad); display: grid; place-items: center; }
+.bar nav { display: flex; gap: 28px; font-size: 14px; font-weight: 500; color: var(--muted); margin: 0 auto; }
+.bar nav a:hover { color: var(--text); }
+.bar .actions { display: flex; gap: 10px; align-items: center; }
+
+/* Hero */
+.hero { position: relative; padding: 80px 0 96px; overflow: hidden; }
+.hero::before { content: ''; position: absolute; inset: -120px 0 auto 50%; width: 900px; height: 600px; transform: translateX(-30%); background: radial-gradient(closest-side, #3b82f622, transparent 70%), radial-gradient(closest-side at 70% 60%, #8b5cf61e, transparent 70%); pointer-events: none; }
+.hero-grid { position: relative; display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; }
+h1 { font-size: 60px; line-height: 1.04; font-weight: 800; letter-spacing: -0.035em; margin-top: 22px; }
+.hero p.sub { margin-top: 20px; color: var(--muted); font-size: 18px; max-width: 48ch; }
+.hero .ctas { margin-top: 32px; display: flex; gap: 12px; flex-wrap: wrap; }
+.kpis { margin-top: 44px; display: flex; gap: 44px; }
+.kpis dt { color: var(--muted); font-size: 13px; }
+.kpis dd { font-size: 26px; font-weight: 800; letter-spacing: -0.02em; }
+
+/* Віджети */
+.widget { background: linear-gradient(180deg, var(--card-2), var(--card)); border: 1px solid var(--line); border-radius: 16px; padding: 22px; }
+.widget-head { display: flex; justify-content: space-between; align-items: flex-start; }
+.widget-head small { color: var(--muted); font-size: 13px; }
+.big-num { font: 600 34px var(--mono); letter-spacing: -0.02em; margin-top: 2px; }
+.delta { color: var(--up); font: 600 14px var(--mono); text-align: right; }
+.delta small { display: block; color: var(--up); opacity: .8; font-family: var(--font); font-weight: 500; }
+.chart { margin-top: 14px; width: 100%; height: 120px; display: block; }
+.tickers { margin-top: 14px; display: grid; gap: 10px; }
+.ticker { display: grid; grid-template-columns: 40px 1fr auto; gap: 14px; align-items: center; padding: 12px 16px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); transition: border-color .2s; }
+.ticker:hover { border-color: #3b82f688; }
+.ticker .ico { width: 40px; height: 40px; border-radius: 10px; display: grid; place-items: center; font: 700 12px var(--mono); background: #ffffff0c; }
+.ticker b { display: block; font-weight: 700; font-size: 15px; }
+.ticker span { color: var(--muted); font-size: 13px; }
+.ticker .val { text-align: right; font: 600 15px var(--mono); }
+.ticker .val small { display: block; font-size: 12px; }
+.up { color: var(--up); } .down { color: var(--down); }
+
+/* Секції */
+section.block { padding: 96px 0; }
+section.alt { background: var(--bg-2); border-block: 1px solid var(--line); }
+.sec-head { text-align: center; max-width: 640px; margin: 0 auto 48px; }
+.sec-head h2 { margin-top: 14px; font-size: 40px; font-weight: 800; letter-spacing: -0.03em; line-height: 1.1; }
+.sec-head p { margin-top: 12px; color: var(--muted); font-size: 17px; }
+
+/* Ігри */
+.games { display: grid; grid-template-columns: repeat(6, 1fr); gap: 14px; }
+.game { padding: 20px 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); text-align: center; transition: transform .2s, border-color .2s; }
+.game:hover { transform: translateY(-3px); border-color: color-mix(in srgb, var(--c) 70%, transparent); }
+.game .gico { width: 52px; height: 52px; margin: 0 auto 12px; border-radius: 14px; display: grid; place-items: center; background: color-mix(in srgb, var(--c) 18%, transparent); color: var(--c); }
+.game b { display: block; font-size: 15px; }
+.game span { color: var(--muted); font-size: 13px; }
+
+/* Таблиця */
+.ixs { display: grid; grid-template-columns: repeat(4, 1fr); gap: 14px; margin-bottom: 20px; }
+.ix { background: var(--card); border: 1px solid var(--line); border-radius: 14px; padding: 16px; text-align: center; }
+.ix small { color: var(--muted); font-size: 12px; }
+.ix b { display: block; font: 600 22px var(--mono); margin: 2px 0; }
+.ix span { font: 500 13px var(--mono); }
+.table-card { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 8px 24px 16px; }
+.table-top { display: flex; justify-content: space-between; align-items: center; padding: 16px 0 12px; gap: 16px; flex-wrap: wrap; }
+.table-top h3 { font-size: 18px; font-weight: 700; }
+.tabs { display: flex; gap: 6px; flex-wrap: wrap; }
+.tabs button { background: none; border: 1px solid var(--line); color: var(--muted); border-radius: 999px; padding: 6px 12px; font: 600 13px var(--font); cursor: pointer; }
+.tabs button[aria-pressed="true"], .tabs button:hover { color: var(--text); border-color: var(--blue); background: #3b82f61a; }
+table { width: 100%; border-collapse: collapse; }
+th { text-align: left; color: var(--muted); font-size: 12px; font-weight: 600; padding: 10px 8px; border-bottom: 1px solid var(--line); }
+td { padding: 14px 8px; border-bottom: 1px solid var(--line); font-size: 14px; }
+tr:last-child td { border-bottom: 0; }
+td.num, th.num { text-align: right; font-family: var(--mono); }
+.rk { font: 700 15px var(--mono); color: var(--muted); }
+.rk.top { color: var(--amber); }
+.sname { font-weight: 700; }
+.sname small { display: block; color: var(--muted); font-weight: 500; font-size: 12px; }
+.spark { width: 90px; height: 28px; }
+
+/* Можливості */
+.features { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+.feature { background: var(--card); border: 1px solid var(--line); border-radius: 16px; padding: 26px; transition: border-color .2s, transform .2s; }
+.feature:hover { border-color: #3b82f677; transform: translateY(-2px); }
+.feature .fico { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: #3b82f61f; color: #7aa6ff; margin-bottom: 18px; }
+.feature h3 { font-size: 18px; font-weight: 700; }
+.feature p { margin-top: 8px; color: var(--muted); font-size: 14px; }
+
+/* Тарифи */
+.plans { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; align-items: stretch; }
+.plan { background: var(--card); border: 1px solid var(--line); border-radius: 18px; padding: 30px; display: flex; flex-direction: column; position: relative; }
+.plan.pop { border-color: var(--blue); box-shadow: 0 0 0 1px var(--blue), 0 24px 60px -24px #3b82f677; }
+.plan .badge { position: absolute; top: -12px; left: 50%; transform: translateX(-50%); background: var(--grad); padding: 3px 12px; border-radius: 999px; font-size: 12px; font-weight: 700; white-space: nowrap; }
+.plan h3 { font-size: 20px; font-weight: 800; }
+.plan .for { color: var(--muted); font-size: 14px; }
+.price { margin: 18px 0; font-size: 42px; font-weight: 800; letter-spacing: -0.03em; }
+.price small { font-size: 15px; color: var(--muted); font-weight: 500; letter-spacing: 0; }
+.plan ul { list-style: none; padding: 0; display: grid; gap: 10px; margin-bottom: 26px; font-size: 14px; }
+.plan li { display: flex; gap: 10px; align-items: flex-start; }
+.plan li svg { flex: none; margin-top: 3px; color: var(--up); }
+.plan .btn { margin-top: auto; }
+
+/* Заклик */
+.cta-band { margin: 0 auto; max-width: 1200px; border-radius: 24px; padding: 56px; background: radial-gradient(600px 300px at 15% 0%, #3b82f63a, transparent), radial-gradient(500px 300px at 90% 100%, #8b5cf63a, transparent), var(--card); border: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; gap: 32px; flex-wrap: wrap; }
+.cta-band h2 { font-size: 34px; font-weight: 800; letter-spacing: -0.03em; max-width: 20ch; line-height: 1.15; }
+.cta-band p { margin-top: 10px; color: var(--muted); }
+
+footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 56px 0 28px; }
+.fgrid { display: grid; grid-template-columns: 1.4fr repeat(3, 1fr); gap: 40px; }
+.fgrid h4 { font-size: 14px; margin-bottom: 14px; }
+.fgrid ul { list-style: none; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
+.fgrid ul a:hover { color: var(--text); }
+.fgrid p { color: var(--muted); font-size: 14px; margin-top: 12px; max-width: 32ch; }
+.fbottom { margin-top: 40px; padding-top: 22px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; color: var(--muted); font-size: 13px; flex-wrap: wrap; gap: 12px; }
+
+@media (prefers-reduced-motion: reduce) { *, *::before { animation: none !important; transition: none !important; scroll-behavior: auto !important; } }
+@media (max-width: 1000px) {
+  .hero-grid { grid-template-columns: 1fr; }
+  .games { grid-template-columns: repeat(3, 1fr); }
+  .features, .plans { grid-template-columns: 1fr 1fr; }
+  .ixs { grid-template-columns: 1fr 1fr; }
+  .bar nav { display: none; }
+  .fgrid { grid-template-columns: 1fr 1fr; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  h1 { font-size: 40px; }
+  .kpis { gap: 24px; flex-wrap: wrap; }
+  .games { grid-template-columns: 1fr 1fr; }
+  .features, .plans { grid-template-columns: 1fr; }
+  .sec-head h2 { font-size: 30px; }
+  section.block { padding: 64px 0; }
+  .hide-sm { display: none; }
+  .cta-band { padding: 32px 24px; }
+  .bar .actions .login { display: none; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap bar">
+    <a class="logo" href="#"><span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 20V12M10 20V4M16 20v-6M22 20H2"/></svg></span>graj.club</a>
+    <nav aria-label="Розділи"><a href="#games">Ігри</a><a href="#top">Рейтинг</a><a href="#owners">Власникам</a><a href="#plans">Тарифи</a></nav>
+    <div class="actions">
+      <a class="btn btn-outline btn-sm login" href="#">Увійти</a>
+      <a class="btn btn-primary btn-sm" href="#">Додати сервер</a>
+    </div>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="pill live">Моніторинг онлайн · 312 серверів</span>
+        <h1>Знайди сервер, де справді <span class="grad-text">грають</span></h1>
+        <p class="sub">Чесний рейтинг ігрових серверів: живий онлайн кожні 5 хвилин, перевірені власники і голоси без накрутки.</p>
+        <div class="ctas">
+          <a class="btn btn-primary" href="#top">Дивитися рейтинг</a>
+          <a class="btn btn-outline" href="#owners">Додати свій сервер</a>
+        </div>
+        <dl class="kpis">
+          <div><dd>312</dd><dt>серверів у рейтингу</dt></div>
+          <div><dd>48 213</dd><dt>гравців онлайн</dt></div>
+          <div><dd>96 410</dd><dt>голосів у жовтні</dt></div>
+        </dl>
+      </div>
+
+      <div>
+        <div class="widget">
+          <div class="widget-head">
+            <div><small>Гравців онлайн зараз</small><div class="big-num" id="online">48 213</div></div>
+            <div class="delta">+3 902<small>+8,8% за добу</small></div>
+          </div>
+          <svg class="chart" viewBox="0 0 400 120" preserveAspectRatio="none" aria-hidden="true">
+            <defs><linearGradient id="fill" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="#3b82f6" stop-opacity=".35"/><stop offset="1" stop-color="#3b82f6" stop-opacity="0"/></linearGradient></defs>
+            <path d="M0,92 C30,90 50,98 80,88 C110,78 130,96 160,84 C190,72 210,80 240,62 C270,44 290,70 320,48 C350,26 370,36 400,14 L400,120 L0,120 Z" fill="url(#fill)"/>
+            <path d="M0,92 C30,90 50,98 80,88 C110,78 130,96 160,84 C190,72 210,80 240,62 C270,44 290,70 320,48 C350,26 370,36 400,14" fill="none" stroke="#5b8ff9" stroke-width="2.5"/>
+          </svg>
+        </div>
+        <div class="tickers">
+          <a class="ticker" href="#"><span class="ico" style="color:#f5b544">L2</span><div><b>Oren PvP</b><span>Lineage 2 · C4 x10000</span></div><div class="val">1 104<small class="up">▲ 12,4%</small></div></a>
+          <a class="ticker" href="#"><span class="ico" style="color:#f472b6">GTA</span><div><b>Kyiv RP</b><span>Grand Theft Auto · FiveM</span></div><div class="val">1 820<small class="up">▲ 6,1%</small></div></a>
+          <a class="ticker" href="#"><span class="ico" style="color:#4ade80">MC</span><div><b>Карпати SMP</b><span>Minecraft · Java 1.21</span></div><div class="val">342<small class="down">▼ 2,3%</small></div></a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt" id="games">
+    <div class="wrap">
+      <div class="sec-head"><span class="pill">Ігри</span><h2>Шість ігор, <span class="grad-text">один рейтинг</span></h2><p>Обери гру і фільтруй сервери за хроніками, версією, режимом чи вайпом.</p></div>
+      <div class="games" id="games-grid"></div>
+    </div>
+  </section>
+
+  <section class="block" id="top">
+    <div class="wrap">
+      <div class="sec-head"><span class="pill">Рейтинг</span><h2>Топ серверів <span class="grad-text">зараз</span></h2><p>Місце залежить від голосів гравців за місяць. Онлайн оновлюється автоматично.</p></div>
+      <div class="ixs">
+        <div class="ix"><small>Lineage 2</small><b>3 210</b><span class="up">+4,1%</span></div>
+        <div class="ix"><small>Grand Theft Auto</small><b>2 852</b><span class="up">+7,9%</span></div>
+        <div class="ix"><small>Minecraft</small><b>1 214</b><span class="down">−1,2%</span></div>
+        <div class="ix"><small>Rust</small><b>628</b><span class="up">+18,0%</span></div>
+      </div>
+      <div class="table-card">
+        <div class="table-top">
+          <h3>Лідери жовтня</h3>
+          <div class="tabs" role="group" aria-label="Гра">
+            <button aria-pressed="true">Усі ігри</button><button aria-pressed="false">Lineage 2</button><button aria-pressed="false">GTA</button><button aria-pressed="false">Minecraft</button><button aria-pressed="false" class="hide-sm">Rust</button>
+          </div>
+        </div>
+        <table>
+          <thead><tr><th>#</th><th>Сервер</th><th class="hide-sm">Онлайн за 24 год</th><th class="num">Гравці</th><th class="num hide-sm">Голоси</th><th></th></tr></thead>
+          <tbody id="rows"></tbody>
+        </table>
+      </div>
+    </div>
+  </section>
+
+  <section class="block alt" id="owners">
+    <div class="wrap">
+      <div class="sec-head"><span class="pill">Власникам серверів</span><h2>Усе, щоб сервер <span class="grad-text">ріс</span></h2><p>Додавання безкоштовне. Платите лише за просування, коли захочете.</p></div>
+      <div class="features" id="features"></div>
+    </div>
+  </section>
+
+  <section class="block" id="plans">
+    <div class="wrap">
+      <div class="sec-head"><span class="pill">Тарифи</span><h2>Просте <span class="grad-text">просування</span></h2><p>Без підписок: платите за конкретний термін, вимикається автоматично.</p></div>
+      <div class="plans">
+        <div class="plan"><h3>Базовий</h3><div class="for">Для старту</div><div class="price">0 ₴<small> назавжди</small></div>
+          <ul><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Місце в рейтингу</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Моніторинг і статистика</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Бонуси за голос (callback)</li></ul>
+          <a class="btn btn-outline" href="#">Додати сервер</a></div>
+        <div class="plan pop"><span class="badge">Найпопулярніший</span><h3>VIP</h3><div class="for">Закріплення над рейтингом</div><div class="price">1 000 ₴<small> / 30 днів</small></div>
+          <ul><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Блок VIP над усіма серверами гри</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Позначка VIP у списку</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Лише 5 місць на гру</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Нагадування за 3 дні до кінця</li></ul>
+          <a class="btn btn-primary" href="#">Обрати VIP</a></div>
+        <div class="plan"><h3>Виділення</h3><div class="for">Помітність у списку</div><div class="price">500 ₴<small> / 30 днів</small></div>
+          <ul><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Кольорова рамка і фон</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Діє на всіх сторінках рейтингу</li><li><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>Поєднується з VIP</li></ul>
+          <a class="btn btn-outline" href="#">Обрати</a></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="wrap">
+    <div class="cta-band">
+      <div><h2>Твій сервер заслуговує на гравців</h2><p>Додай його за 3 хвилини. Модерація зазвичай займає до доби.</p></div>
+      <a class="btn btn-primary" href="#">Додати сервер безкоштовно</a>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap">
+    <div class="fgrid">
+      <div><a class="logo" href="#"><span class="logo-mark"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M4 20V12M10 20V4M16 20v-6M22 20H2"/></svg></span>graj.club</a><p>Рейтинг ігрових серверів з живим моніторингом і чесним голосуванням.</p></div>
+      <div><h4>Ігри</h4><ul><li><a href="#">Lineage 2</a></li><li><a href="#">Grand Theft Auto</a></li><li><a href="#">Minecraft</a></li><li><a href="#">DayZ, Rust, CS</a></li></ul></div>
+      <div><h4>Власникам</h4><ul><li><a href="#">Додати сервер</a></li><li><a href="#">Тарифи</a></li><li><a href="#">API і vote-callback</a></li></ul></div>
+      <div><h4>Портал</h4><ul><li><a href="#">Правила</a></li><li><a href="#">Конфіденційність</a></li><li><a href="#">Контакти</a></li></ul></div>
+    </div>
+    <div class="fbottom"><span>© 2026 graj.club</span><span>Онлайн оновлюється кожні 5 хвилин</span></div>
+  </div>
+</footer>
+
+<script>
+const fmt = n => n.toLocaleString('uk-UA');
+const icon = p => `<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${p}</svg>`;
+
+document.getElementById('games-grid').innerHTML = [
+  ['Lineage 2', '#f5b544', 10, '<path d="M14.5 17.5 3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/>'],
+  ['GTA', '#f472b6', 7, '<path d="M5 17h14M6 17l1.5-6h9L18 17M7 21h2M15 21h2M9 11l1-4h4l1 4"/>'],
+  ['Minecraft', '#4ade80', 7, '<path d="M12 3 3 8v8l9 5 9-5V8z"/><path d="M3 8l9 5 9-5M12 13v8"/>'],
+  ['DayZ', '#a3a35a', 5, '<circle cx="12" cy="12" r="9"/><path d="M12 3v4M12 17v4M3 12h4M17 12h4"/>'],
+  ['Rust', '#fb923c', 5, '<path d="M12 2v4M12 18v4M4.9 4.9l2.8 2.8M16.3 16.3l2.8 2.8M2 12h4M18 12h4"/><circle cx="12" cy="12" r="4"/>'],
+  ['Counter-Strike', '#60a5fa', 5, '<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/><path d="M12 1v4M12 19v4M1 12h4M19 12h4"/>'],
+].map(([g, c, n, p]) => `<a class="game" href="#" style="--c:${c}"><span class="gico">${icon(p)}</span><b>${g}</b><span>${n} серверів</span></a>`).join('');
+
+const spark = (pts, up) => {
+  const max = Math.max(...pts), min = Math.min(...pts);
+  const d = pts.map((v, i) => `${i ? 'L' : 'M'}${(i / (pts.length - 1) * 90).toFixed(1)},${(26 - (v - min) / (max - min || 1) * 24).toFixed(1)}`).join(' ');
+  return `<svg class="spark" viewBox="0 0 90 28" aria-hidden="true"><path d="${d}" fill="none" stroke="${up ? '#22c55e' : '#ef4444'}" stroke-width="2"/></svg>`;
+};
+document.getElementById('rows').innerHTML = [
+  ['Kyiv RP', 'Grand Theft Auto · FiveM', 1820, 612, [9,10,12,11,14,16,15,18], true],
+  ['Карпати SMP', 'Minecraft · Java 1.21', 342, 598, [12,11,12,10,9,10,9,8], false],
+  ['Oren PvP', 'Lineage 2 · C4 x10000', 1104, 583, [6,8,7,9,11,10,13,14], true],
+  ['Public 24/7 Dust2', 'Counter-Strike · CS2', 30, 566, [20,22,21,25,24,26,27,30], true],
+  ['Elmore Classic', 'Lineage 2 · Gracia Final x5', 244, 546, [14,13,15,12,13,12,11,12], false],
+  ['Dnipro City RP', 'Grand Theft Auto · RAGE:MP', 730, 544, [5,6,8,7,9,9,11,12], true],
+  ['Rust Solo Weekly', 'Rust · вайп щотижня', 184, 520, [3,4,6,8,10,13,15,18], true],
+].map(([n, g, p, v, s, up], i) => `<tr>
+  <td><span class="rk ${i < 3 ? 'top' : ''}">${String(i + 1).padStart(2, '0')}</span></td>
+  <td><a class="sname" href="#">${n}<small>${g}</small></a></td>
+  <td class="hide-sm">${spark(s, up)}</td>
+  <td class="num">${fmt(p)}</td>
+  <td class="num hide-sm">${fmt(v)}</td>
+  <td style="text-align:right"><a class="btn btn-primary btn-sm" href="#">Голосувати</a></td></tr>`).join('');
+
+document.getElementById('features').innerHTML = [
+  ['Живий моніторинг', 'Онлайн, пінг і аптайм кожні 5 хвилин для Minecraft, CS, Rust, DayZ, SA-MP і FiveM.', '<path d="M3 12h4l3-8 4 16 3-8h4"/>'],
+  ['Бонуси за голос', 'Підписаний vote-callback видає гравцю нагороду в грі одразу після голосу.', '<path d="M20 12v10H4V12M2 7h20v5H2zM12 22V7M12 7H7.5a2.5 2.5 0 1 1 0-5C11 2 12 7 12 7zM12 7h4.5a2.5 2.5 0 1 0 0-5C13 2 12 7 12 7z"/>'],
+  ['Статистика', 'Графіки онлайну й голосів за добу, тиждень і місяць, історія місць у рейтингу.', '<path d="M3 3v18h18M7 15l4-4 3 3 6-7"/>'],
+  ['Чесні голоси', 'Обмеження за IP, пристроєм і підмережею, перевірка VPN, ручна модерація підозрілих.', '<path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/><path d="M9 12l2 2 4-4"/>'],
+  ['API для власників', 'Перевірка голосу за ніком, передача онлайну з L2 та інших ігор без query.', '<path d="M16 18l6-6-6-6M8 6l-6 6 6 6"/>'],
+  ['Сповіщення', 'Email або Telegram: сервер офлайн, новий відгук, рішення модератора.', '<path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9M13.7 21a2 2 0 0 1-3.4 0"/>'],
+].map(([t, d, p]) => `<article class="feature"><span class="fico">${icon(p)}</span><h3>${t}</h3><p>${d}</p></article>`).join('');
+</script>
+</body>
+</html>

@@ -33,6 +33,7 @@ class Server extends Model
             'offline_notified_at' => 'datetime',
             'suspicious_online' => 'boolean',
             'is_online' => 'boolean',
+            'vac' => 'boolean',
             'uptime' => 'decimal:2',
             'verified_at' => 'datetime',
             'checked_at' => 'datetime',

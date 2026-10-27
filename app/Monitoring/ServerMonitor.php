@@ -46,6 +46,10 @@ class ServerMonitor
             'players' => $result->online ? $result->players : 0,
             'max_players' => $result->maxPlayers ?: ($server->max_players ?? 0),
             'checked_at' => $now,
+            // Карта й VAC лишаються останніми відомими, поки сервер офлайн
+            'current_map' => $result->map ?? $server->current_map,
+            'vac' => $result->vac ?? $server->vac,
+            'ping_ms' => $result->online ? $result->pingMs : null,
             'offline_since' => $result->online ? null : ($server->offline_since ?? $now),
             'suspicious_online' => $this->isSuspicious($server, $result),
         ])->saveQuietly();

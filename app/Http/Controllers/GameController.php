@@ -7,14 +7,23 @@ use App\Models\MonthlyWinner;
 use App\Models\Server;
 use App\Models\Vote;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
+use InvalidArgumentException;
 
 class GameController extends Controller
 {
-    public const SORTS = ['votes', 'online', 'new', 'opening'];
+    public const SORTS = ['votes', 'online', 'new', 'opening', 'ping'];
+
+    /** Швидкі фільтри (меню закупівлі на сторінці CS): ?vac=1&lowping=1 */
+    public const PERKS = ['notempty', 'free', 'tick128', 'vac', 'lowping', 'big'];
+
+    private const LOW_PING_MS = 50;
+
+    private const BIG_SLOTS = 24;
 
     public const PER_PAGE = 25;
 
@@ -33,6 +42,7 @@ class GameController extends Controller
 
         match ($sort) {
             'online' => $query->orderByDesc('is_online')->orderByDesc('players'),
+            'ping' => $query->orderByDesc('is_online')->orderByRaw('ping_ms is null')->orderBy('ping_ms'),
             'new' => $query->latest(),
             'opening' => $query->whereNotNull('opens_at')->orderByDesc('opens_at'),
             default => $query->orderByDesc('score')->orderByDesc('votes_month'),
@@ -48,8 +58,17 @@ class GameController extends Controller
             }
         }
 
+        foreach (self::PERKS as $perk) {
+            if ($request->boolean($perk)) {
+                $active[$perk] = '1';
+                $this->applyPerk($query, $perk, $game);
+            }
+        }
+
         if ($search !== '') {
-            $query->where('name', 'like', '%'.addcslashes($search, '%_\\').'%');
+            // Назва або адреса: гравці часто шукають сервер за IP
+            $like = '%'.addcslashes($search, '%_\\').'%';
+            $query->where(fn ($q) => $q->where('name', 'like', $like)->orWhere('host', 'like', $like));
         }
 
         $servers = $query->paginate(self::PER_PAGE)->withQueryString();
@@ -90,7 +109,53 @@ class GameController extends Controller
                 ->with('fieldValues.field')->orderBy('opens_at')->limit(3)->get(),
             'fame' => $this->winners($game, 4)->where('place', 1)->values(),
             'shares' => $this->shares($game, $filters->first()),
+            'perks' => $game->themeKey() === 'cs' ? $this->perkCounts($game) : [],
+            'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
         ]);
+    }
+
+    private function applyPerk(Builder|HasMany $query, string $perk, Game $game): void
+    {
+        match ($perk) {
+            'notempty' => $query->where('is_online', true)->where('players', '>', 0),
+            'free' => $query->where('is_online', true)->whereColumn('players', '<', 'max_players'),
+            'tick128' => $query->whereHas('fieldValues', fn (Builder $q) => $q
+                ->where('game_field_id', $game->fields->firstWhere('key', 'tickrate')?->id)
+                ->where('value', '128')),
+            'vac' => $query->where('vac', true),
+            'lowping' => $query->where('is_online', true)->where('ping_ms', '<=', self::LOW_PING_MS),
+            'big' => $query->where('max_players', '>=', self::BIG_SLOTS),
+            // Сюди потрапляють лише значення з self::PERKS
+            default => throw new InvalidArgumentException("Unknown quick filter: {$perk}"),
+        };
+    }
+
+    /** Скільки серверів підходить під кожен швидкий фільтр окремо */
+    private function perkCounts(Game $game): array
+    {
+        return collect(self::PERKS)->mapWithKeys(function (string $perk) use ($game) {
+            $query = $game->servers()->published();
+            $this->applyPerk($query, $perk, $game);
+
+            return [$perk => $query->count()];
+        })->all();
+    }
+
+    /** Частка гравців онлайн за поточною картою */
+    private function mapShares(Game $game): array
+    {
+        $rows = $game->servers()->published()->where('is_online', true)->whereNotNull('current_map')
+            ->groupBy('current_map')->selectRaw('current_map, sum(players) as players')
+            ->pluck('players', 'current_map')->map(fn ($n) => (int) $n)->filter()->sortDesc()->take(5);
+
+        $total = max(1, $rows->sum());
+        $top = max(1, (int) $rows->first());
+
+        return $rows->map(fn ($n, $map) => [
+            'map' => $map,
+            'percent' => (int) round($n / $total * 100),
+            'width' => round($n / $top * 100, 1),
+        ])->values()->all();
     }
 
     /** @return Collection<int, MonthlyWinner> */

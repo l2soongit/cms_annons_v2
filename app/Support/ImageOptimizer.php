@@ -12,13 +12,21 @@ use Illuminate\Support\Str;
  */
 final class ImageOptimizer
 {
-    public const MAX_WIDTH = ['logo' => 512, 'banner' => 1200, 'screenshot' => 1920];
+    public const MAX_WIDTH = [
+        'logo' => 512, 'banner' => 1200, 'screenshot' => 1920,
+        // Зображення головної з адмінки
+        'hero' => 2400, 'cover' => 1600, 'icon' => 256, 'og' => 1200, 'site_logo' => 600,
+    ];
+
+    /** Більші фото GD розпаковує в сотні МБ пам’яті — такі зберігаємо без обробки */
+    private const MAX_PIXELS = 40_000_000;
 
     public static function store(UploadedFile $file, string $directory, string $type): string
     {
         $maxWidth = self::MAX_WIDTH[$type] ?? 1920;
+        [$w, $h] = @getimagesize($file->getRealPath()) ?: [0, 0];
 
-        if (! function_exists('imagewebp') || self::isAnimatedGif($file)) {
+        if (! function_exists('imagewebp') || self::isAnimatedGif($file) || $w * $h > self::MAX_PIXELS) {
             return $file->store($directory, 'public');
         }
 

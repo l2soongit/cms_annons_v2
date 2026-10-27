@@ -9,10 +9,12 @@ use App\Models\Server;
 use App\Models\User;
 use App\Models\Vote;
 use App\Support\HomePageData;
+use App\Support\ImageOptimizer;
 use App\Support\Settings;
 use Database\Seeders\GameSeeder;
 use Database\Seeders\RoleSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -149,6 +151,32 @@ class HomePageTest extends TestCase
             ->assertSee('<meta property="og:image" content="'.url('/storage/home/og.webp').'">', false);
 
         $this->assertSame(url('/storage/servers/banner.webp'), HomePageData::get()['arena']['all']['rows'][0]['image']);
+    }
+
+    public function test_uploaded_cover_is_converted_to_webp_and_resized(): void
+    {
+        Storage::fake('public');
+
+        $path = ImageOptimizer::store(UploadedFile::fake()->image('cover.jpg', 3000, 1500), 'games', 'cover');
+
+        $this->assertStringEndsWith('.webp', $path);
+        [$width] = getimagesizefromstring(Storage::disk('public')->get($path));
+        $this->assertSame(1600, $width);
+    }
+
+    public function test_replacing_game_cover_deletes_old_file_and_refreshes_home(): void
+    {
+        Storage::fake('public');
+        $this->makeServer();
+        $game = Game::where('slug', 'lineage2')->first();
+        $game->update(['cover' => 'games/old.webp']);
+        Storage::disk('public')->put('games/old.webp', 'x');
+        HomePageData::get();
+
+        $game->update(['cover' => 'games/new.webp']);
+
+        Storage::disk('public')->assertMissing('games/old.webp');
+        $this->assertStringEndsWith('games/new.webp', collect(HomePageData::get()['games'])->firstWhere('name', 'Lineage 2')['image']);
     }
 
     public function test_replaced_home_image_is_deleted(): void

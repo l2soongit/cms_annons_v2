@@ -2,6 +2,7 @@
 
 namespace App\Filament\Pages;
 
+use App\Filament\Support\ImageField;
 use App\Models\ModerationLog;
 use App\Support\HomeContent;
 use App\Support\HomePageData;
@@ -75,12 +76,12 @@ class HomePageSettings extends Page
                     ->helperText('Друкуються по черзі, поки поле порожнє.'),
             ]),
             Section::make('Зображення')
-                ->description('Необов’язково. Без зображення лишається анімований фон. Обкладинки й іконки ігор — у розділі «Ігри», логотипи й банери серверів завантажують власники в кабінеті.')
+                ->description('Необов’язково, до 10 МБ — після завантаження стискаються у WebP. Без зображення лишається анімований фон. Обкладинки й іконки ігор — у розділі «Ігри», логотипи й банери серверів завантажують власники в кабінеті.')
                 ->columns(2)->schema([
-                    $this->image('home.hero_image', 'Фон першого екрана')->helperText('Широке зображення, від 1920 px. Повільно наближається, згасає донизу.'),
-                    $this->image('home.cta_image', 'Фон блоку «Заклик унизу»')->helperText('Від 1200 px завширшки.'),
-                    $this->image('home.logo_image', 'Логотип сайту')->helperText('Замінює значок і назву в шапці та підвалі. PNG або WebP із прозорим фоном, висота від 64 px.'),
-                    $this->image('home.og_image', 'Картинка для соцмереж')->imageEditorAspectRatios(['1.91:1'])->helperText('Прев’ю посилання в Telegram, Facebook, Discord. 1200×630 px.'),
+                    $this->image('home.hero_image', 'Фон першого екрана', 'hero')->helperText('Широке зображення, від 1920 px. Повільно наближається, згасає донизу.'),
+                    $this->image('home.cta_image', 'Фон блоку «Заклик унизу»', 'cover')->helperText('Від 1200 px завширшки.'),
+                    $this->image('home.logo_image', 'Логотип сайту', 'site_logo')->helperText('Замінює значок і назву в шапці та підвалі. PNG або WebP із прозорим фоном, висота від 64 px.'),
+                    $this->image('home.og_image', 'Картинка для соцмереж', 'og')->imageEditorAspectRatios(['1.91:1'])->helperText('Прев’ю посилання в Telegram, Facebook, Discord. 1200×630 px.'),
                     TextInput::make('home.hero_image_opacity')->label('Яскравість фону першого екрана, %')
                         ->numeric()->minValue(5)->maxValue(100)->required()
                         ->helperText('Менше — текст читається краще.'),
@@ -102,13 +103,9 @@ class HomePageSettings extends Page
         ]);
     }
 
-    private function image(string $key, string $label): FileUpload
+    private function image(string $key, string $label, string $type): FileUpload
     {
-        return FileUpload::make($key)->label($label)
-            ->image()->imageEditor()
-            ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-            ->maxSize(4096)
-            ->disk('public')->directory('home')->visibility('public');
+        return ImageField::make($key, 'home', $type)->label($label);
     }
 
     /** Поле українською (обов’язкове) і англійською */

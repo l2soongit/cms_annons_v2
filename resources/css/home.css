@@ -530,7 +530,11 @@ tbody tr.in { opacity: 1; transform: none; }
 .hero-img { position: absolute; inset: -80px 0 0; z-index: 0; pointer-events: none; background: center / cover no-repeat; opacity: var(--img-o, .35); mask-image: linear-gradient(180deg, #000 45%, transparent); animation: ken-burns 32s ease-in-out infinite alternate; }
 @keyframes ken-burns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1.5%, -1%); } }
 .scene-img { background: center / cover no-repeat; animation: ken-burns 24s ease-in-out infinite alternate; transition: filter .3s; }
-.world:hover .scene-img { filter: saturate(1.15) brightness(1.08); }
+/* Фото-обкладинка лишається різкою під 3D-нахилом: без наближення, фільтрів і змішування —
+ * інакше браузер розтягує вже намальований шар замість перемалювати його. */
+.world.has-img .scene-img { animation: none; }
+/* Відблиск без mix-blend-mode: змішування всередині 3D-нахилу змушує браузер перемальовувати картку в нижчій якості */
+.world.has-img .shine { mix-blend-mode: normal; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), #ffffff1f, transparent 45%); }
 .champ .scene-img { opacity: .75; }
 .cta-img { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: center / cover no-repeat; opacity: .28; mask-image: linear-gradient(90deg, transparent, #000 60%); animation: ken-burns 28s ease-in-out infinite alternate; }
 .cta > :not(.cta-img) { position: relative; z-index: 1; }/* Логотипи серверів (з кабінету власника), іконки ігор, логотип сайту */

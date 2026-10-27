@@ -3,11 +3,11 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\GameResource\Pages;
+use App\Filament\Support\ImageField;
 use App\Models\Game;
 use App\Monitoring\DriverRegistry;
 use BackedEnum;
 use Filament\Actions\EditAction;
-use Filament\Forms\Components\FileUpload;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -54,18 +54,12 @@ class GameResource extends Resource
                 TextInput::make('default_port')->label('Порт за замовчуванням')->numeric(),
                 Select::make('theme')->label('Стиль оформлення')->options(Game::THEMES)->placeholder('Нейтральний')
                     ->helperText('Колір, шрифт і анімована сцена гри на головній і в списках.'),
-                FileUpload::make('cover')->label('Обкладинка')->columnSpanFull()
-                    ->image()->imageEditor()->imageEditorAspectRatios(['16:9', '4:3'])
-                    ->acceptedFileTypes(['image/jpeg', 'image/png', 'image/webp', 'image/gif'])
-                    ->maxSize(4096)
-                    ->disk('public')->directory('games')->visibility('public')
-                    ->helperText('Картка гри на головній і в топі місяця. Без обкладинки показується анімована сцена стилю.'),
-                FileUpload::make('icon')->label('Іконка')
-                    ->image()->imageEditor()->imageEditorAspectRatios(['1:1'])
-                    ->acceptedFileTypes(['image/png', 'image/webp'])
-                    ->maxSize(1024)
-                    ->disk('public')->directory('games/icons')->visibility('public')
-                    ->helperText('Квадратна, з прозорим фоном. Показується на картці гри на головній.'),
+                ImageField::make('cover', 'games', 'cover')->label('Обкладинка')->columnSpanFull()
+                    ->imageEditorAspectRatios(['16:9', '4:3'])
+                    ->helperText('Картка гри на головній і в топі місяця. До 10 МБ, стискається у WebP. Без обкладинки показується анімована сцена стилю.'),
+                ImageField::make('icon', 'games/icons', 'icon')->label('Іконка')
+                    ->imageEditorAspectRatios(['1:1'])
+                    ->helperText('Квадратна, бажано з прозорим фоном (PNG/WebP). Показується на картці гри на головній.'),
                 TextInput::make('vip_slots')->label('VIP-місць')->numeric()->default(5),
                 TextInput::make('sort')->label('Порядок')->numeric()->default(0),
                 Toggle::make('is_active')->label('Активна')->default(true),

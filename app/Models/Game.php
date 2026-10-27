@@ -2,9 +2,11 @@
 
 namespace App\Models;
 
+use App\Support\HomePageData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Storage;
 use Spatie\Translatable\HasTranslations;
 
 class Game extends Model
@@ -30,6 +32,23 @@ class Game extends Model
         return [
             'is_active' => 'boolean',
         ];
+    }
+
+    protected static function booted(): void
+    {
+        // Головна кешує дані на хвилину — зміни гри з адмінки показуємо одразу
+        static::saved(fn () => HomePageData::forget());
+        static::deleted(fn () => HomePageData::forget());
+
+        // Замінена або прибрана обкладинка/іконка більше ніде не використовується
+        static::updated(function (Game $game) {
+            foreach (['cover', 'icon'] as $field) {
+                $old = $game->getOriginal($field);
+                if ($old && $game->wasChanged($field)) {
+                    Storage::disk('public')->delete($old);
+                }
+            }
+        });
     }
 
     public function getRouteKeyName(): string

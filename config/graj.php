@@ -74,4 +74,37 @@ return [
         'stop_words' => array_filter(explode(',', (string) env('REVIEW_STOP_WORDS', ''))),
     ],
 
+    // Головна сторінка; тексти змінюються в адмінці («Головна сторінка»), тут — значення за замовчуванням
+    'home' => [
+        // Порядок фіксований у шаблоні, тут лише які секції показувати
+        'sections' => ['arena', 'marquee', 'games', 'ranking', 'soon', 'owners', 'plans', 'cta'],
+        'hero_title' => ['uk' => 'Знайди сервер, де справді', 'en' => 'Find a server where people actually'],
+        'hero_accent' => ['uk' => 'грають', 'en' => 'play'],
+        'hero_lead' => [
+            'uk' => 'Чесний рейтинг ігрових серверів. Онлайн перевіряємо кожні 5 хвилин, голоси — без накрутки.',
+            'en' => 'Honest game server rankings. Player counts are checked every 5 minutes, votes are protected from cheating.',
+        ],
+        // Посилання «Часто шукають» під пошуком
+        'quick_links' => ['Interlude x50', 'FiveM RP', 'Анархія 1.21', 'Rust Solo'],
+        // Підказки, що «друкуються» в полі пошуку
+        'search_hints' => ['Interlude x50 PvP', 'FiveM RP з економікою', 'Minecraft анархія 1.21', 'Rust Solo, вайп щотижня', 'CS2 Retake 128 tick'],
+        'owners_title' => ['uk' => 'Від реєстрації до першого місця', 'en' => 'From sign-up to first place'],
+        'owners_lead' => [
+            'uk' => 'Додавання безкоштовне. Портал сам перевіряє онлайн і приводить гравців, які голосують саме за вас.',
+            'en' => 'Listing is free. We check your server automatically and bring players who vote for you.',
+        ],
+        'cta_title' => ['uk' => 'Твій сервер заслуговує на гравців', 'en' => 'Your server deserves players'],
+        'cta_text' => ['uk' => 'Додай його за 3 хвилини. Модерація зазвичай займає до доби.', 'en' => 'Add it in 3 minutes. Moderation usually takes under a day.'],
+        'ranking_size' => 10,
+        // Власні зображення (шлях на диску public); без них — анімований фон із демо
+        'hero_image' => null,
+        'hero_image_opacity' => 35,
+        'cta_image' => null,
+        // Логотип у шапці й підвалі головної та картинка для прев'ю посилання в соцмережах (1200×630)
+        'logo_image' => null,
+        'og_image' => null,
+        // Сповіщення «щойно проголосували» внизу екрана
+        'live_feed' => true,
+    ],
+
 ];

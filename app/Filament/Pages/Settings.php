@@ -44,7 +44,7 @@ class Settings extends Page
     public function mount(): void
     {
         $values = [];
-        foreach (SettingsStore::EDITABLE as $key) {
+        foreach (SettingsStore::PORTAL as $key) {
             Arr::set($values, $key, config("graj.{$key}"));
         }
 
@@ -83,7 +83,7 @@ class Settings extends Page
         $state = $this->form->getState();
 
         $values = [];
-        foreach (SettingsStore::EDITABLE as $key) {
+        foreach (SettingsStore::PORTAL as $key) {
             $value = Arr::get($state, $key);
             $values[$key] = match (true) {
                 $key === 'reviews.stop_words' => array_values(array_filter(array_map(fn ($w) => mb_strtolower(trim($w)), (array) $value))),

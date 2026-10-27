@@ -121,6 +121,15 @@ class Server extends Model
         return $this->port ? "{$this->host}:{$this->port}" : $this->host;
     }
 
+    /** Підписи значень полів гри («Interlude», «x50»); потрібні завантажені fieldValues.field */
+    public function fieldLabels(): string
+    {
+        return $this->fieldValues
+            ->map(fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value)
+            ->filter()
+            ->implode(' ');
+    }
+
     public function fillRatio(): float
     {
         return $this->max_players > 0 ? min(1, $this->players / $this->max_players) : 0;

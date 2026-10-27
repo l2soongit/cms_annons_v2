@@ -7,13 +7,15 @@ use Illuminate\Database\Seeder;
 
 class GameSeeder extends Seeder
 {
+    private const THEMES = ['lineage2' => 'l2', 'gta' => 'gta', 'minecraft' => 'mc', 'dayz' => 'dayz', 'rust' => 'rust', 'counter-strike' => 'cs'];
+
     public function run(): void
     {
         foreach ($this->games() as $sort => $data) {
             $fields = $data['fields'];
             unset($data['fields']);
 
-            $game = Game::updateOrCreate(['slug' => $data['slug']], $data + ['sort' => $sort]);
+            $game = Game::updateOrCreate(['slug' => $data['slug']], $data + ['sort' => $sort, 'theme' => self::THEMES[$data['slug']] ?? null]);
 
             foreach ($fields as $fieldSort => $field) {
                 $game->fields()->updateOrCreate(['key' => $field['key']], $field + ['sort' => $fieldSort]);

@@ -12,7 +12,8 @@ use Illuminate\Support\Facades\Schema;
  */
 final class Settings
 {
-    public const EDITABLE = [
+    /** Сторінка «Налаштування порталу» */
+    public const PORTAL = [
         'voting.interval_hours',
         'voting.subnet_limit',
         'rating.weights.votes',
@@ -23,6 +24,29 @@ final class Settings
         'monitoring.archive_after_offline_days',
         'reviews.stop_words',
     ];
+
+    /** Сторінка «Головна сторінка» */
+    public const HOME = [
+        'home.sections',
+        'home.hero_title',
+        'home.hero_accent',
+        'home.hero_lead',
+        'home.quick_links',
+        'home.search_hints',
+        'home.owners_title',
+        'home.owners_lead',
+        'home.cta_title',
+        'home.cta_text',
+        'home.ranking_size',
+        'home.live_feed',
+        'home.hero_image',
+        'home.hero_image_opacity',
+        'home.cta_image',
+        'home.logo_image',
+        'home.og_image',
+    ];
+
+    public const EDITABLE = [...self::PORTAL, ...self::HOME];
 
     /**
      * Застосувати збережені значення до config() — викликається при старті застосунку.

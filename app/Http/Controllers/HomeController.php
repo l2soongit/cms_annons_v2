@@ -2,30 +2,52 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\Game;
+use App\Enums\ServerStatus;
 use App\Models\Server;
+use App\Models\Vote;
+use App\Support\HomePageData;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\View\View;
 
 class HomeController extends Controller
 {
+    /** За скільки хвилин показувати голоси одразу після відкриття сторінки */
+    private const FEED_BACKLOG_MINUTES = 10;
+
     public function __invoke(): View
     {
-        $games = Game::active()
-            ->withCount(['servers' => fn ($q) => $q->published()])
-            ->get()
-            ->each(fn (Game $game) => $game->setRelation('top', $game->servers()
-                ->ranked()
-                ->with('fieldValues.field')
-                ->limit(5)
-                ->get()));
+        return view('home', [
+            'data' => HomePageData::get(),
+            'feedAfter' => (int) Vote::where('created_at', '<', now()->subMinutes(self::FEED_BACKLOG_MINUTES))->max('id'),
+        ]);
+    }
 
-        $comingSoon = Server::published()
-            ->where('opens_at', '>', now())
-            ->with('game')
-            ->orderBy('opens_at')
-            ->limit(9)
-            ->get();
+    /**
+     * Живі події для головної: нові зараховані голоси після ?after=id і загальні лічильники.
+     */
+    public function live(Request $request): JsonResponse
+    {
+        $after = max(0, (int) $request->query('after'));
 
-        return view('home', compact('games', 'comingSoon'));
+        $votes = Vote::where('id', '>', $after)->where('status', 'counted')
+            ->whereHas('server', fn ($q) => $q->where('status', ServerStatus::Published))
+            ->with('server.game')
+            ->latest('id')->limit(10)->get()
+            ->reverse()->values();
+
+        return response()->json([
+            'last' => $votes->max('id') ?? $after,
+            'votes' => $votes->map(fn (Vote $v) => [
+                'id' => $v->id,
+                'nick' => $v->nickname ?: null,
+                'server' => $v->server->name,
+                'url' => route('servers.show', $v->server),
+                'theme' => $v->server->game->themeKey(),
+            ]),
+            // Актуальні голоси місяця для серверів, що отримали голос, — оновлюють цифри в топі
+            'servers' => $votes->pluck('server')->unique('id')->mapWithKeys(fn (Server $s) => [$s->id => (int) $s->votes_month]),
+            'online' => (int) Server::published()->where('is_online', true)->sum('players'),
+        ]);
     }
 }

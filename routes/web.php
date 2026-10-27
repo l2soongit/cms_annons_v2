@@ -14,6 +14,7 @@ use App\Livewire\Cabinet\ServerForm;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/', HomeController::class)->name('home');
+Route::get('/live/feed', [HomeController::class, 'live'])->middleware('throttle:30,1')->name('home.live');
 Route::get('/search', SearchController::class)->middleware('throttle:30,1')->name('search');
 Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->middleware('guest')->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->middleware('guest')->name('social.callback');

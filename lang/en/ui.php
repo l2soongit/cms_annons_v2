@@ -1,0 +1,53 @@
+<?php
+
+return [
+    'meta' => [
+        'title' => 'graj.club — game server rankings',
+        'description' => 'Top Lineage 2, GTA, Minecraft, DayZ, Rust and Counter-Strike servers: online players, votes, new launches.',
+    ],
+    'skip' => 'Skip to content',
+    'theme' => 'Toggle theme',
+    'breadcrumbs' => 'Breadcrumbs',
+    'nav' => [
+        'games' => 'Games',
+        'login' => 'Log in',
+        'add_server' => 'Add server',
+    ],
+    'footer' => [
+        'rules' => 'Rules',
+        'api' => 'Owner API',
+        'contacts' => 'Contacts',
+    ],
+    'home' => [
+        'title' => 'Where people play right now',
+        'lead' => 'Servers with the most votes this month. Status and player counts refresh every 5 minutes.',
+        'full_ranking' => 'Full ranking (:n)',
+        'coming_soon' => 'Opening soon',
+    ],
+    'game' => [
+        'meta_title' => ':game servers — rankings and online | graj.club',
+        'title' => ':game servers',
+        'lead' => ':n servers, ranked by votes for :month',
+        'filters' => 'Filters',
+        'any' => 'Any',
+        'apply' => 'Show',
+        'col_rank' => 'Rank',
+        'col_server' => 'Server',
+        'col_online' => 'Online',
+        'col_votes' => 'Votes',
+        'empty' => 'No servers match these filters.',
+        'reset' => 'Clear filters',
+    ],
+    'server' => [
+        'online' => 'Online',
+        'offline' => 'Offline',
+        'verified' => 'Owner verified',
+        'players' => ':n of :max players',
+        'votes' => 'vote|votes',
+        'vote' => 'Vote',
+        'vote_soon' => 'Voting arrives in stage 2.',
+        'address' => 'Address',
+        'status' => 'Status',
+        'uptime' => 'Uptime, 30 days',
+    ],
+];

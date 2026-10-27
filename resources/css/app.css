@@ -1,0 +1,92 @@
+@import 'tailwindcss';
+
+@source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php';
+@source '../../storage/framework/views/*.php';
+@source '../**/*.blade.php';
+@source '../**/*.js';
+
+/*
+ * graj.club — токени дизайну.
+ * Темна тема за замовчуванням; світла вмикається data-theme="light" на <html>.
+ */
+@theme {
+    --font-sans: 'Golos Text', ui-sans-serif, system-ui, sans-serif;
+    --font-display: 'Unbounded', 'Golos Text', ui-sans-serif, sans-serif;
+
+    --color-night: #0f1b1e;
+    --color-slab: #172629;
+    --color-slab-2: #1d3033;
+    --color-seam: #27393b;
+    --color-bone: #e7ede6;
+    --color-moss: #8fa39e;
+    --color-amber: #f0b43c;
+    --color-amber-ink: #241a04;
+    --color-signal: #4fd18b;
+    --color-fade: #e06450;
+}
+
+:root {
+    color-scheme: dark;
+}
+
+:root[data-theme='light'] {
+    color-scheme: light;
+    --color-night: #eef2f0;
+    --color-slab: #ffffff;
+    --color-slab-2: #f5f8f6;
+    --color-seam: #d3dcd8;
+    --color-bone: #13221f;
+    --color-moss: #556963;
+    --color-amber: #a86d00;
+    --color-amber-ink: #ffffff;
+    --color-signal: #1b8a4f;
+    --color-fade: #b83a28;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-sans);
+        background: var(--color-night);
+        color: var(--color-bone);
+        -webkit-font-smoothing: antialiased;
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-amber);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            transition-duration: 0.01ms !important;
+            animation-duration: 0.01ms !important;
+        }
+    }
+}
+
+@layer components {
+    /* Сегментна шкала заповненості сервера: 10 поділок */
+    .load-meter {
+        display: grid;
+        grid-template-columns: repeat(10, 1fr);
+        gap: 2px;
+        height: 8px;
+    }
+
+    .load-meter > span {
+        border-radius: 1px;
+        background: var(--color-seam);
+    }
+
+    .load-meter > span[data-on] {
+        background: var(--color-signal);
+    }
+
+    .rank-numeral {
+        font-family: var(--font-display);
+        font-weight: 700;
+        font-variant-numeric: tabular-nums;
+        letter-spacing: -0.04em;
+        line-height: 1;
+    }
+}

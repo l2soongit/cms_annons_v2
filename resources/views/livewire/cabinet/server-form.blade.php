@@ -66,8 +66,33 @@
 
         <section class="space-y-5" aria-labelledby="s-desc">
             <h2 id="s-desc" class="font-display text-lg font-medium">{{ __('cabinet.form.section_description') }}</h2>
-            <x-field name="description_uk" wire:model="description_uk" type="textarea" rows="8" :label="__('cabinet.form.description_uk')" :hint="__('cabinet.form.description_hint')" />
-            <x-field name="description_en" wire:model="description_en" type="textarea" rows="5" :label="__('cabinet.form.description_en')" />
+            <x-rich-editor name="description_uk" :value="$description_uk" :label="__('cabinet.form.description_uk')" :hint="__('cabinet.form.description_hint')" />
+            <x-rich-editor name="description_en" :value="$description_en" :label="__('cabinet.form.description_en')" />
+
+            <div class="grid gap-5 sm:grid-cols-[1fr_14rem]">
+                <fieldset>
+                    <legend class="mb-2 text-sm font-medium">{{ __('cabinet.form.languages') }}</legend>
+                    <div class="flex flex-wrap gap-2">
+                        @foreach (\App\Livewire\Cabinet\ServerForm::LANGUAGES as $code => $langName)
+                            <label class="cursor-pointer">
+                                <input type="checkbox" wire:model="languages" value="{{ $code }}" class="peer sr-only">
+                                <span class="block rounded-md border border-seam px-3 py-1.5 text-sm text-moss peer-checked:border-amber peer-checked:bg-amber/10 peer-checked:text-bone peer-focus-visible:outline-2 peer-focus-visible:outline-amber">{{ $langName }}</span>
+                            </label>
+                        @endforeach
+                    </div>
+                    @error('languages') <p class="mt-1.5 text-sm text-fade">{{ $message }}</p> @enderror
+                </fieldset>
+                <div>
+                    <label for="country" class="mb-1.5 block text-sm font-medium">{{ __('cabinet.form.country') }}</label>
+                    <select id="country" wire:model="country" class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone focus:border-amber focus:outline-none">
+                        <option value="">—</option>
+                        @foreach (\App\Livewire\Cabinet\ServerForm::COUNTRIES as $code => $countryName)
+                            <option value="{{ $code }}">{{ $countryName }}</option>
+                        @endforeach
+                    </select>
+                    <p class="mt-1.5 text-xs text-moss">{{ __('cabinet.form.country_hint') }}</p>
+                </div>
+            </div>
         </section>
 
         <section class="space-y-5" aria-labelledby="s-links">
@@ -79,6 +104,20 @@
 
         <section class="space-y-5" aria-labelledby="s-media">
             <h2 id="s-media" class="font-display text-lg font-medium">{{ __('cabinet.form.section_media') }}</h2>
+
+            @if ($server && $server->media->isNotEmpty())
+                <ul class="flex flex-wrap gap-3" aria-label="{{ __('cabinet.form.media_current') }}">
+                    @foreach ($server->media as $item)
+                        <li wire:key="media-{{ $item->id }}" class="relative">
+                            <img src="{{ Storage::disk('public')->url($item->path) }}" alt="{{ __('cabinet.form.media_'.$item->type) }}" class="h-20 w-28 rounded-md object-cover">
+                            <span class="absolute left-1 top-1 rounded bg-night/80 px-1.5 text-xs">{{ __('cabinet.form.media_'.$item->type) }}</span>
+                            <button type="button" wire:click="deleteMedia({{ $item->id }})" wire:confirm="{{ __('cabinet.form.media_delete_confirm') }}"
+                                    class="absolute right-1 top-1 rounded bg-night/80 px-1.5 text-xs text-fade hover:bg-fade hover:text-night"
+                                    aria-label="{{ __('cabinet.form.media_delete') }}">✕</button>
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
             <div class="grid gap-5 sm:grid-cols-2">
                 <div>
                     <label for="logo" class="mb-1.5 block text-sm font-medium">{{ __('cabinet.form.logo') }}</label>

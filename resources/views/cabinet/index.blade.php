@@ -1,4 +1,5 @@
 <x-layouts.app :title="__('cabinet.title').' | graj.club'">
+    <x-cabinet-nav />
     <div class="flex flex-wrap items-end justify-between gap-4">
         <h1 class="font-display text-3xl font-bold tracking-tight">{{ __('cabinet.my_servers') }}</h1>
         <x-button :href="route('cabinet.servers.create')">{{ __('ui.nav.add_server') }}</x-button>

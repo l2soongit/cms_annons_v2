@@ -30,6 +30,7 @@ class Server extends Model
             'pending_changes' => 'array',
             'languages' => 'array',
             'offline_since' => 'datetime',
+            'offline_notified_at' => 'datetime',
             'suspicious_online' => 'boolean',
             'is_online' => 'boolean',
             'uptime' => 'decimal:2',

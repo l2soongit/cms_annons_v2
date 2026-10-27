@@ -43,6 +43,33 @@ return [
         'moderated_fields' => ['name', 'host', 'port', 'game_id'],
     ],
 
+    'notifications' => [
+        // Подія => канали за замовчуванням; користувач змінює їх у кабінеті
+        'events' => [
+            'moderation' => ['mail'],
+            'server_offline' => ['mail'],
+            'new_review' => ['mail'],
+        ],
+        // Скільки хвилин сервер має бути офлайн, щоб власник отримав сповіщення
+        'offline_after_minutes' => 15,
+    ],
+
+    'telegram' => [
+        'bot_token' => env('TELEGRAM_BOT_TOKEN'),
+        'bot_username' => env('TELEGRAM_BOT_USERNAME'),
+        // Секрет у URL вебхука, щоб чужі запити не приймалися
+        'webhook_secret' => env('TELEGRAM_WEBHOOK_SECRET'),
+    ],
+
+    'security' => [
+        'require_staff_2fa' => (bool) env('REQUIRE_STAFF_2FA', true),
+    ],
+
+    'privacy' => [
+        // Хеші IP голосів старші за цей термін видаляються (ТЗ: не довше 90 днів)
+        'vote_ip_retention_days' => 90,
+    ],
+
     'reviews' => [
         'stop_words' => array_filter(explode(',', (string) env('REVIEW_STOP_WORDS', ''))),
     ],

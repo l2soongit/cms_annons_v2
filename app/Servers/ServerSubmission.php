@@ -6,6 +6,7 @@ use App\Enums\ServerStatus;
 use App\Models\Game;
 use App\Models\Server;
 use App\Models\User;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
@@ -140,7 +141,7 @@ class ServerSubmission
             }
         }
 
-        $path = $file->store("servers/{$server->id}", 'public');
+        $path = ImageOptimizer::store($file, "servers/{$server->id}", $type);
 
         $server->media()->create([
             'type' => $type,

@@ -17,11 +17,19 @@
                     </select>
                 </label>
             @endforeach
+            <input type="hidden" name="sort" value="{{ $sort }}">
             <button class="rounded-md bg-slab-2 px-4 py-2 text-sm font-medium hover:text-amber">{{ __('ui.game.apply') }}</button>
         </form>
     </div>
 
-    <div class="mt-8 hidden grid-cols-[4rem_1fr_11rem_7rem_auto] gap-x-4 border-b border-bone/80 pb-2 text-xs text-moss sm:grid">
+    <nav class="mt-8 flex flex-wrap gap-1 text-sm" aria-label="{{ __('ui.game.sort') }}">
+        @foreach (\App\Http\Controllers\GameController::SORTS as $option)
+            <a href="{{ request()->fullUrlWithQuery(['sort' => $option, 'page' => null]) }}" @if ($sort === $option) aria-current="true" @endif
+               @class(['rounded-md px-3 py-1.5', 'bg-slab-2 text-bone' => $sort === $option, 'text-moss hover:text-bone' => $sort !== $option])>{{ __("ui.game.sort_{$option}") }}</a>
+        @endforeach
+    </nav>
+
+    <div class="mt-4 hidden grid-cols-[4rem_1fr_11rem_7rem_auto] gap-x-4 border-b border-bone/80 pb-2 text-xs text-moss sm:grid">
         <span class="text-right">{{ __('ui.game.col_rank') }}</span>
         <span>{{ __('ui.game.col_server') }}</span>
         <span>{{ __('ui.game.col_online') }}</span>
@@ -29,7 +37,7 @@
         <span class="w-[6.5rem]"></span>
     </div>
 
-    @if ($vip->isNotEmpty() && $servers->onFirstPage())
+    @if ($vip->isNotEmpty() && $servers->onFirstPage() && $sort === 'votes')
         <ol class="border-b-2 border-amber/40" aria-label="VIP">
             @foreach ($vip as $server)
                 <x-server-row :server="$server" :rank="$server->rank" vip />
@@ -50,4 +58,48 @@
         </ol>
         <div class="mt-6">{{ $servers->links() }}</div>
     @endif
+
+    <div class="mt-16 grid gap-x-10 gap-y-12 lg:grid-cols-2">
+        @if ($comingSoon->isNotEmpty())
+            <section aria-labelledby="game-soon">
+                <h2 id="game-soon" class="border-b border-bone/80 pb-2 font-display text-lg font-medium">{{ __('ui.home.coming_soon') }}</h2>
+                <ul>
+                    @foreach ($comingSoon as $soon)
+                        <li class="flex items-baseline justify-between gap-4 border-b border-seam py-3">
+                            <a href="{{ route('servers.show', $soon) }}" class="truncate font-medium hover:text-amber">{{ $soon->name }}</a>
+                            <time datetime="{{ $soon->opens_at->toDateString() }}" class="shrink-0 text-sm tabular-nums text-amber">{{ $soon->opens_at->translatedFormat('j M') }}</time>
+                        </li>
+                    @endforeach
+                </ul>
+            </section>
+        @endif
+
+        @if ($winners->isNotEmpty())
+            <section aria-labelledby="game-winners">
+                <h2 id="game-winners" class="border-b border-bone/80 pb-2 font-display text-lg font-medium">{{ __('ui.game.winners') }}</h2>
+                <dl>
+                    @foreach ($winners as $month => $places)
+                        <div class="grid grid-cols-[7rem_1fr] gap-4 border-b border-seam py-3">
+                            <dt class="text-sm text-moss">{{ \Illuminate\Support\Carbon::parse($month)->translatedFormat('F Y') }}</dt>
+                            <dd>
+                                <ol class="space-y-1">
+                                    @foreach ($places as $winner)
+                                        <li class="flex items-baseline gap-3">
+                                            <span class="rank-numeral w-4 text-amber">{{ $winner->place }}</span>
+                                            @if ($winner->server)
+                                                <a href="{{ route('servers.show', $winner->server) }}" class="hover:text-amber">{{ $winner->server_name }}</a>
+                                            @else
+                                                <span>{{ $winner->server_name }}</span>
+                                            @endif
+                                            <span class="ml-auto text-sm tabular-nums text-moss">{{ number_format($winner->votes, 0, ',', ' ') }}</span>
+                                        </li>
+                                    @endforeach
+                                </ol>
+                            </dd>
+                        </div>
+                    @endforeach
+                </dl>
+            </section>
+        @endif
+    </div>
 </x-layouts.app>

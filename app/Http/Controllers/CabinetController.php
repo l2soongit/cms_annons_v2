@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Jobs\DeliverVoteCallback;
 use App\Models\Server;
+use App\Models\ServerInvitation;
 use App\Models\Vote;
 use App\Rules\PublicAddress;
 use App\Servers\OwnershipVerifier;
@@ -34,7 +35,8 @@ class CabinetController extends Controller
     {
         $this->authorizeServer($request, $server);
 
-        $server->load(['game', 'media']);
+        $server->load(['game', 'media', 'owner', 'coOwners']);
+        $invitations = ServerInvitation::where('server_id', $server->id)->latest()->get();
 
         $stats = DB::table('server_stats_hourly')
             ->where('server_id', $server->id)
@@ -49,6 +51,8 @@ class CabinetController extends Controller
             'verifyCode' => $verifier->code($server),
             'stats' => $stats,
             'recentVotes' => $recentVotes,
+            'invitations' => $invitations,
+            'isMainOwner' => $server->user_id === $request->user()->id,
         ]);
     }
 

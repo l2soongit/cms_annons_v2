@@ -114,6 +114,67 @@
             </form>
         </section>
 
+        {{-- Співвласники --}}
+        <section aria-labelledby="s-owners">
+            <h2 id="s-owners" class="font-display text-lg font-medium">{{ __('owners.title') }}</h2>
+            <p class="mt-3 text-moss">{{ __('owners.lead') }}</p>
+            <ul class="mt-4 text-sm">
+                <li class="flex justify-between gap-4 border-b border-seam py-2">
+                    <span>{{ $server->owner->name }}</span><span class="text-moss">{{ __('owners.owner') }}</span>
+                </li>
+                @foreach ($server->coOwners as $co)
+                    <li class="flex items-center justify-between gap-4 border-b border-seam py-2">
+                        <span>{{ $co->name }}</span>
+                        @if ($isMainOwner)
+                            <form method="POST" action="{{ route('cabinet.servers.owners.remove', [$server, $co]) }}" onsubmit="return confirm(@js(__('owners.remove_confirm', ['name' => $co->name])))">
+                                @csrf @method('DELETE')
+                                <button class="text-moss hover:text-fade">{{ __('owners.remove') }}</button>
+                            </form>
+                        @endif
+                    </li>
+                @endforeach
+                @foreach ($invitations as $invitation)
+                    <li class="flex items-center justify-between gap-4 border-b border-seam py-2">
+                        <span class="min-w-0 truncate">{{ $invitation->email }} <span class="text-moss">— {{ __('owners.pending', ['date' => $invitation->expires_at->format('d.m')]) }}</span></span>
+                        @if ($isMainOwner)
+                            <form method="POST" action="{{ route('cabinet.servers.invitations.cancel', [$server, $invitation]) }}">
+                                @csrf @method('DELETE')
+                                <button class="text-moss hover:text-fade">{{ __('owners.cancel') }}</button>
+                            </form>
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+
+            @if ($isMainOwner)
+                <form method="POST" action="{{ route('cabinet.servers.owners.invite', $server) }}" class="mt-4 flex items-end gap-2">
+                    @csrf
+                    <x-field name="email" type="email" class="flex-1" :label="__('owners.invite_email')" required />
+                    <x-button variant="secondary">{{ __('owners.invite') }}</x-button>
+                </form>
+
+                @if ($server->coOwners->isNotEmpty())
+                    <details class="mt-6">
+                        <summary class="cursor-pointer text-sm text-moss hover:text-bone">{{ __('owners.transfer_title') }}</summary>
+                        <form method="POST" action="{{ route('cabinet.servers.transfer', $server) }}" class="mt-3 space-y-3">
+                            @csrf
+                            <p class="text-sm text-moss">{{ __('owners.transfer_lead') }}</p>
+                            <label class="block text-sm">
+                                <span class="mb-1.5 block font-medium">{{ __('owners.transfer_to') }}</span>
+                                <select name="user_id" required class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone">
+                                    @foreach ($server->coOwners as $co)
+                                        <option value="{{ $co->id }}">{{ $co->name }}</option>
+                                    @endforeach
+                                </select>
+                            </label>
+                            <x-field name="password" type="password" :label="__('owners.password')" autocomplete="current-password" required />
+                            <x-button variant="danger">{{ __('owners.transfer') }}</x-button>
+                        </form>
+                    </details>
+                @endif
+            @endif
+        </section>
+
         {{-- Останні голоси --}}
         <section aria-labelledby="s-votes">
             <h2 id="s-votes" class="font-display text-lg font-medium">{{ __('cabinet.votes.title') }}</h2>

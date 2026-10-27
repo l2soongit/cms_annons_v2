@@ -5,15 +5,15 @@ namespace App\Http\Controllers;
 use App\Enums\ServerStatus;
 use App\Models\Report;
 use App\Models\Server;
+use App\Servers\ServerHistory;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
 
 class ServerController extends Controller
 {
-    public function show(Request $request, Server $server): View
+    public function show(Request $request, Server $server, ServerHistory $history): View
     {
         abort_unless($server->status === ServerStatus::Published, 404);
 
@@ -33,13 +33,10 @@ class ServerController extends Controller
             ->selectRaw('AVG(rating) as avg, COUNT(*) as total')
             ->first();
 
-        $history = DB::table('server_stats_hourly')
-            ->where('server_id', $server->id)
-            ->where('hour', '>=', now()->subDays(7))
-            ->orderBy('hour')
-            ->get(['hour', 'players_avg']);
+        $period = array_key_exists($request->query('period'), ServerHistory::PERIODS) ? $request->query('period') : 'week';
+        $history = $history->points($server, $period);
 
-        return view('servers.show', compact('server', 'reviews', 'myReview', 'rating', 'history'));
+        return view('servers.show', compact('server', 'reviews', 'myReview', 'rating', 'history', 'period'));
     }
 
     public function report(Request $request, Server $server): RedirectResponse

@@ -6,7 +6,9 @@ use App\Models\Game;
 use App\Models\Server;
 use App\Rules\PublicAddress;
 use App\Servers\ServerSubmission;
+use App\Support\HtmlSanitizer;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Title;
@@ -40,6 +42,11 @@ class ServerForm extends Component
 
     public ?string $opens_at = null;
 
+    /** @var list<string> */
+    public array $languages = [];
+
+    public ?string $country = null;
+
     /** @var array<string, string|array> */
     public array $fields = [];
 
@@ -66,6 +73,8 @@ class ServerForm extends Component
             $this->description_uk = (string) $server->getTranslation('description', 'uk', false);
             $this->description_en = (string) $server->getTranslation('description', 'en', false);
             $this->opens_at = $server->opens_at?->toDateString();
+            $this->languages = $server->languages ?? [];
+            $this->country = $server->country;
             $this->fields = $server->fieldValues()->with('field')->get()
                 ->groupBy(fn ($v) => $v->field->key)
                 ->map(fn ($values, $key) => $values->first()->field->type === 'multiselect'
@@ -105,9 +114,12 @@ class ServerForm extends Component
             'website' => ['nullable', 'url:http,https', 'max:255', new PublicAddress(url: true)],
             'discord' => ['nullable', 'url:https', 'max:255', 'regex:#^https://(discord\.gg|discord\.com/invite)/#'],
             'youtube' => ['nullable', 'url:https', 'max:255', 'regex:#^https://(www\.)?(youtube\.com|youtu\.be)/#'],
-            'description_uk' => ['required', 'string', 'min:50', 'max:5000'],
-            'description_en' => ['nullable', 'string', 'max:5000'],
+            'description_uk' => ['required', 'string', 'max:20000', $this->visibleLength(50, 5000)],
+            'description_en' => ['nullable', 'string', 'max:20000', $this->visibleLength(0, 5000)],
             'opens_at' => ['nullable', 'date'],
+            'languages' => ['array', 'max:6'],
+            'languages.*' => [Rule::in(array_keys(self::LANGUAGES))],
+            'country' => ['nullable', Rule::in(array_keys(self::COUNTRIES))],
             'logo' => ['nullable', 'image', 'max:1024', 'dimensions:max_width=1024,max_height=1024'],
             'banner' => ['nullable', 'image', 'max:2048'],
             'screenshots' => ['array', 'max:'.config('graj.servers.max_screenshots')],
@@ -146,8 +158,13 @@ class ServerForm extends Component
             'website' => $this->website ?: null,
             'discord' => $this->discord ?: null,
             'youtube' => $this->youtube ?: null,
-            'description' => array_filter(['uk' => strip_tags($this->description_uk), 'en' => strip_tags($this->description_en)]),
+            'description' => array_filter([
+                'uk' => HtmlSanitizer::clean($this->description_uk),
+                'en' => HtmlSanitizer::clean($this->description_en),
+            ]),
             'opens_at' => $this->opens_at,
+            'languages' => array_values($this->languages) ?: null,
+            'country' => $this->country ?: null,
         ];
 
         if ($this->server) {
@@ -174,6 +191,34 @@ class ServerForm extends Component
 
         return $this->redirectRoute('cabinet.servers.show', $server);
     }
+
+    public function deleteMedia(int $mediaId): void
+    {
+        abort_unless($this->server && auth()->user()->canManage($this->server), 403);
+
+        $media = $this->server->media()->findOrFail($mediaId);
+        Storage::disk('public')->delete($media->path);
+        $media->delete();
+    }
+
+    /**
+     * Довжина видимого тексту опису (без HTML-розмітки редактора).
+     */
+    private function visibleLength(int $min, int $max): \Closure
+    {
+        return function (string $attribute, mixed $value, \Closure $fail) use ($min, $max) {
+            $length = mb_strlen(HtmlSanitizer::text($value));
+            if ($length < $min) {
+                $fail(__('validation.min.string', ['attribute' => __('cabinet.form.description'), 'min' => $min]));
+            } elseif ($length > $max) {
+                $fail(__('validation.max.string', ['attribute' => __('cabinet.form.description'), 'max' => $max]));
+            }
+        };
+    }
+
+    public const LANGUAGES = ['uk' => 'Українська', 'en' => 'English', 'pl' => 'Polski', 'ru' => 'Русский', 'de' => 'Deutsch', 'cs' => 'Čeština', 'ro' => 'Română', 'kk' => 'Қазақша'];
+
+    public const COUNTRIES = ['UA' => 'Україна', 'PL' => 'Польща', 'DE' => 'Німеччина', 'NL' => 'Нідерланди', 'FR' => 'Франція', 'FI' => 'Фінляндія', 'CZ' => 'Чехія', 'RO' => 'Румунія', 'US' => 'США', 'KZ' => 'Казахстан', 'other' => 'Інша'];
 
     public function render()
     {

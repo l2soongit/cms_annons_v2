@@ -29,6 +29,26 @@
    * * * * * cd /шлях/до/проєкту && php artisan schedule:run >> /dev/null 2>&1
    ```
 
+## Зовнішні сервіси (необов'язкові)
+
+Без ключів відповідні функції просто вимкнені. Усі змінні є в `.env.production.example`.
+
+| Що | Де взяти | Змінні |
+| --- | --- | --- |
+| Вхід через Google | console.cloud.google.com → OAuth client, redirect `https://graj.club/auth/google/callback` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
+| Вхід через Discord | discord.com/developers → OAuth2, redirect `https://graj.club/auth/discord/callback` | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` |
+| Telegram-сповіщення | @BotFather → новий бот | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (будь-який довгий рядок) |
+| Капча | dash.cloudflare.com → Turnstile | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` |
+| Виявлення VPN | ipqualityscore.com | `IPQS_KEY` |
+
+Після налаштування бота один раз зареєструйте вебхук (відкрийте в браузері):
+
+```
+https://api.telegram.org/bot<TELEGRAM_BOT_TOKEN>/setWebhook?url=https://graj.club/api/telegram/webhook/<TELEGRAM_WEBHOOK_SECRET>
+```
+
+Модераторам і адміністраторам потрібна 2FA (`REQUIRE_STAFF_2FA=true`): перший вхід в `/admin` перенаправить на сторінку «Безпека» в кабінеті.
+
 ## Оновлення
 
 GitHub → Actions → «Deploy to hosting» → Run workflow. Потім через SSH:

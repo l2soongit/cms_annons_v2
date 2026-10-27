@@ -43,6 +43,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'remember_token',
         'two_factor_secret',
         'two_factor_recovery_codes',
+        'telegram_link_token',
     ];
 
     /**
@@ -57,6 +58,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'password' => 'hashed',
             'balance' => 'decimal:2',
             'banned_until' => 'datetime',
+            'notification_prefs' => 'array',
         ];
     }
 
@@ -84,5 +86,26 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     public function isBanned(): bool
     {
         return $this->banned_until?->isFuture() ?? false;
+    }
+
+    public function isStaff(): bool
+    {
+        return $this->hasAnyRole(['admin', 'moderator']);
+    }
+
+    /**
+     * Канали для події з урахуванням налаштувань користувача (за замовчуванням — email).
+     *
+     * @return list<string> mail | telegram
+     */
+    public function channelsFor(string $event): array
+    {
+        $channels = $this->notification_prefs[$event] ?? config("graj.notifications.events.{$event}", ['mail']);
+
+        if (! $this->telegram_chat_id) {
+            $channels = array_diff($channels, ['telegram']);
+        }
+
+        return array_values($channels);
     }
 }

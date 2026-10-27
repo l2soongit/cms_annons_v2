@@ -18,8 +18,15 @@ class PublicAddress implements ValidationRule
 
         $ok = $this->url ? PublicHost::isPublicUrl($value) : PublicHost::isPublic((string) $value);
 
-        if (! $ok) {
-            $fail(__('validation.public_address'));
+        if ($ok) {
+            return;
         }
+
+        $host = $this->url ? (string) parse_url((string) $value, PHP_URL_HOST) : (string) $value;
+
+        // Домен, який просто не існує, — окреме повідомлення, щоб власник шукав друкарську помилку
+        $fail(! filter_var($host, FILTER_VALIDATE_IP) && @gethostbynamel($host) === false
+            ? __('validation.host_unresolved', ['host' => $host])
+            : __('validation.public_address'));
     }
 }

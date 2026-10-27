@@ -23,7 +23,7 @@
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
             <a href="{{ route('home') }}" class="font-display text-xl font-bold tracking-tight">graj<span class="text-amber">.</span>club</a>
 
-            <nav aria-label="{{ __('ui.nav.games') }}" class="order-3 -mx-4 w-full overflow-x-auto px-4 [scrollbar-width:none] sm:order-none sm:mx-0 sm:w-auto sm:px-0">
+            <nav aria-label="{{ __('ui.nav.games') }}" class="order-3 -mx-4 w-full overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 xl:order-none xl:w-auto">
                 <ul class="flex gap-1 whitespace-nowrap text-sm">
                     @foreach ($navGames as $navGame)
                         <li>
@@ -40,6 +40,9 @@
             </nav>
 
             <div class="ml-auto flex items-center gap-2 text-sm">
+                <a href="{{ route('search') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.search.title') }}">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+                </a>
                 <button type="button" data-theme-toggle class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.theme') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
                 </button>

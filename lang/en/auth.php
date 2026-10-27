@@ -42,5 +42,8 @@ return [
         'confirm_title' => 'Confirm password',
         'confirm_lead' => 'Please enter your password again to continue.',
         'confirm' => 'Confirm',
+        'or_social' => 'or log in with',
+        'social_failed' => 'Social login failed. Please try again.',
+        'social_no_email' => 'The provider did not share a verified email. Please register with email and password.',
     ],
 ];

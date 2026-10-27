@@ -6,6 +6,7 @@ use App\Enums\ServerStatus;
 use App\Models\Report;
 use App\Models\Review;
 use App\Models\Server;
+use App\Notifications\NewReview;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
@@ -29,10 +30,14 @@ class ReviewController extends Controller
 
         $body = strip_tags($data['body']);
 
-        Review::updateOrCreate(
+        $review = Review::updateOrCreate(
             ['server_id' => $server->id, 'user_id' => $request->user()->id],
             ['rating' => $data['rating'], 'body' => $body, 'status' => $this->needsPremoderation($body) ? 'pending' : 'published'],
         );
+
+        if ($review->wasRecentlyCreated && $review->status === 'published') {
+            $server->owner?->notify(new NewReview($review));
+        }
 
         return to_route('servers.show', $server)->withFragment('reviews')->with('status', __('reviews.saved'));
     }

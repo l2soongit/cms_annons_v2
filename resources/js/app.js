@@ -1,4 +1,8 @@
 import './bootstrap';
+import 'trix';
+
+// Без вкладень у редакторі опису: картинки сервера завантажуються окремо
+document.addEventListener('trix-file-accept', (event) => event.preventDefault());
 
 // Відбиток пристрою для обмеження голосів: не ідентифікує людину, лише налаштування браузера
 async function deviceFingerprint() {

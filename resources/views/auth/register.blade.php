@@ -19,6 +19,8 @@
         <x-button class="w-full">{{ __('auth.ui.register') }}</x-button>
     </form>
 
+    <x-social-login />
+
     <x-slot:footer>
         {{ __('auth.ui.have_account') }} <a href="{{ route('login') }}" class="text-amber hover:underline">{{ __('auth.ui.login') }}</a>
     </x-slot:footer>

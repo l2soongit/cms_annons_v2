@@ -9,6 +9,7 @@ use App\Models\User;
 use App\Rating\RatingCalculator;
 use App\Voting\VoteService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
@@ -89,7 +90,7 @@ class DemoServerSeeder extends Seeder
     {
         $server->votes()->delete();
         $since = now()->startOfMonth();
-        $span = max(1, now()->diffInSeconds($since));
+        $span = max(1, (int) $since->diffInSeconds(now()));
 
         $rows = [];
         for ($n = 0; $n < $count; $n++) {
@@ -114,9 +115,12 @@ class DemoServerSeeder extends Seeder
     {
         DB::table('server_stats_hourly')->where('server_id', $server->id)->delete();
 
+        $votesPerHour = $server->votes()->pluck('created_at')
+            ->countBy(fn ($at) => Carbon::parse($at)->format('Y-m-d H:00:00'));
+
         $rows = [];
         $base = max(1, $server->players ?: (int) ($server->max_players * 0.3));
-        for ($h = 24 * 7; $h >= 1; $h--) {
+        for ($h = 24 * 30; $h >= 1; $h--) {
             $hour = now()->subHours($h)->startOfHour();
             // Добовий цикл: пік увечері, мінімум під ранок
             $wave = 0.55 + 0.45 * sin(($hour->hour - 9) / 24 * 2 * M_PI);
@@ -127,7 +131,7 @@ class DemoServerSeeder extends Seeder
                 'players_avg' => $players,
                 'players_max' => (int) round($players * 1.2),
                 'uptime' => fake()->boolean(95) ? 100 : fake()->randomFloat(2, 50, 99),
-                'votes' => 0,
+                'votes' => $votesPerHour[$hour->toDateTimeString()] ?? 0,
             ];
         }
 

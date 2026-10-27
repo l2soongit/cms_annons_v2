@@ -2,6 +2,12 @@
     <div class="max-w-2xl">
         <h1 class="font-display text-3xl font-bold tracking-tight sm:text-4xl">{{ __('ui.home.title') }}</h1>
         <p class="mt-3 text-moss">{{ __('ui.home.lead') }}</p>
+        <form method="get" action="{{ route('search') }}" class="mt-6 flex gap-2" role="search">
+            <label for="home-q" class="sr-only">{{ __('ui.search.label') }}</label>
+            <input id="home-q" name="q" type="search" minlength="2" maxlength="64" placeholder="{{ __('ui.search.placeholder') }}"
+                   class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone placeholder:text-moss/70 focus:border-amber focus:outline-none">
+            <x-button>{{ __('ui.search.submit') }}</x-button>
+        </form>
     </div>
 
     <div class="mt-10 grid gap-x-10 gap-y-12 lg:grid-cols-2">

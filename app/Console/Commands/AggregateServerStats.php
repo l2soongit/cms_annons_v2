@@ -79,6 +79,12 @@ class AggregateServerStats extends Command
     {
         ServerCheck::where('checked_at', '<', now()->subDays(config('graj.monitoring.raw_retention_days')))->delete();
         DB::table('server_stats_hourly')->where('hour', '<', now()->subDays(config('graj.monitoring.hourly_retention_days')))->delete();
+
+        // ТЗ / GDPR: ідентифікатори голосуючих не зберігаються довше 90 днів; сам голос лишається в статистиці
+        DB::table('votes')
+            ->where('created_at', '<', now()->subDays(config('graj.privacy.vote_ip_retention_days')))
+            ->where('ip_hash', '!=', '')
+            ->update(['ip_hash' => '', 'subnet_hash' => null, 'fingerprint' => null]);
     }
 
     private function archiveDeadServers(): void

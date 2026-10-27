@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'title' => 'Co-owners',
+    'lead' => 'Co-owners can edit the server, see statistics and reply to reviews. Only the main owner manages the list and can transfer ownership.',
+    'owner' => 'Main owner',
+    'invite_email' => 'New co-owner’s email',
+    'invite' => 'Send invitation',
+    'pending' => 'Awaiting acceptance until :date',
+    'cancel' => 'Cancel',
+    'remove' => 'Remove',
+    'remove_confirm' => 'Remove :name from co-owners?',
+    'transfer_title' => 'Transfer server',
+    'transfer_lead' => 'The new main owner gets full control; you stay on as a co-owner.',
+    'transfer_to' => 'Transfer to',
+    'transfer' => 'Transfer ownership',
+    'password' => 'Your password to confirm',
+    'invited' => 'Invitation sent to :email.',
+    'already' => 'This person already has access to the server.',
+    'limit' => 'No more than 10 co-owners and invitations per server.',
+    'invalid' => 'The invitation is invalid or expired. Ask for a new one.',
+    'wrong_account' => 'The invitation was sent to :email. Log in with that email to accept it.',
+    'accepted' => 'You are now a co-owner of this server.',
+    'removed' => 'Co-owner removed.',
+    'cancelled' => 'Invitation cancelled.',
+    'transferred' => 'Server transferred: :name is now the main owner.',
+    'mail' => [
+        'subject' => 'Invitation to manage :server',
+        'line' => ':inviter invites you to become a co-owner of :server on graj.club.',
+        'accept' => 'Accept invitation',
+        'expires' => 'The link is valid until :date. If you did not expect this email, just ignore it.',
+    ],
+];

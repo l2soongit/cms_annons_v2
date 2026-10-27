@@ -6,7 +6,7 @@
 @endphp
 
 <x-layouts.app :title="__('ui.server_page.meta_title', ['server' => $server->name, 'game' => $server->game->name])"
-               :description="\Illuminate\Support\Str::limit((string) $server->description, 155)">
+               :description="\Illuminate\Support\Str::limit(\App\Support\HtmlSanitizer::text($server->description), 155)">
     <nav class="text-sm text-moss" aria-label="{{ __('ui.breadcrumbs') }}">
         <a href="{{ route('games.show', $server->game) }}" class="hover:text-bone">{{ $server->game->name }}</a>
         <span aria-hidden="true">/</span>
@@ -40,19 +40,23 @@
                 </div>
             </div>
 
-            <div class="mt-8 max-w-prose whitespace-pre-line leading-relaxed">{{ $server->description }}</div>
+            {{-- Опис очищено HTMLPurifier при збереженні --}}
+            <div class="prose-description mt-8 max-w-prose leading-relaxed">{!! \App\Support\HtmlSanitizer::render($server->description) !!}</div>
 
-            @if ($history->isNotEmpty())
-                @php($peak = max(1, $history->max('players_avg')))
-                <figure class="mt-10">
-                    <figcaption class="text-sm text-moss">{{ __('ui.server_page.chart') }}</figcaption>
-                    <div class="mt-3 flex h-28 items-end gap-px border-b border-seam" role="img" aria-label="{{ __('ui.server_page.chart') }}">
-                        @foreach ($history as $point)
-                            <div class="flex-1 rounded-t-sm bg-signal/70" style="height: {{ max(2, round($point->players_avg / $peak * 100)) }}%" title="{{ \Illuminate\Support\Carbon::parse($point->hour)->format('d.m H:00') }}: {{ $point->players_avg }}"></div>
-                        @endforeach
+            <section class="mt-10" aria-label="{{ __('ui.server_page.chart') }}">
+                <nav class="flex gap-1 text-sm" aria-label="{{ __('ui.server_page.period') }}">
+                    @foreach (\App\Servers\ServerHistory::PERIODS as $key => $days)
+                        <a href="{{ request()->fullUrlWithQuery(['period' => $key]) }}#history" @if ($period === $key) aria-current="true" @endif
+                           @class(['rounded-md px-3 py-1.5', 'bg-slab-2 text-bone' => $period === $key, 'text-moss hover:text-bone' => $period !== $key])>{{ __("ui.server_page.period_{$key}") }}</a>
+                    @endforeach
+                </nav>
+                @if ($history->isNotEmpty())
+                    <div id="history" class="mt-5 grid gap-8 sm:grid-cols-2">
+                        <x-bar-chart :points="$history" key="players" :label="__('ui.server_page.chart_online')" />
+                        <x-bar-chart :points="$history" key="votes" :label="__('ui.server_page.chart_votes')" tone="amber" />
                     </div>
-                </figure>
-            @endif
+                @endif
+            </section>
 
             @if ($screens->isNotEmpty())
                 <div class="mt-10 grid grid-cols-2 gap-3 sm:grid-cols-3">
@@ -161,6 +165,17 @@
                 <p class="text-sm text-moss">{{ __('ui.server.uptime') }}</p>
                 <p class="mt-1 font-medium">{{ $server->uptime }}%</p>
             </div>
+            @if ($server->languages || $server->country)
+                <div>
+                    <p class="text-sm text-moss">{{ __('ui.server_page.languages') }}</p>
+                    <p class="mt-1 font-medium">
+                        {{ collect($server->languages)->map(fn ($code) => \App\Livewire\Cabinet\ServerForm::LANGUAGES[$code] ?? $code)->implode(', ') ?: '—' }}
+                    </p>
+                    @if ($server->country)
+                        <p class="mt-1 text-sm text-moss">{{ __('ui.server_page.hosted_in', ['country' => \App\Livewire\Cabinet\ServerForm::COUNTRIES[$server->country] ?? $server->country]) }}</p>
+                    @endif
+                </div>
+            @endif
             <div id="vote">
                 <p class="font-display text-2xl font-medium tabular-nums">{{ number_format($server->votes_month, 0, ',', ' ') }}</p>
                 <p class="text-sm text-moss">{{ trans_choice('ui.server.votes', $server->votes_month) }} {{ __('ui.server_page.this_month') }}</p>

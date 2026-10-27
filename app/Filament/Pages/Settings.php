@@ -17,6 +17,8 @@ use UnitEnum;
 
 /**
  * Відкриті питання ТЗ (інтервал голосування, формула рейтингу) вирішуються тут без зміни коду.
+ *
+ * @property-read Schema $form
  */
 class Settings extends Page
 {

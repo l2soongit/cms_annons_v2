@@ -35,7 +35,7 @@ class AggregateServerStats extends Command
 
     private function aggregateHour(Carbon $hour): void
     {
-        $rows = ServerCheck::query()
+        $rows = DB::table('server_checks')
             ->whereBetween('checked_at', [$hour, $hour->copy()->endOfHour()])
             ->groupBy('server_id')
             ->select('server_id')

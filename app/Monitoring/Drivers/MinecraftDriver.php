@@ -75,6 +75,13 @@ class MinecraftDriver implements ServerQueryDriver
         return self::varInt(strlen($value)).$value;
     }
 
+    /**
+     * Кожен виклик читає наступні байти з сокета.
+     *
+     * @return int<0, max>
+     *
+     * @phpstan-impure
+     */
     private static function readVarInt($socket): int
     {
         $value = 0;

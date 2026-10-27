@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Str;
 use Laravel\Socialite\Facades\Socialite;
+use Laravel\Socialite\Two\AbstractProvider;
 
 class SocialAuthController extends Controller
 {
@@ -22,6 +23,7 @@ class SocialAuthController extends Controller
     {
         abort_unless(in_array($provider, self::PROVIDERS, true) && self::enabled($provider), 404);
 
+        /** @var AbstractProvider $driver */
         $driver = Socialite::driver($provider);
 
         return ($provider === 'discord' ? $driver->scopes(['identify', 'email']) : $driver)->redirect();

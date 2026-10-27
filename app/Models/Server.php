@@ -45,51 +45,61 @@ class Server extends Model
         return 'slug';
     }
 
+    /** @return BelongsTo<Game, $this> */
     public function game(): BelongsTo
     {
         return $this->belongsTo(Game::class);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');
     }
 
+    /** @return BelongsToMany<User, $this> */
     public function coOwners(): BelongsToMany
     {
         return $this->belongsToMany(User::class);
     }
 
+    /** @return HasMany<ServerFieldValue, $this> */
     public function fieldValues(): HasMany
     {
         return $this->hasMany(ServerFieldValue::class);
     }
 
+    /** @return HasMany<ServerMedia, $this> */
     public function media(): HasMany
     {
         return $this->hasMany(ServerMedia::class)->orderBy('sort');
     }
 
+    /** @return HasMany<ServerCheck, $this> */
     public function checks(): HasMany
     {
         return $this->hasMany(ServerCheck::class);
     }
 
+    /** @return HasMany<Vote, $this> */
     public function votes(): HasMany
     {
         return $this->hasMany(Vote::class);
     }
 
+    /** @return HasMany<Review, $this> */
     public function reviews(): HasMany
     {
         return $this->hasMany(Review::class);
     }
 
+    /** @return HasMany<Order, $this> */
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
     }
 
+    /** @return MorphMany<Report, $this> */
     public function reports(): MorphMany
     {
         return $this->morphMany(Report::class, 'reportable');
@@ -100,6 +110,7 @@ class Server extends Model
         $query->where('status', ServerStatus::Published);
     }
 
+    /** @param Builder<Server> $query */
     public function scopeRanked(Builder $query): void
     {
         $query->published()->orderByDesc('score')->orderByDesc('votes_month');

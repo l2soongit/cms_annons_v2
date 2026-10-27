@@ -37,11 +37,14 @@ jobs:
           password: ${{ secrets.FTP_PASSWORD }}
           server-dir: ${{ secrets.FTP_DIR }}
           protocol: ftps
+          # storage/ не виключаємо: у свіжому checkout там лише порожні теки з .gitignore,
+          # а Laravel без storage/framework/* на сервері не запуститься. Чужі файли на сервері
+          # (логи, кеш, завантаження) дія не чіпає — вона синхронізує лише те, що сама залила.
           exclude: |
-            **/.git*
-            **/.git*/**
+            **/.git/**
+            **/.github/**
             **/node_modules/**
             .env
-            storage/**
             database/database.sqlite
             tests/**
+            phpunit.xml

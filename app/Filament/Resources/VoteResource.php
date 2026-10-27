@@ -34,7 +34,7 @@ class VoteResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return Vote::where('status', 'suspicious')->count() ?: null;
+        return (string) (Vote::where('status', 'suspicious')->count()) ?: null;
     }
 
     public static function table(Table $table): Table
@@ -69,7 +69,9 @@ class VoteResource extends Resource
         Vote::whereKey($votes->modelKeys())->update(['status' => $status]);
 
         foreach ($votes->groupBy('server_id') as $serverVotes) {
-            ModerationLog::record($serverVotes->first()->server, "votes_{$status}", changes: ['vote_ids' => $serverVotes->modelKeys()]);
+            /** @var Vote $first */
+            $first = $serverVotes->first();
+            ModerationLog::record($first->server, "votes_{$status}", changes: ['vote_ids' => $serverVotes->modelKeys()]);
         }
         // Місця перерахує планувальник протягом 5 хвилин
     }

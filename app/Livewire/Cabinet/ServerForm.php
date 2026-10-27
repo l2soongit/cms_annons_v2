@@ -15,6 +15,10 @@ use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
+/**
+ * @property-read Collection<int, Game> $games
+ * @property-read Game|null $game
+ */
 #[Title('Сервер | graj.club')]
 class ServerForm extends Component
 {
@@ -42,7 +46,7 @@ class ServerForm extends Component
 
     public ?string $opens_at = null;
 
-    /** @var list<string> */
+    /** @var array<int, string> чекбокси Livewire можуть залишати пропуски в ключах */
     public array $languages = [];
 
     public ?string $country = null;
@@ -126,7 +130,7 @@ class ServerForm extends Component
             'screenshots.*' => ['image', 'max:3072'],
         ];
 
-        foreach ($this->game?->fields ?? [] as $field) {
+        foreach ($this->game->fields ?? [] as $field) {
             $values = collect($field->options)->pluck('value')->all();
             $rules["fields.{$field->key}"] = match ($field->type) {
                 'select' => [$field->is_required ? 'required' : 'nullable', Rule::in($values)],
@@ -141,7 +145,7 @@ class ServerForm extends Component
 
     protected function validationAttributes(): array
     {
-        return collect($this->game?->fields ?? [])
+        return collect($this->game->fields ?? [])
             ->mapWithKeys(fn ($f) => ["fields.{$f->key}" => $f->label])
             ->all();
     }

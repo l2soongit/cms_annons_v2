@@ -19,6 +19,7 @@ class ServerCheck extends Model
         ];
     }
 
+    /** @return BelongsTo<Server, $this> */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

@@ -48,7 +48,7 @@ class ServerResource extends Resource
     {
         $count = Server::where('status', ServerStatus::Pending)->orWhereNotNull('pending_changes')->count();
 
-        return $count ?: null;
+        return (string) ($count) ?: null;
     }
 
     public static function form(Schema $schema): Schema
@@ -139,7 +139,7 @@ class ServerResource extends Resource
             ])
             ->toolbarActions([
                 BulkAction::make('approveMany')->label('Схвалити вибрані')->color('success')->requiresConfirmation()
-                    ->action(fn (Collection $records) => $records->each(fn (Server $s) => app(ServerModeration::class)->approve($s))),
+                    ->action(fn (Collection $records) => $records->whereInstanceOf(Server::class)->each(fn (Server $s) => app(ServerModeration::class)->approve($s))),
             ]);
     }
 

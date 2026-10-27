@@ -32,7 +32,7 @@ class ReportResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return Report::where('status', 'open')->count() ?: null;
+        return (string) (Report::where('status', 'open')->count()) ?: null;
     }
 
     public static function table(Table $table): Table
@@ -41,14 +41,15 @@ class ReportResource extends Resource
             ->defaultSort('created_at', 'desc')
             ->columns([
                 TextColumn::make('reportable_type')->label('Об’єкт')
-                    ->formatStateUsing(fn (string $state, Report $r) => match ($r->reportable::class ?? null) {
-                        Server::class => 'Сервер: '.$r->reportable->name,
-                        Review::class => 'Відгук на '.$r->reportable->server?->name,
-                        default => $state,
+                    // Об'єкт скарги міг бути видалений — тоді reportable = null
+                    ->formatStateUsing(fn (string $state, Report $r) => match (true) {
+                        $r->reportable instanceof Server => 'Сервер: '.$r->reportable->name,
+                        $r->reportable instanceof Review => 'Відгук на '.$r->reportable->server?->name,
+                        default => $state.' (видалено)',
                     })
-                    ->url(fn (Report $r) => match ($r->reportable::class ?? null) {
-                        Server::class => route('servers.show', $r->reportable),
-                        Review::class => $r->reportable->server ? route('servers.show', $r->reportable->server).'#reviews' : null,
+                    ->url(fn (Report $r) => match (true) {
+                        $r->reportable instanceof Server => route('servers.show', $r->reportable),
+                        $r->reportable instanceof Review && $r->reportable->server => route('servers.show', $r->reportable->server).'#reviews',
                         default => null,
                     }, shouldOpenInNewTab: true),
                 TextColumn::make('reason')->label('Причина')->formatStateUsing(fn ($state) => __("reviews.reasons.{$state}")),

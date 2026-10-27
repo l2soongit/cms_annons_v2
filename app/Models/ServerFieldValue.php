@@ -11,11 +11,13 @@ class ServerFieldValue extends Model
 
     protected $guarded = [];
 
+    /** @return BelongsTo<Server, $this> */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /** @return BelongsTo<GameField, $this> */
     public function field(): BelongsTo
     {
         return $this->belongsTo(GameField::class, 'game_field_id');

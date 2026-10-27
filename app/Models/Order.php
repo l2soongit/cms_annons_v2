@@ -20,16 +20,19 @@ class Order extends Model
         ];
     }
 
+    /** @return BelongsTo<User, $this> */
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
 
+    /** @return BelongsTo<Server, $this> */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);
     }
 
+    /** @return BelongsTo<Tariff, $this> */
     public function tariff(): BelongsTo
     {
         return $this->belongsTo(Tariff::class);

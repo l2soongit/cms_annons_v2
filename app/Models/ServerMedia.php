@@ -9,6 +9,7 @@ class ServerMedia extends Model
 {
     protected $guarded = [];
 
+    /** @return BelongsTo<Server, $this> */
     public function server(): BelongsTo
     {
         return $this->belongsTo(Server::class);

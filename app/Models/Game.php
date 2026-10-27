@@ -27,16 +27,19 @@ class Game extends Model
         return 'slug';
     }
 
+    /** @return HasMany<GameField, $this> */
     public function fields(): HasMany
     {
         return $this->hasMany(GameField::class)->orderBy('sort');
     }
 
+    /** @return HasMany<Server, $this> */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class);
     }
 
+    /** @return HasMany<Tariff, $this> */
     public function tariffs(): HasMany
     {
         return $this->hasMany(Tariff::class);

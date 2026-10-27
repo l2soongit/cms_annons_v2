@@ -1,0 +1,9 @@
+includes:
+    - vendor/larastan/larastan/extension.neon
+
+parameters:
+    paths:
+        - app/
+    level: 5
+    # Моделі оголошують приведення в методі casts(), а не у властивості $casts
+    parseModelCastsMethod: true

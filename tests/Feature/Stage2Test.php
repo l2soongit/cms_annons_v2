@@ -237,6 +237,19 @@ class Stage2Test extends TestCase
         $this->actingAs($server->owner)->get(route('cabinet.servers.edit', $server))->assertOk();
     }
 
+    public function test_reports_page_survives_deleted_subject(): void
+    {
+        $server = $this->server();
+        $reporter = User::factory()->create();
+        $server->reports()->create(['user_id' => $reporter->id, 'reason' => 'spam']);
+        $server->forceDelete();
+
+        $this->actingAs(User::factory()->create()->assignRole('moderator'))
+            ->get('/admin/reports')
+            ->assertOk()
+            ->assertSee('видалено');
+    }
+
     // --- Відгуки ---
 
     public function test_review_with_link_goes_to_premoderation(): void

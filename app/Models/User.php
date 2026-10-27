@@ -67,11 +67,13 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasAnyRole(['admin', 'moderator']);
     }
 
+    /** @return HasMany<Server, $this> */
     public function servers(): HasMany
     {
         return $this->hasMany(Server::class);
     }
 
+    /** @return BelongsToMany<Server, $this> */
     public function sharedServers(): BelongsToMany
     {
         return $this->belongsToMany(Server::class);

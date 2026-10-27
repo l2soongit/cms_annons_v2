@@ -32,7 +32,7 @@ class ReviewResource extends Resource
 
     public static function getNavigationBadge(): ?string
     {
-        return Review::where('status', 'pending')->count() ?: null;
+        return (string) (Review::where('status', 'pending')->count()) ?: null;
     }
 
     public static function table(Table $table): Table
@@ -60,9 +60,14 @@ class ReviewResource extends Resource
                     ->action(fn (Review $r) => self::setStatus($r, 'hidden')),
             ])
             ->toolbarActions([
-                BulkAction::make('publishMany')->label('Опублікувати')->action(fn (Collection $records) => $records->each(fn ($r) => self::setStatus($r, 'published'))),
-                BulkAction::make('hideMany')->label('Приховати')->color('danger')->action(fn (Collection $records) => $records->each(fn ($r) => self::setStatus($r, 'hidden'))),
+                BulkAction::make('publishMany')->label('Опублікувати')->action(fn (Collection $records) => self::setStatusMany($records, 'published')),
+                BulkAction::make('hideMany')->label('Приховати')->color('danger')->action(fn (Collection $records) => self::setStatusMany($records, 'hidden')),
             ]);
+    }
+
+    private static function setStatusMany(Collection $records, string $status): void
+    {
+        $records->whereInstanceOf(Review::class)->each(fn (Review $review) => self::setStatus($review, $status));
     }
 
     private static function setStatus(Review $review, string $status): void

@@ -31,11 +31,13 @@ class ModerationLog extends Model
         ]);
     }
 
+    /** @return BelongsTo<User, $this> */
     public function moderator(): BelongsTo
     {
         return $this->belongsTo(User::class, 'moderator_id');
     }
 
+    /** @return MorphTo<Model, $this> */
     public function subject(): MorphTo
     {
         return $this->morphTo();

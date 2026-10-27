@@ -532,7 +532,8 @@ tbody tr.in { opacity: 1; transform: none; }
 .scene-img { background: center / cover no-repeat; animation: ken-burns 24s ease-in-out infinite alternate; transition: filter .3s; }
 /* Фото-обкладинка лишається різкою під 3D-нахилом: без наближення, фільтрів і змішування —
  * інакше браузер розтягує вже намальований шар замість перемалювати його. */
-.world.has-img .scene-img { animation: none; }
+/* Шар фото малюється вдвічі більшим і стискається: під нахилом браузеру вистачає пікселів, фото не мʼякне */
+.world.has-img .scene-img { animation: none; inset: auto; top: -1px; left: -1px; width: calc(200% + 4px); height: calc(200% + 4px); transform: scale(.5); transform-origin: 0 0; backface-visibility: hidden; }
 /* Відблиск без mix-blend-mode: змішування всередині 3D-нахилу змушує браузер перемальовувати картку в нижчій якості */
 .world.has-img .shine { mix-blend-mode: normal; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), #ffffff1f, transparent 45%); }
 .champ .scene-img { opacity: .75; }

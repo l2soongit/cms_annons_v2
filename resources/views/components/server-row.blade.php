@@ -69,7 +69,7 @@
         <p class="text-right text-sm tabular-nums text-moss">{{ number_format($server->votes_month, 0, ',', ' ') }}</p>
     @else
         <p class="text-right text-sm tabular-nums text-moss sm:hidden">{{ number_format($server->votes_month, 0, ',', ' ') }}</p>
-        <a href="{{ route('servers.show', $server) }}#vote"
+        <a href="{{ route('servers.vote', $server) }}"
            class="hidden rounded-md border border-seam px-3 py-2 text-sm font-medium hover:border-amber hover:text-amber sm:inline-block">{{ __('ui.server.vote') }}</a>
     @endif
 </li>

@@ -41,7 +41,8 @@ class GameSeeder extends Seeder
                 'query_driver' => 'samp',
                 'default_port' => 7777,
                 'fields' => [
-                    $this->select('platform', ['uk' => 'Платформа', 'en' => 'Platform'], ['SA-MP', 'FiveM', 'RAGE:MP', 'alt:V'], inUrl: true),
+                    $this->select('platform', ['uk' => 'Платформа', 'en' => 'Platform'], ['SA-MP', 'FiveM', 'RAGE:MP', 'alt:V'], inUrl: true,
+                        drivers: ['SA-MP' => 'samp', 'FiveM' => 'fivem', 'RAGE:MP' => 'tcp', 'alt:V' => 'tcp']),
                     $this->select('roleplay', ['uk' => 'Режим', 'en' => 'Mode'], ['RP', 'Freeroam', 'DM']),
                 ],
             ],
@@ -51,7 +52,8 @@ class GameSeeder extends Seeder
                 'query_driver' => 'minecraft',
                 'default_port' => 25565,
                 'fields' => [
-                    $this->select('edition', ['uk' => 'Видання', 'en' => 'Edition'], ['Java', 'Bedrock'], inUrl: true),
+                    $this->select('edition', ['uk' => 'Видання', 'en' => 'Edition'], ['Java', 'Bedrock'], inUrl: true,
+                        drivers: ['Java' => 'minecraft', 'Bedrock' => 'bedrock']),
                     $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['1.8', '1.12', '1.16', '1.20', '1.21']),
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Виживання', 'SkyBlock', 'Анархія', 'Міні-ігри', 'Творчий']),
                 ],
@@ -89,13 +91,20 @@ class GameSeeder extends Seeder
         ];
     }
 
-    private function select(string $key, array $label, array $values, bool $inUrl = false): array
+    /**
+     * @param  array<string, string>  $drivers  варіант => протокол моніторингу (перекриває драйвер гри)
+     */
+    private function select(string $key, array $label, array $values, bool $inUrl = false, array $drivers = []): array
     {
         return [
             'key' => $key,
             'label' => $label,
             'type' => 'select',
-            'options' => array_map(fn ($v) => ['value' => str($v)->slug()->value() ?: $v, 'label' => $v], $values),
+            'options' => array_map(fn ($v) => array_filter([
+                'value' => str($v)->slug()->value() ?: $v,
+                'label' => $v,
+                'driver' => $drivers[$v] ?? null,
+            ]), $values),
             'is_required' => true,
             'is_filterable' => true,
             'in_url' => $inUrl,

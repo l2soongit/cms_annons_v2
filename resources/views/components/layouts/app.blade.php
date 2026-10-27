@@ -20,7 +20,7 @@
     <a href="#main" class="sr-only focus:not-sr-only focus:absolute focus:left-4 focus:top-4 focus:z-50 focus:rounded focus:bg-amber focus:px-3 focus:py-2 focus:text-amber-ink">{{ __('ui.skip') }}</a>
 
     <header class="border-b border-seam">
-        <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-8 gap-y-3 px-4 py-4 sm:px-6">
+        <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
             <a href="{{ route('home') }}" class="font-display text-xl font-bold tracking-tight">graj<span class="text-amber">.</span>club</a>
 
             <nav aria-label="{{ __('ui.nav.games') }}" class="order-3 -mx-4 w-full overflow-x-auto px-4 [scrollbar-width:none] sm:order-none sm:mx-0 sm:w-auto sm:px-0">
@@ -43,8 +43,16 @@
                 <button type="button" data-theme-toggle class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.theme') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
                 </button>
-                <a href="#" class="rounded-md px-3 py-2 text-moss hover:text-bone">{{ __('ui.nav.login') }}</a>
-                <a href="#" class="rounded-md bg-amber px-4 py-2 font-medium text-amber-ink hover:brightness-110">{{ __('ui.nav.add_server') }}</a>
+                @auth
+                    <a href="{{ route('cabinet') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
+                    <form method="POST" action="{{ route('logout') }}">
+                        @csrf
+                        <button class="rounded-md px-3 py-2 text-moss hover:text-bone">{{ __('auth.ui.logout') }}</button>
+                    </form>
+                @else
+                    <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone">{{ __('ui.nav.login') }}</a>
+                @endauth
+                <a href="{{ route('cabinet.servers.create') }}" class="rounded-md bg-amber px-4 py-2 font-medium text-amber-ink hover:brightness-110">{{ __('ui.nav.add_server') }}</a>
             </div>
         </div>
     </header>

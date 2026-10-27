@@ -38,6 +38,16 @@ return [
         'empty' => 'No servers match these filters.',
         'reset' => 'Clear filters',
     ],
+    'server_page' => [
+        'meta_title' => ':server — :game server | graj.club',
+        'chart' => 'Average players per hour, last 7 days',
+        'screenshot' => 'Screenshot :n',
+        'copy' => 'Copy',
+        'copied' => 'Copied',
+        'this_month' => 'this month',
+        'website' => 'Server website',
+        'report' => 'Report this server',
+    ],
     'server' => [
         'online' => 'Online',
         'offline' => 'Offline',

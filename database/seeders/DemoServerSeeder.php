@@ -6,7 +6,10 @@ use App\Enums\ServerStatus;
 use App\Models\Game;
 use App\Models\Server;
 use App\Models\User;
+use App\Rating\RatingCalculator;
+use App\Voting\VoteService;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Str;
 
 /**
@@ -34,7 +37,6 @@ class DemoServerSeeder extends Seeder
             foreach (self::NAMES[$game->slug] ?? [] as $i => $name) {
                 $max = fake()->randomElement([100, 200, 500, 1000, 2000]);
                 $online = fake()->boolean(85);
-                $votes = fake()->numberBetween(20, 4000);
 
                 $server = Server::updateOrCreate(['slug' => Str::slug($name)], [
                     'game_id' => $game->id,
@@ -51,10 +53,13 @@ class DemoServerSeeder extends Seeder
                     'players' => $online ? fake()->numberBetween(5, $max) : 0,
                     'max_players' => $max,
                     'uptime' => fake()->randomFloat(2, 82, 100),
-                    'votes_month' => $votes,
-                    'score' => $votes,
                     'checked_at' => now()->subMinutes(fake()->numberBetween(1, 5)),
+                    'callback_secret' => Str::random(40),
+                    'verify_token' => Str::lower(Str::random(16)),
                 ]);
+
+                $this->seedVotes($server, $i === 0 ? fake()->numberBetween(0, 15) : fake()->numberBetween(10, 600));
+                $this->seedHourlyStats($server);
 
                 $server->fieldValues()->delete();
                 foreach ($game->fields as $field) {
@@ -63,11 +68,6 @@ class DemoServerSeeder extends Seeder
                         'value' => fake()->randomElement($field->options)['value'],
                     ]);
                 }
-            }
-
-            $rank = 1;
-            foreach ($game->servers()->ranked()->get() as $server) {
-                $server->updateQuietly(['rank' => $rank++]);
             }
 
             // Два VIP-місця в кожній грі для перегляду блоку VIP
@@ -80,6 +80,59 @@ class DemoServerSeeder extends Seeder
                     'ends_at' => now()->addDays(27),
                 ]);
             }
+        }
+
+        app(RatingCalculator::class)->recalculate();
+    }
+
+    private function seedVotes(Server $server, int $count): void
+    {
+        $server->votes()->delete();
+        $since = now()->startOfMonth();
+        $span = max(1, now()->diffInSeconds($since));
+
+        $rows = [];
+        for ($n = 0; $n < $count; $n++) {
+            $ip = fake()->ipv4();
+            $rows[] = [
+                'server_id' => $server->id,
+                'ip_hash' => VoteService::hashIp($ip),
+                'subnet_hash' => VoteService::hashSubnet($ip),
+                'nickname' => fake()->boolean(70) ? fake()->userName() : null,
+                'status' => 'counted',
+                'callback_status' => 'none',
+                'created_at' => $since->copy()->addSeconds(fake()->numberBetween(0, $span)),
+            ];
+        }
+
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('votes')->insert($chunk);
+        }
+    }
+
+    private function seedHourlyStats(Server $server): void
+    {
+        DB::table('server_stats_hourly')->where('server_id', $server->id)->delete();
+
+        $rows = [];
+        $base = max(1, $server->players ?: (int) ($server->max_players * 0.3));
+        for ($h = 24 * 7; $h >= 1; $h--) {
+            $hour = now()->subHours($h)->startOfHour();
+            // Добовий цикл: пік увечері, мінімум під ранок
+            $wave = 0.55 + 0.45 * sin(($hour->hour - 9) / 24 * 2 * M_PI);
+            $players = (int) round($base * $wave * fake()->randomFloat(2, 0.85, 1.15));
+            $rows[] = [
+                'server_id' => $server->id,
+                'hour' => $hour->toDateTimeString(),
+                'players_avg' => $players,
+                'players_max' => (int) round($players * 1.2),
+                'uptime' => fake()->boolean(95) ? 100 : fake()->randomFloat(2, 50, 99),
+                'votes' => 0,
+            ];
+        }
+
+        foreach (array_chunk($rows, 200) as $chunk) {
+            DB::table('server_stats_hourly')->insert($chunk);
         }
     }
 }

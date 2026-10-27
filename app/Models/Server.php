@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\MorphMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Spatie\Translatable\HasTranslations;
 
@@ -26,7 +27,10 @@ class Server extends Model
     {
         return [
             'status' => ServerStatus::class,
+            'pending_changes' => 'array',
             'languages' => 'array',
+            'offline_since' => 'datetime',
+            'suspicious_online' => 'boolean',
             'is_online' => 'boolean',
             'uptime' => 'decimal:2',
             'verified_at' => 'datetime',
@@ -83,6 +87,11 @@ class Server extends Model
     public function orders(): HasMany
     {
         return $this->hasMany(Order::class);
+    }
+
+    public function reports(): MorphMany
+    {
+        return $this->morphMany(Report::class, 'reportable');
     }
 
     public function scopePublished(Builder $query): void

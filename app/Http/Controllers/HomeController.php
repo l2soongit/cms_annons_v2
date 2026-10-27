@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ServerStatus;
+use App\Models\Game;
 use App\Models\Server;
 use App\Models\Vote;
 use App\Support\HomePageData;
@@ -29,9 +30,12 @@ class HomeController extends Controller
     public function live(Request $request): JsonResponse
     {
         $after = max(0, (int) $request->query('after'));
+        // Сторінка гри отримує лише голоси й онлайн своєї гри
+        $gameId = $request->filled('game') ? Game::where('slug', $request->string('game'))->value('id') : null;
+        $scope = fn ($q) => $q->where('status', ServerStatus::Published)->when($gameId, fn ($q) => $q->where('game_id', $gameId));
 
         $votes = Vote::where('id', '>', $after)->where('status', 'counted')
-            ->whereHas('server', fn ($q) => $q->where('status', ServerStatus::Published))
+            ->whereHas('server', $scope)
             ->with('server.game')
             ->latest('id')->limit(10)->get()
             ->reverse()->values();
@@ -47,7 +51,7 @@ class HomeController extends Controller
             ]),
             // Актуальні голоси місяця для серверів, що отримали голос, — оновлюють цифри в топі
             'servers' => $votes->pluck('server')->unique('id')->mapWithKeys(fn (Server $s) => [$s->id => (int) $s->votes_month]),
-            'online' => (int) Server::published()->where('is_online', true)->sum('players'),
+            'online' => (int) Server::published()->where('is_online', true)->when($gameId, fn ($q) => $q->where('game_id', $gameId))->sum('players'),
         ]);
     }
 }

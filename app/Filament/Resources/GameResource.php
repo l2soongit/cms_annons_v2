@@ -64,6 +64,17 @@ class GameResource extends Resource
                 TextInput::make('sort')->label('Порядок')->numeric()->default(0),
                 Toggle::make('is_active')->label('Активна')->default(true),
             ]),
+            Section::make('Сторінка гри')->description('Банер угорі сторінки гри. Обкладинка гри стає його фоном.')
+                ->columns(2)->schema([
+                    TextInput::make('hero_title.uk')->label('Заголовок банера (uk)')->maxLength(60)
+                        ->helperText('Напр. «Lineage II». Останнє слово виділяється золотом. Порожньо — назва гри.'),
+                    TextInput::make('hero_title.en')->label('Заголовок банера (en)')->maxLength(60),
+                    TextInput::make('eyebrow.uk')->label('Підпис над заголовком (uk)')->maxLength(80)
+                        ->helperText('Напр. «Фентезі MMORPG · з 2003 року».'),
+                    TextInput::make('eyebrow.en')->label('Підпис над заголовком (en)')->maxLength(80),
+                    Textarea::make('description.uk')->label('Опис під заголовком (uk)')->rows(2)->maxLength(240),
+                    Textarea::make('description.en')->label('Опис під заголовком (en)')->rows(2)->maxLength(240),
+                ]),
             Section::make('SEO')->columns(2)->collapsed()->schema([
                 TextInput::make('seo_title.uk')->label('Title (uk)'),
                 TextInput::make('seo_title.en')->label('Title (en)'),

@@ -25,7 +25,7 @@ class Game extends Model
 
     protected $guarded = [];
 
-    public array $translatable = ['name', 'description', 'seo_title', 'seo_description'];
+    public array $translatable = ['name', 'hero_title', 'eyebrow', 'description', 'seo_title', 'seo_description'];
 
     protected function casts(): array
     {
@@ -90,6 +90,12 @@ class Game extends Model
         }
 
         return implode('', array_map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)), $words));
+    }
+
+    /** Назва в меню ігор: коротка назва лишається, довга скорочується («Grand Theft Auto» → GTA) */
+    public function navName(): string
+    {
+        return mb_strlen($this->name) > 12 ? $this->shortName() : $this->name;
     }
 
     public function scopeActive(Builder $query): void

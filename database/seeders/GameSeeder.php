@@ -29,6 +29,12 @@ class GameSeeder extends Seeder
             [
                 'slug' => 'lineage2',
                 'name' => ['uk' => 'Lineage 2', 'en' => 'Lineage 2'],
+                'hero_title' => ['uk' => 'Lineage II', 'en' => 'Lineage II'],
+                'eyebrow' => ['uk' => 'Фентезі MMORPG · з 2003 року', 'en' => 'Fantasy MMORPG · since 2003'],
+                'description' => [
+                    'uk' => 'Облоги замків, клани й олімпіади. Обери хроніки та рейти — ми покажемо, де зараз найбільше гравців.',
+                    'en' => 'Castle sieges, clans and the Olympiad. Pick a chronicle and rates — we will show where most players are right now.',
+                ],
                 'query_driver' => 'tcp',
                 'default_port' => 7777,
                 'fields' => [

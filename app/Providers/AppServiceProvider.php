@@ -42,7 +42,7 @@ class AppServiceProvider extends ServiceProvider
             $event->extendSocialite('discord', DiscordProvider::class);
         });
 
-        View::composer(['components.layouts.app', 'components.layouts.home'], function ($view) {
+        View::composer(['components.layouts.app', 'components.layouts.home', 'components.layouts.game'], function ($view) {
             $view->with('navGames', once(fn () => Game::active()->get(['id', 'slug', 'name'])));
         });
     }

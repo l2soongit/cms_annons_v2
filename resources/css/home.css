@@ -530,11 +530,12 @@ tbody tr.in { opacity: 1; transform: none; }
 .hero-img { position: absolute; inset: -80px 0 0; z-index: 0; pointer-events: none; background: center / cover no-repeat; opacity: var(--img-o, .35); mask-image: linear-gradient(180deg, #000 45%, transparent); animation: ken-burns 32s ease-in-out infinite alternate; }
 @keyframes ken-burns { from { transform: scale(1); } to { transform: scale(1.12) translate(-1.5%, -1%); } }
 .scene-img { background: center / cover no-repeat; animation: ken-burns 24s ease-in-out infinite alternate; transition: filter .3s; }
-/* Фото-обкладинка лишається різкою під 3D-нахилом: без наближення, фільтрів і змішування —
- * інакше браузер розтягує вже намальований шар замість перемалювати його. */
-/* Шар фото малюється вдвічі більшим і стискається: під нахилом браузеру вистачає пікселів, фото не мʼякне */
-.world.has-img .scene-img { animation: none; inset: auto; top: -1px; left: -1px; width: calc(200% + 4px); height: calc(200% + 4px); transform: scale(.5); transform-origin: 0 0; backface-visibility: hidden; }
-/* Відблиск без mix-blend-mode: змішування всередині 3D-нахилу змушує браузер перемальовувати картку в нижчій якості */
+/* Фото-обкладинка під 3D-нахилом: Chrome малює повернуте фото текстурою, тому мінімізуємо пересемплювання —
+ * перспектива в transform самої картки (не в батька), плоский шар і backface-visibility: hidden (заміри: удвічі різкіше). */
+.worlds { perspective: none; }
+.world.has-img { transform-style: flat; backface-visibility: hidden; }
+.world.has-img h3, .world.has-img .wmeta, .world.has-img .wlead, .world.has-img .gicon { transform: none; }
+.world.has-img .scene-img { animation: none; }
 .world.has-img .shine { mix-blend-mode: normal; background: radial-gradient(420px circle at var(--mx, 50%) var(--my, 50%), #ffffff1f, transparent 45%); }
 .champ .scene-img { opacity: .75; }
 .cta-img { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: center / cover no-repeat; opacity: .28; mask-image: linear-gradient(90deg, transparent, #000 60%); animation: ken-burns 28s ease-in-out infinite alternate; }

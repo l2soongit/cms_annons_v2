@@ -345,7 +345,8 @@ $$('.world').forEach(tile => {
   tile.addEventListener('pointermove', e => {
     const r = tile.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
-    tile.style.transform = `rotateY(${(x - 0.5) * 10}deg) rotateX(${(0.5 - y) * 10}deg) translateZ(0)`;
+    // Перспектива в самій картці: для фото-обкладинок це помітно різкіше, ніж perspective у батька
+    tile.style.transform = `perspective(1200px) rotateY(${(x - 0.5) * 10}deg) rotateX(${(0.5 - y) * 10}deg)`;
     tile.style.setProperty('--mx', `${x * 100}%`);
     tile.style.setProperty('--my', `${y * 100}%`);
   });

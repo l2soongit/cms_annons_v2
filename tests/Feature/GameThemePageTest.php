@@ -84,12 +84,27 @@ class GameThemePageTest extends TestCase
 
     public function test_game_without_own_design_keeps_generic_page(): void
     {
-        $this->makeServer('Kyiv Test', ['game' => 'gta']);
+        $this->makeServer('Block Test', ['game' => 'minecraft']);
+
+        $this->get('/minecraft')
+            ->assertOk()
+            ->assertSee('Block Test')
+            ->assertDontSee('class="ghero"', false);
+    }
+
+    public function test_gta_page_shows_cards_with_connect_command(): void
+    {
+        $game = Game::where('slug', 'gta')->first();
+        $server = $this->makeServer('Kyiv Test', ['game' => 'gta', 'port' => 30120]);
+        $server->fieldValues()->create(['game_field_id' => $game->fields()->where('key', 'platform')->value('id'), 'value' => 'fivem']);
 
         $this->get('/gta')
             ->assertOk()
-            ->assertSee('Kyiv Test')
-            ->assertDontSee('class="ghero"', false);
+            ->assertSee('game-gta', false)
+            ->assertSee('class="srv gcard lead"', false)
+            ->assertSee('data-connect="connect play.example.net:30120"', false)
+            ->assertSee('data-v="FiveM"', false)
+            ->assertSee('Рольові й мультиплеєрні сервери');
     }
 
     public function test_live_feed_can_be_limited_to_one_game(): void

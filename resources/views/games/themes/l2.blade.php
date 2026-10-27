@@ -129,7 +129,7 @@
 
       @if ($shares)
         <section class="panel" data-reveal>
-          <h3>{{ __('ui.game.popular', ['field' => mb_strtolower($filters->first()->label)]) }}</h3>
+          <h3>{{ __('ui.game.popular_by')[$filters->first()->key] ?? __('ui.game.popular', ['field' => mb_strtolower($filters->first()->label)]) }}</h3>
           <div class="chron-bars" id="chron-bars">
             @foreach ($shares as $share)
               <div class="cb"><div class="l"><b>{{ $share['label'] }}</b><span class="num">{{ $share['percent'] }}%</span></div><div class="track"><i data-w="{{ $share['width'] }}"></i></div></div>

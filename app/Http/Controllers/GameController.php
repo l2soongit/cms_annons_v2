@@ -26,7 +26,8 @@ class GameController extends Controller
         $sort = in_array($request->query('sort'), self::SORTS, true) ? $request->query('sort') : 'votes';
         $search = trim($request->string('q')->limit(64, '')->value());
         $filters = $game->fields->where('is_filterable', true);
-        $with = ['fieldValues.field', 'media' => fn ($q) => $q->where('type', 'logo')];
+        // Логотип (герб L2) і банер (обкладинка картки GTA) завантажує власник у кабінеті
+        $with = ['fieldValues.field', 'media' => fn ($q) => $q->whereIn('type', ['logo', 'banner'])];
 
         $query = $game->servers()->published()->with($with);
 

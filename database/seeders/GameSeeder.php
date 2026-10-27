@@ -46,6 +46,11 @@ class GameSeeder extends Seeder
             [
                 'slug' => 'gta',
                 'name' => ['uk' => 'Grand Theft Auto', 'en' => 'Grand Theft Auto'],
+                'eyebrow' => ['uk' => 'Рольові й мультиплеєрні сервери', 'en' => 'Roleplay and multiplayer servers'],
+                'description' => [
+                    'uk' => 'Своє місто, своя історія: від суворого RP із фракціями до драйвового DM. Обери платформу й режим — покажемо, де вирує життя.',
+                    'en' => 'Your city, your story: from serious faction RP to fast-paced DM. Pick a platform and mode — we will show where the action is.',
+                ],
                 'query_driver' => 'samp',
                 'default_port' => 7777,
                 'fields' => [

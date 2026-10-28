@@ -56,7 +56,9 @@ class TransactionResource extends Resource
                 TextColumn::make('type')->label('Операція')->formatStateUsing(fn (string $state) => self::TYPES[$state] ?? $state)
                     ->description(fn (Transaction $t) => $t->order?->tariff->name ?? ($t->payload['reason'] ?? null)),
                 TextColumn::make('amount')->label('Сума')->formatStateUsing(fn ($state) => Money::format($state))
-                    ->color(fn ($state) => $state > 0 ? 'success' : null),
+                    ->color(fn ($state) => $state > 0 ? 'success' : null)
+                    // Поповнення в іноземній валюті: скільки списала платіжна система і за яким курсом НБУ
+                    ->description(fn (Transaction $t) => $t->paid_currency ? Money::formatIn(Money::cents($t->paid_amount), $t->paid_currency).' · курс '.rtrim(rtrim((string) $t->rate, '0'), '.') : null),
                 TextColumn::make('provider')->label('Платіжна система')->placeholder('баланс'),
                 TextColumn::make('external_id')->label('ID у провайдера')->placeholder('—')->toggleable(isToggledHiddenByDefault: true)->copyable(),
                 TextColumn::make('status')->label('Статус')->badge()->formatStateUsing(fn (string $state) => self::STATUSES[$state] ?? $state)

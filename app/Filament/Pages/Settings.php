@@ -80,7 +80,9 @@ class Settings extends Page
                     KeyValue::make('locales')->label('Мови')->keyLabel('Код (2 літери)')->valueLabel('Назва в перемикачі')
                         ->addActionLabel('Додати мову')
                         ->rules([fn () => function (string $attribute, $value, Closure $fail) {
-                            foreach (array_keys((array) $value) as $code) {
+                            // Валідатор бачить сирий стан поля — рядки [{key, value}], а не «код => назва»
+                            $value = collect((array) $value)->mapWithKeys(fn ($row, $code) => is_array($row) ? [trim((string) ($row['key'] ?? '')) => $row['value'] ?? ''] : [$code => $row])->all();
+                            foreach (array_keys($value) as $code) {
                                 if (! preg_match('/^[a-z]{2}$/', (string) $code)) {
                                     $fail("Код мови «{$code}» має складатися з двох латинських літер (uk, en, pl).");
                                 }

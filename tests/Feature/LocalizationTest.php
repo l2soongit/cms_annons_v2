@@ -3,6 +3,7 @@
 namespace Tests\Feature;
 
 use App\Enums\ServerStatus;
+use App\Filament\Pages\Settings as SettingsPage;
 use App\Filament\Pages\Translations as TranslationsPage;
 use App\Filament\Resources\GameResource\Pages\EditGame;
 use App\Models\Game;
@@ -124,6 +125,27 @@ class LocalizationTest extends TestCase
         // Форма гри в адмінці отримує поля для нової мови
         $this->actingAs(User::factory()->create()->assignRole('admin'));
         Livewire::test(EditGame::class, ['record' => Game::first()->getRouteKey()])->assertSee('Назва (de)');
+    }
+
+    public function test_portal_settings_form_saves_languages_and_vote_interval(): void
+    {
+        $this->actingAs(User::factory()->create()->assignRole('admin'));
+
+        Livewire::test(SettingsPage::class)
+            ->assertSet('data.voting.interval_hours', 24)
+            ->set('data.voting.interval_hours', 12)
+            ->call('save')
+            ->assertHasNoErrors();
+
+        $this->assertSame(12, config('graj.voting.interval_hours'));
+        $this->assertSame(['uk' => 'Українська', 'en' => 'English', 'ru' => 'Русский', 'pl' => 'Polski'], config('graj.locales'));
+        $this->get('/pl/search')->assertOk()->assertSee('<html lang="pl"', false);
+
+        // Без основної мови або з некоректним кодом — не зберігається
+        Livewire::test(SettingsPage::class)
+            ->set('data.locales', [['key' => 'en', 'value' => 'English'], ['key' => 'polish', 'value' => 'Polski']])
+            ->call('save')
+            ->assertHasErrors('data.locales');
     }
 
     public function test_static_pages_in_both_languages(): void

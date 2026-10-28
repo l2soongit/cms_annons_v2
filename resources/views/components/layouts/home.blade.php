@@ -46,6 +46,7 @@
       </nav>
       <div class="actions">
         @auth
+          <x-notification-bell />
           <a class="btn btn-ghost btn-sm login" href="{{ route('cabinet') }}" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
         @else
           <a class="btn btn-ghost btn-sm login" href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>

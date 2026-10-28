@@ -2,6 +2,7 @@
 
 namespace App\Notifications\Concerns;
 
+use App\Notifications\Channels\DiscordChannel;
 use App\Notifications\Channels\TelegramChannel;
 
 /**
@@ -16,7 +17,11 @@ trait UsesUserChannels
         $channels = method_exists($notifiable, 'channelsFor') ? $notifiable->channelsFor($this->event()) : ['mail'];
 
         return array_merge(['database'], array_map(
-            fn ($channel) => $channel === 'telegram' ? TelegramChannel::class : $channel,
+            fn ($channel) => match ($channel) {
+                'telegram' => TelegramChannel::class,
+                'discord' => DiscordChannel::class,
+                default => $channel,
+            },
             $channels,
         ));
     }

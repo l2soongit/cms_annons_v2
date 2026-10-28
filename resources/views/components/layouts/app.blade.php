@@ -47,6 +47,7 @@
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
                 </button>
                 @auth
+                    <x-notification-bell class="text-moss hover:text-bone" />
                     <a href="{{ route('cabinet') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf

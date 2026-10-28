@@ -15,6 +15,7 @@
                             <th class="py-2 font-normal">{{ __('profile.notifications.event') }}</th>
                             <th class="w-24 py-2 text-center font-normal">Email</th>
                             <th class="w-24 py-2 text-center font-normal">Telegram</th>
+                            <th class="w-24 py-2 text-center font-normal">Discord</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -27,6 +28,9 @@
                                 </td>
                                 <td class="text-center">
                                     <input type="checkbox" name="prefs[{{ $event }}][]" value="telegram" @checked(in_array('telegram', $current)) @disabled(! $user->telegram_chat_id) class="size-4 accent-amber disabled:opacity-40" aria-label="Telegram: {{ __("profile.notifications.events.{$event}") }}">
+                                </td>
+                                <td class="text-center">
+                                    <input type="checkbox" name="prefs[{{ $event }}][]" value="discord" @checked(in_array('discord', $current)) @disabled(! $user->discord_webhook) class="size-4 accent-amber disabled:opacity-40" aria-label="Discord: {{ __("profile.notifications.events.{$event}") }}">
                                 </td>
                             </tr>
                         @endforeach
@@ -51,6 +55,14 @@
             @else
                 <p class="mt-3 text-moss">{{ __('profile.notifications.telegram_unavailable') }}</p>
             @endif
+
+            <h2 id="n-discord" class="mt-10 font-display text-lg font-medium">Discord</h2>
+            <p class="mt-3 text-sm text-moss">{{ __('profile.notifications.discord_lead') }}</p>
+            <form method="POST" action="{{ route('cabinet.notifications.discord') }}" class="mt-4 space-y-3">
+                @csrf @method('PUT')
+                <x-field name="discord_webhook" :label="__('profile.notifications.discord_label')" type="url" :value="$user->discord_webhook" placeholder="https://discord.com/api/webhooks/…" />
+                <x-button variant="secondary">{{ __('profile.save') }}</x-button>
+            </form>
         </section>
     </div>
 </x-layouts.app>

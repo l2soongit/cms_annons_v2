@@ -6,6 +6,7 @@ use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\InboxController;
 use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionController;
@@ -71,6 +72,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/notifications', [ProfileController::class, 'notifications'])->name('.notifications');
         Route::put('/notifications', [ProfileController::class, 'updateNotifications'])->name('.notifications.update');
         Route::delete('/notifications/telegram', [ProfileController::class, 'unlinkTelegram'])->name('.notifications.telegram.unlink');
+        Route::put('/notifications/discord', [ProfileController::class, 'updateDiscord'])->middleware('throttle:6,1')->name('.notifications.discord');
+        Route::get('/inbox', [InboxController::class, 'index'])->name('.inbox');
+        Route::get('/inbox/{id}', [InboxController::class, 'open'])->name('.inbox.open');
+        Route::post('/inbox/read-all', [InboxController::class, 'readAll'])->name('.inbox.read-all');
     });
 });
 

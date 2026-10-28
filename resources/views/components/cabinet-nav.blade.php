@@ -1,6 +1,7 @@
 @php
     $items = [
         'cabinet' => __('cabinet.my_servers'),
+        'cabinet.inbox' => __('notifications.inbox.nav').(($unreadNotes = auth()->user()->unreadNotifications()->count()) ? " ({$unreadNotes})" : ''),
         'cabinet.messages' => __('messages.nav').(($unread = app(\App\Messaging\Messenger::class)->unreadCount(auth()->user())) ? " ({$unread})" : ''),
         'cabinet.support' => __('messages.support.nav'),
         'cabinet.ads' => __('billing.ads.nav'),

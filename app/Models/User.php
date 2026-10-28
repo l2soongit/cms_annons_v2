@@ -44,6 +44,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         'two_factor_secret',
         'two_factor_recovery_codes',
         'telegram_link_token',
+        'discord_webhook',
     ];
 
     /**
@@ -59,6 +60,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'balance' => 'decimal:2',
             'banned_until' => 'datetime',
             'notification_prefs' => 'array',
+            'discord_webhook' => 'encrypted',
         ];
     }
 
@@ -122,7 +124,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
     /**
      * Канали для події з урахуванням налаштувань користувача (за замовчуванням — email).
      *
-     * @return list<string> mail | telegram
+     * @return list<string> mail | telegram | discord
      */
     public function channelsFor(string $event): array
     {
@@ -130,6 +132,9 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
         if (! $this->telegram_chat_id) {
             $channels = array_diff($channels, ['telegram']);
+        }
+        if (! $this->discord_webhook) {
+            $channels = array_diff($channels, ['discord']);
         }
 
         return array_values($channels);

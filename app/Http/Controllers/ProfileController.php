@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Notifications\Channels\DiscordChannel;
 use App\Notifications\Channels\TelegramChannel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -43,7 +44,7 @@ class ProfileController extends Controller
         $data = $request->validate([
             'prefs' => ['array'],
             'prefs.*' => ['array'],
-            'prefs.*.*' => [Rule::in(['mail', 'telegram'])],
+            'prefs.*.*' => [Rule::in(['mail', 'telegram', 'discord'])],
         ]);
 
         $prefs = collect($events)->mapWithKeys(fn ($event) => [$event => array_values($data['prefs'][$event] ?? [])])->all();
@@ -51,6 +52,23 @@ class ProfileController extends Controller
         $request->user()->forceFill(['notification_prefs' => $prefs])->save();
 
         return back()->with('status', __('profile.notifications.saved'));
+    }
+
+    /** Вебхук Discord-каналу: зберегти (з тестовим повідомленням) або прибрати */
+    public function updateDiscord(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'discord_webhook' => ['nullable', 'string', 'max:255', 'regex:'.DiscordChannel::URL_PATTERN],
+        ], ['discord_webhook.regex' => __('profile.notifications.discord_invalid')]);
+
+        $webhook = $data['discord_webhook'] ?? null;
+        if ($webhook && ! DiscordChannel::sendMessage($webhook, __('profile.notifications.discord_test'))) {
+            return back()->withInput()->withErrors(['discord_webhook' => __('profile.notifications.discord_failed')]);
+        }
+
+        $request->user()->forceFill(['discord_webhook' => $webhook])->save();
+
+        return back()->with('status', __($webhook ? 'profile.notifications.discord_linked' : 'profile.notifications.discord_unlinked'));
     }
 
     public function unlinkTelegram(Request $request): RedirectResponse

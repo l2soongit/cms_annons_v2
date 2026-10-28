@@ -27,6 +27,7 @@ Schedule::command('servers:release-blocks')->everyFifteenMinutes();
 Schedule::command('billing:expire')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('billing:remind')->dailyAt('10:00');
 Schedule::command('queue:prune-failed --hours=168')->daily();
+Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping(60);
 
 Artisan::command('rating:recalculate', function (RatingCalculator $rating) {
     $rating->recalculate();

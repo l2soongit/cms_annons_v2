@@ -37,6 +37,20 @@ return [
         'archive_after_offline_days' => 30,
     ],
 
+    // Щоденний бекап бази (db:backup): локальні копії в storage/app/private/backups + копія по SFTP
+    'backup' => [
+        'keep_days' => (int) env('BACKUP_KEEP_DAYS', 14),
+        'sftp' => [
+            'host' => env('BACKUP_SFTP_HOST'),
+            'port' => (int) env('BACKUP_SFTP_PORT', 22),
+            'username' => env('BACKUP_SFTP_USERNAME'),
+            // Пароль або шлях до приватного ключа (тоді пароль — від ключа, якщо є)
+            'password' => env('BACKUP_SFTP_PASSWORD'),
+            'key' => env('BACKUP_SFTP_KEY'),
+            'root' => env('BACKUP_SFTP_ROOT', 'backups/graj'),
+        ],
+    ],
+
     'servers' => [
         'max_screenshots' => 10,
         // Поля, зміна яких повертає сервер на модерацію

@@ -2,6 +2,8 @@
 
 namespace App\Providers;
 
+use App\Backup\BackupTarget;
+use App\Backup\SftpTarget;
 use App\Models\Game;
 use App\Support\Settings;
 use App\Support\Translations;
@@ -24,6 +26,11 @@ class AppServiceProvider extends ServiceProvider
     {
         // Переклади з адмінки поверх файлів lang/
         $this->app->extend('translation.loader', fn ($loader) => new Translations($loader));
+
+        // Копія бекапу поза сервер — лише коли задано сховище
+        if (filled(config('graj.backup.sftp.host'))) {
+            $this->app->bind(BackupTarget::class, fn () => new SftpTarget(config('graj.backup.sftp')));
+        }
     }
 
     /**

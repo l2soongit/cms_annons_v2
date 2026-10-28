@@ -1,4 +1,5 @@
 <x-layouts.app :title="__('ui.game.meta_title', ['game' => $game->name])">
+    <x-ad-banner placement="game" :game="$game" gap="0 auto 32px" />
     <div class="flex flex-wrap items-end justify-between gap-6">
         <div>
             <h1 class="font-display text-3xl font-bold tracking-tight sm:text-4xl">{{ __('ui.game.title', ['game' => $game->name]) }}</h1>

@@ -49,6 +49,7 @@
       <a class="btn btn-gold" href="{{ $addUrl }}">{{ $game->pageText('game.add_own', ['game' => $game->shortName()]) }}</a>
     </div>
   </section>
+  <x-ad-banner placement="game" :game="$game" gap="20px auto 0" />
 
   <div class="layout">
     <div>
@@ -88,6 +89,7 @@
     </div>
 
     <aside class="side">
+      <x-ad-banner placement="sidebar" />
       @if ($game->showsBlock('soon'))
       <section class="panel" data-reveal>
         <h3>{{ $game->pageText('home.coming_soon') }}</h3>

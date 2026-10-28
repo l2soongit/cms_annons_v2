@@ -13,6 +13,17 @@ class TariffSeeder extends Seeder
 {
     public function run(): void
     {
+        // Банери в шапці й сайдбарі — спільні для всього сайту
+        foreach (['header' => [1 => 150, 7 => 700, 30 => 2500], 'sidebar' => [1 => 80, 7 => 400, 30 => 1400]] as $placement => $prices) {
+            foreach ($prices as $days => $price) {
+                $label = $placement === 'header' ? ['uk' => 'Банер у шапці', 'en' => 'Header banner'] : ['uk' => 'Банер у сайдбарі', 'en' => 'Sidebar banner'];
+                Tariff::updateOrCreate(
+                    ['game_id' => null, 'service' => 'banner', 'placement' => $placement, 'days' => $days],
+                    ['name' => ['uk' => "{$label['uk']}, {$days} дн.", 'en' => "{$label['en']}, {$days} days"], 'price' => $price],
+                );
+            }
+        }
+
         foreach (Game::all() as $game) {
             foreach ([7 => 300, 30 => 1000] as $days => $price) {
                 Tariff::updateOrCreate(
@@ -30,6 +41,14 @@ class TariffSeeder extends Seeder
                 Tariff::updateOrCreate(
                     ['game_id' => $game->id, 'service' => 'boost', 'points' => $points],
                     ['name' => ['uk' => "Підняття +{$points} балів", 'en' => "Boost +{$points} points"], 'price' => $price],
+                );
+            }
+
+            // Банер на сторінці цієї гри
+            foreach ([1 => 100, 7 => 500, 30 => 1800] as $days => $price) {
+                Tariff::updateOrCreate(
+                    ['game_id' => $game->id, 'service' => 'banner', 'placement' => 'game', 'days' => $days],
+                    ['name' => ['uk' => "Банер на сторінці гри, {$days} дн.", 'en' => "Game page banner, {$days} days"], 'price' => $price],
                 );
             }
 

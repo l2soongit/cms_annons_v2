@@ -53,6 +53,7 @@
       <a class="btn btn-gold" href="{{ route('cabinet.servers.create', ['game' => $game->slug]) }}">{{ $game->pageText('game.add_own', ['game' => $game->shortName()]) }}</a>
     </div>
   </section>
+  <x-ad-banner placement="game" :game="$game" gap="20px auto 0" />
 
   <!-- GTA: без бічної колонки. Вгорі — білборди «Скоро відкриття», далі сітка карток на всю ширину -->
   @if ($comingSoon->isNotEmpty() && $game->showsBlock('soon'))

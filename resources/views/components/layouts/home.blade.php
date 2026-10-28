@@ -57,6 +57,7 @@
 </header>
 
 <main id="main">
+  <x-ad-banner placement="header" gap="16px auto 0" :inset="16" :max="1152" />
   {{ $slot }}
 </main>
 

@@ -51,6 +51,7 @@
       <span class="radar-label">{{ $game->pageText('cs.radar') }}</span>
     </div>
   </section>
+  <x-ad-banner placement="game" :game="$game" gap="20px auto 0" />
 
   <!-- Версія, режим, пошук, сортування — посилання з GET-параметрами -->
   <section class="controls" aria-label="{{ __('ui.game.filters') }}" data-reveal>

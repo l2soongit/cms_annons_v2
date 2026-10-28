@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Billing\Money;
 use App\Filament\Resources\TariffResource\Pages;
+use App\Models\Banner;
 use App\Models\Tariff;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -52,8 +53,12 @@ class TariffResource extends Resource
                 TextInput::make('name.uk')->label('Назва (uk)')->required()->maxLength(80),
                 TextInput::make('name.en')->label('Назва (en)')->maxLength(80),
                 TextInput::make('days')->label('Днів')->numeric()->minValue(1)->maxValue(365)
-                    ->visible(fn (Get $get) => in_array($get('service'), ['vip', 'highlight'], true))
-                    ->required(fn (Get $get) => in_array($get('service'), ['vip', 'highlight'], true)),
+                    ->visible(fn (Get $get) => in_array($get('service'), ['vip', 'highlight', 'banner'], true))
+                    ->required(fn (Get $get) => in_array($get('service'), ['vip', 'highlight', 'banner'], true)),
+                Select::make('placement')->label('Рекламне місце')
+                    ->options(collect(Banner::PLACEMENTS)->map(fn ($p) => "{$p[0]} ({$p[1]}×{$p[2]})"))
+                    ->helperText('Шапка й сайдбар — спільні для всього сайту (гру не обирайте); «Сторінка гри» — для вибраної гри.')
+                    ->visible(fn (Get $get) => $get('service') === 'banner')->required(fn (Get $get) => $get('service') === 'banner'),
                 TextInput::make('points')->label('Бонусних балів')->numeric()->minValue(1)
                     ->helperText('Діють до кінця місяця; вага балів у формулі рейтингу — у Налаштуваннях.')
                     ->visible(fn (Get $get) => $get('service') === 'boost')->required(fn (Get $get) => $get('service') === 'boost'),
@@ -72,6 +77,7 @@ class TariffResource extends Resource
                 TextColumn::make('service')->label('Послуга')->formatStateUsing(fn (string $state) => Tariff::SERVICES[$state] ?? $state),
                 TextColumn::make('name')->label('Назва'),
                 TextColumn::make('days')->label('Днів')->placeholder('—'),
+                TextColumn::make('placement')->label('Місце')->formatStateUsing(fn (?string $state) => Banner::PLACEMENTS[$state][0] ?? $state)->placeholder('—')->toggleable(),
                 TextColumn::make('price')->label('Ціна')->formatStateUsing(fn ($state) => Money::format($state))->sortable(),
                 IconColumn::make('is_active')->label('Продається')->boolean(),
             ])

@@ -60,6 +60,7 @@
     <div><b class="num y" id="g-votes" data-count="{{ $stats['votes'] }}">0</b><span>{{ __('ui.mc.stat_votes') }}</span></div>
     @if ($game->showsBlock('season'))<div><b class="num" id="season">&nbsp;</b><span>{{ $game->pageText('mc.season') }}</span></div>@endif
   </div>
+  <x-ad-banner placement="game" :game="$game" gap="20px auto 0" />
 
   <!-- «Скоро відкриття» як спливні досягнення -->
   @if ($comingSoon->isNotEmpty() && $game->showsBlock('soon'))

@@ -3,6 +3,7 @@
 namespace App\Billing;
 
 use App\Enums\ServerStatus;
+use App\Models\Banner;
 use App\Models\Order;
 use App\Models\PromoCode;
 use App\Models\Server;
@@ -12,6 +13,7 @@ use App\Models\User;
 use App\Notifications\ServiceNotice;
 use App\Support\HomePageData;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
@@ -92,7 +94,8 @@ class Billing
      */
     public function purchase(User $user, Server $server, Tariff $tariff, ?string $promoCode = null, bool $autoRenew = false, ?Order $renewing = null): Order
     {
-        if (! $tariff->is_active || ($tariff->game_id && $tariff->game_id !== $server->game_id) || ! isset(Tariff::SERVICES[$tariff->service])) {
+        // Банер купується через bookBanner(): потрібні дати, зображення й посилання
+        if (! $tariff->is_active || ($tariff->game_id && $tariff->game_id !== $server->game_id) || ! isset(Tariff::SERVICES[$tariff->service]) || $tariff->service === 'banner') {
             throw BillingException::because('tariff');
         }
         if ($server->status !== ServerStatus::Published) {
@@ -257,6 +260,111 @@ class Billing
             ->where('status', 'active')->where('ends_at', '>', $order->ends_at)
             ->whereHas('tariff', fn ($q) => $q->where('service', $order->tariff->service))
             ->exists();
+    }
+
+    /**
+     * Забронювати рекламне місце з дати $start на термін тарифу й оплатити з балансу.
+     * На місці (і грі — для місця «game») одночасно показується лише один банер.
+     */
+    public function bookBanner(User $user, Server $server, Tariff $tariff, CarbonInterface $start, string $image, string $url, ?string $alt = null, ?string $promoCode = null): Banner
+    {
+        if (! $tariff->is_active || $tariff->service !== 'banner' || ! isset(Banner::PLACEMENTS[$tariff->placement]) || ($tariff->game_id && $tariff->game_id !== $server->game_id)) {
+            throw BillingException::because('tariff');
+        }
+        if ($server->status !== ServerStatus::Published) {
+            throw BillingException::because('not_published');
+        }
+        $start = Carbon::instance($start)->startOfDay();
+        if ($start->lt(today()) || $start->gt(today()->addDays((int) config('graj.billing.banner_booking_days')))) {
+            throw BillingException::because('banner_date');
+        }
+        $promo = $this->findPromo($promoCode);
+        if ($promoCode && ! $promo?->appliesTo($tariff)) {
+            throw BillingException::because('promo');
+        }
+
+        $gameId = $tariff->placement === 'game' ? $server->game_id : null;
+        $end = $start->copy()->addDays((int) $tariff->days);
+
+        $banner = DB::transaction(function () use ($user, $server, $tariff, $promo, $start, $end, $gameId, $image, $url, $alt) {
+            $user = User::whereKey($user->id)->lockForUpdate()->first();
+            if ($this->bannerTaken($tariff->placement, $gameId, $start, $end)) {
+                throw BillingException::because('banner_busy');
+            }
+            $cents = $this->price($tariff, $promo);
+            if (Money::cents($user->balance) < $cents) {
+                throw BillingException::because('balance', ['price' => Money::format($cents, true)]);
+            }
+
+            $order = $user->orders()->create([
+                'server_id' => $server->id,
+                'tariff_id' => $tariff->id,
+                'promo_code_id' => $promo?->id,
+                'amount' => Money::decimal($cents),
+                'status' => 'active',
+                'auto_renew' => false,
+                'starts_at' => $start,
+                'ends_at' => $end,
+            ]);
+            $user->decrement('balance', $cents / 100);
+            $user->transactions()->create([
+                'order_id' => $order->id,
+                'type' => 'charge',
+                'amount' => Money::decimal(-$cents),
+                'currency' => config('graj.billing.currency'),
+                'status' => 'succeeded',
+            ]);
+            $promo?->increment('used');
+
+            return Banner::create([
+                'order_id' => $order->id,
+                'server_id' => $server->id,
+                'game_id' => $gameId,
+                'placement' => $tariff->placement,
+                'image' => $image,
+                'alt' => $alt ?: $server->name,
+                'url' => $url,
+                'starts_at' => $start,
+                'ends_at' => $end,
+            ]);
+        });
+
+        return $banner;
+    }
+
+    /** Чи перетинається період з уже заброньованим банером на тому ж місці */
+    public function bannerTaken(string $placement, ?int $gameId, CarbonInterface $start, CarbonInterface $end): bool
+    {
+        return $this->bannersOn($placement, $gameId)->where('starts_at', '<', $end)->where('ends_at', '>', $start)->exists();
+    }
+
+    /**
+     * Зайняті дні місця на найближчий період бронювання (для календаря в кабінеті).
+     *
+     * @return list<string> дати Y-m-d
+     */
+    public function busyDays(string $placement, ?int $gameId): array
+    {
+        $from = today();
+        $to = today()->addDays((int) config('graj.billing.banner_booking_days') + 31);
+        $days = [];
+
+        foreach ($this->bannersOn($placement, $gameId)->where('ends_at', '>', $from)->where('starts_at', '<', $to)->get(['starts_at', 'ends_at']) as $b) {
+            for ($d = $b->starts_at->copy()->startOfDay(); $d->lt($b->ends_at); $d->addDay()) {
+                $days[] = $d->toDateString();
+            }
+        }
+
+        return array_values(array_unique($days));
+    }
+
+    /** @return Builder<Banner> */
+    private function bannersOn(string $placement, ?int $gameId): Builder
+    {
+        return Banner::where('placement', $placement)
+            ->where('is_active', true)
+            ->when($placement === 'game', fn ($q) => $q->where('game_id', $gameId), fn ($q) => $q->whereNull('game_id'))
+            ->where(fn ($q) => $q->whereNull('order_id')->orWhereHas('order', fn ($o) => $o->whereNotIn('status', ['cancelled', 'refunded'])));
     }
 
     /** Скасувати замовлення адміністратором; з поверненням — сума повертається на баланс */

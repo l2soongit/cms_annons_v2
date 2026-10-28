@@ -29,7 +29,7 @@ class TransactionResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Транзакції';
 
-    protected static ?int $navigationSort = 4;
+    protected static ?int $navigationSort = 5;
 
     private const TYPES = ['deposit' => 'Поповнення', 'charge' => 'Оплата послуги', 'refund' => 'Повернення', 'adjustment' => 'Коригування'];
 

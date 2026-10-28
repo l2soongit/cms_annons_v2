@@ -148,6 +148,7 @@
         </div>
 
         <aside class="space-y-6 lg:sticky lg:top-6 lg:self-start lg:border-l lg:border-seam lg:pl-8">
+            <x-ad-banner placement="sidebar" />
             <div>
                 <p class="text-sm text-moss">{{ __('ui.server.address') }}</p>
                 <div class="mt-1 flex flex-wrap items-center gap-2">

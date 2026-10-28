@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\AdsController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
@@ -51,6 +52,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/auto-renew', [PromotionController::class, 'autoRenew'])->name('.orders.auto-renew');
         Route::get('/orders/{order}/receipt', [BillingController::class, 'receipt'])->name('.orders.receipt');
         Route::get('/balance', [BillingController::class, 'index'])->name('.balance');
+        Route::get('/ads', [AdsController::class, 'index'])->name('.ads');
+        Route::post('/ads', [AdsController::class, 'store'])->middleware('throttle:10,1')->name('.ads.store');
         Route::post('/balance', [BillingController::class, 'deposit'])->middleware('throttle:10,1')->name('.balance.deposit');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('.profile');
@@ -61,6 +64,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/notifications/telegram', [ProfileController::class, 'unlinkTelegram'])->name('.notifications.telegram.unlink');
     });
 });
+
+// Перехід з рекламного банера (лічильник кліків)
+Route::get('/ad/{banner}', [AdsController::class, 'click'])->middleware('throttle:60,1')->name('ads.click');
 
 // Повернення з платіжної системи й тестова оплата (лише локально, посилання підписане)
 Route::get('/billing/return', [BillingController::class, 'returned'])->name('billing.return');

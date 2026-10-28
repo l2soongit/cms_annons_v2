@@ -49,7 +49,7 @@ class CabinetController extends Controller
         $recentVotes = $server->votes()->latest('created_at')->limit(10)->get();
 
         // Просування: тарифи гри (і загальні), активні й оплачені наперед послуги сервера
-        $tariffs = Tariff::where('is_active', true)
+        $tariffs = Tariff::where('is_active', true)->where('service', '!=', 'banner')
             ->where(fn ($q) => $q->where('game_id', $server->game_id)->orWhereNull('game_id'))
             ->orderBy('service')->orderBy('price')->get()->groupBy('service');
         $activeOrders = $server->orders()->with('tariff')->where('status', 'active')->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))

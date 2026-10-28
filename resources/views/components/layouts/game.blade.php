@@ -55,6 +55,7 @@
 </header>
 
 <main class="wrap" id="main">
+  <x-ad-banner placement="header" gap="16px auto 0" />
   <nav class="crumbs" aria-label="{{ __('ui.breadcrumbs') }}"><a href="{{ route('home') }}">{{ __('ui.game.home') }}</a><span aria-hidden="true">/</span><span>{{ $game->name }}</span></nav>
   {{ $slot }}
 </main>

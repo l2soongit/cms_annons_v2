@@ -20,6 +20,7 @@ class Tariff extends Model
         'highlight' => 'Виділення в списку',
         'boost' => 'Підняття (бонусні бали)',
         'coming_soon' => '«Скоро відкриття» на головній',
+        'banner' => 'Банер (рекламне місце з бронюванням дат)',
     ];
 
     protected function casts(): array

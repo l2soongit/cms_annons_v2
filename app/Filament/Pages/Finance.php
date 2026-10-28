@@ -23,7 +23,7 @@ class Finance extends Page
 
     protected static ?string $title = 'Фінансовий звіт';
 
-    protected static ?int $navigationSort = 5;
+    protected static ?int $navigationSort = 6;
 
     protected string $view = 'filament.pages.finance';
 

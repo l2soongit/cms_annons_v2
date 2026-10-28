@@ -2,12 +2,16 @@
 
 namespace App\Filament\Resources;
 
+use App\Billing\Billing;
+use App\Billing\Money;
 use App\Filament\Resources\BannerResource\Pages;
 use App\Models\Banner;
 use App\Models\ModerationLog;
 use App\Support\HomePageData;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\Toggle;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\IconColumn;
@@ -17,10 +21,12 @@ use Filament\Tables\Filters\Filter;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Support\Facades\Storage;
 use UnitEnum;
 
 /**
- * Рекламні банери: перегляд заброньованих, статистика, зняття з показу неприйнятних зображень.
+ * Рекламні банери: перегляд заброньованих, статистика, зняття з показу неприйнятних зображень, видалення
+ * (оплачений діючий банер скасовує замовлення, за бажанням — з поверненням коштів).
  */
 class BannerResource extends Resource
 {
@@ -76,7 +82,41 @@ class BannerResource extends Resource
                         $record->update(['is_active' => ! $record->is_active]);
                         ModerationLog::record($record, $record->is_active ? 'banner_show' : 'banner_hide');
                     }),
+                Action::make('delete')->label('Видалити')->icon(Heroicon::OutlinedTrash)->color('danger')
+                    ->requiresConfirmation()
+                    ->modalHeading('Видалити банер?')
+                    ->modalDescription(fn (Banner $record) => self::hasActiveOrder($record)
+                        ? 'Банер оплачено до '.$record->ends_at->copy()->subSecond()->format('d.m.Y').' ('.Money::format($record->order->amount).'). Замовлення буде скасовано, дати звільняться для інших.'
+                        : 'Банер і його зображення буде видалено назавжди. Статистика показів зникне разом із ним.')
+                    ->schema(fn (Banner $record) => self::hasActiveOrder($record)
+                        // Ще не почався — повертаємо за замовчуванням; уже йде — на розсуд адміністратора
+                        ? [Toggle::make('refund')->label('Повернути '.Money::format($record->order->amount).' на баланс покупця')->default($record->starts_at->isFuture())]
+                        : [])
+                    ->action(function (Banner $record, array $data) {
+                        $refund = (bool) ($data['refund'] ?? false);
+                        if (self::hasActiveOrder($record)) {
+                            app(Billing::class)->cancel($record->order, $refund);
+                        }
+
+                        ModerationLog::record($record, 'banner_delete', changes: [
+                            'placement' => $record->placement, 'server' => $record->server?->name, 'refund' => $refund,
+                            'starts_at' => $record->starts_at->toDateString(), 'ends_at' => $record->ends_at->toDateString(),
+                        ]);
+                        // Те саме зображення могло лишитися в іншого банера (повторна покупка з тим самим файлом)
+                        if (! Banner::where('image', $record->image)->whereKeyNot($record->getKey())->exists()) {
+                            Storage::disk('public')->delete($record->image);
+                        }
+                        $record->delete();
+
+                        Notification::make()->title($refund ? 'Банер видалено, кошти повернено' : 'Банер видалено')->success()->send();
+                    }),
             ]);
+    }
+
+    /** Банер куплено, і замовлення ще діє — видалення його скасовує */
+    private static function hasActiveOrder(Banner $record): bool
+    {
+        return $record->order?->status === 'active';
     }
 
     public static function getPages(): array

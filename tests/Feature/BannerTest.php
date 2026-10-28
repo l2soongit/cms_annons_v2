@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Billing\Billing;
 use App\Billing\BillingException;
 use App\Enums\ServerStatus;
+use App\Filament\Resources\BannerResource\Pages\ListBanners;
 use App\Models\Banner;
 use App\Models\Game;
 use App\Models\Server;
@@ -16,6 +17,7 @@ use Database\Seeders\TariffSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Storage;
+use Livewire\Livewire;
 use Tests\TestCase;
 
 /**
@@ -208,5 +210,37 @@ class BannerTest extends TestCase
         app(Billing::class)->bookBanner($server->owner, $server, $this->tariff('header', 1), today(), 'banners/a.webp', 'https://a.example.net');
 
         $this->actingAs(User::factory()->create()->assignRole('admin'))->get('/admin/banners')->assertOk()->assertSee($server->name)->assertSee('CTR');
+    }
+
+    public function test_admin_deletes_banner_with_optional_refund(): void
+    {
+        $billing = app(Billing::class);
+        $server = $this->server();
+        Storage::disk('public')->put('banners/future.webp', 'img');
+        Storage::disk('public')->put('banners/old.webp', 'img');
+
+        // Ще не почався: видалення скасовує замовлення, повертає гроші й звільняє дати
+        $future = $billing->bookBanner($server->owner, $server, $this->tariff('header', 7), today()->addDays(5), 'banners/future.webp', 'https://a.example.net');
+        $this->actingAs(User::factory()->create()->assignRole('admin'));
+        Livewire::test(ListBanners::class)
+            ->callTableAction('delete', $future, data: ['refund' => true])
+            ->assertHasNoTableActionErrors();
+
+        $this->assertModelMissing($future);
+        $this->assertSame('10000.00', $server->owner->fresh()->balance);
+        $this->assertSame('refunded', $future->order->fresh()->status);
+        $this->assertSame([], $billing->busyDays('header', null));
+        Storage::disk('public')->assertMissing('banners/future.webp');
+        $this->assertDatabaseHas('moderation_logs', ['action' => 'banner_delete', 'subject_id' => $future->id]);
+
+        // Банер, доданий без замовлення, просто видаляється
+        $old = Banner::create(['server_id' => $server->id, 'placement' => 'sidebar', 'image' => 'banners/old.webp', 'url' => 'https://b.example.net',
+            'starts_at' => today()->subDays(10), 'ends_at' => today()->subDays(3)]);
+        Livewire::test(ListBanners::class)->callTableAction('delete', $old)->assertHasNoTableActionErrors();
+        $this->assertModelMissing($old);
+        Storage::disk('public')->assertMissing('banners/old.webp');
+
+        // Модератор без права на платні послуги банерів не бачить
+        $this->actingAs(User::factory()->create()->assignRole('moderator'))->get('/admin/banners')->assertForbidden();
     }
 }

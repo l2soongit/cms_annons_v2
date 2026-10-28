@@ -63,7 +63,8 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 
 /* ── Перший екран ──────────────────────────────────── */
 .hero { position: relative; padding: 64px 0 96px; }
-.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: center; position: relative; z-index: 1; }
+/* По верху, не по центру: інакше «Арена» зсувається, коли догружається шрифт заголовка (CLS) */
+.hero-grid { display: grid; grid-template-columns: 1.05fr 1fr; gap: 56px; align-items: start; position: relative; z-index: 1; }
 h1 { margin-top: 20px; font: 800 56px/1.05 var(--display); letter-spacing: -0.035em; }
 .hero p.sub { margin-top: 20px; font-size: 18px; color: var(--muted); max-width: 46ch; }
 .search { margin-top: 32px; display: flex; gap: 8px; padding: 8px; border-radius: var(--r-lg); background: var(--card); border: 1px solid var(--line-2); max-width: 560px; transition: border-color .2s, box-shadow .2s; }

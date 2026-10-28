@@ -18,6 +18,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         // Платіжна система повертає покупця POST-запитом зі свого домену; сторінка лише перенаправляє в кабінет
         $middleware->validateCsrfTokens(except: ['billing/return']);
+        // Закрите повідомлення про cookies ставить JavaScript — без шифрування, щоб сервер міг його прочитати
+        $middleware->encryptCookies(except: ['cookie_notice']);
         // Мова з адреси (/en/…) — до маршрутизації; мова користувача для листів — після сесії
         $middleware->prepend(LocalizeFromUrl::class);
         $middleware->append(SecurityHeaders::class);

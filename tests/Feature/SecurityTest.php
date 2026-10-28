@@ -35,6 +35,9 @@ class SecurityTest extends TestCase
     {
         $this->get('/')->assertOk()->assertSee('id="cookie-notice"', false)->assertSee(route('pages.show', 'privacy'));
 
+        // Після «Зрозуміло» cookie_notice=1: сервер більше не виводить блок
+        $this->withUnencryptedCookie('cookie_notice', '1')->get('/')->assertOk()->assertDontSee('id="cookie-notice"', false);
+
         $this->get('/page/privacy')->assertOk()->assertSee('Політика конфіденційності')->assertSee('90 днів');
         $this->get('/en/page/privacy')->assertOk()->assertSee('Privacy policy')->assertSee('90 days');
     }

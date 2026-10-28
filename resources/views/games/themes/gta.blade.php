@@ -86,11 +86,11 @@
       <section class="filters" aria-label="{{ __('ui.game.filters') }}" data-reveal>
         @foreach ($filters as $field)
           <div class="frow"><span>{{ $field->label }}</span><div class="chips">
-            <a class="chip" href="{{ $filterUrl($field->key, null) }}" aria-pressed="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
+            <a class="chip" href="{{ $filterUrl($field->key, null) }}" aria-current="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
             @foreach ($field->options as $option)
               @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
               @if ($n || $on)
-                <a @class(['chip', 'tinted' => ! empty($option['color'])]) href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" @if (! empty($option['color'])) style="--p:{{ $option['color'] }}" @endif data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
+                <a @class(['chip', 'tinted' => ! empty($option['color'])]) href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" @if (! empty($option['color'])) style="--p:{{ $option['color'] }}" @endif data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
               @endif
             @endforeach
           </div></div>
@@ -106,7 +106,7 @@
           </form>
           <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
             @foreach (['votes', 'online', 'new', 'opening'] as $s)
-              <a href="{{ $sortUrl($s) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.game.sort_short_{$s}") }}</a>
+              <a href="{{ $sortUrl($s) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.game.sort_short_{$s}") }}</a>
             @endforeach
           </div>
         </div>

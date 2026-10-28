@@ -4,7 +4,7 @@
  */
 :root {
   --bg: #09090b; --bg-2: #0f0f12; --card: #18181b; --card-2: #1f1f23; --line: #27272a; --line-2: #3f3f46;
-  --text: #f4f4f5; --muted: #a1a1aa; --faint: #71717a;
+  --text: #f4f4f5; --muted: #a1a1aa; --faint: #8a8a93;
   --up: #34d399; --down: #fb7185;
   /* Тема GTA: неоновий рожевий → фіолетовий */
   --gc: #ff4fa3; --gc-2: #ff9ad0; --gc-deep: #5b1a7a; --gc-ink: #1a0414;
@@ -107,7 +107,7 @@ header.scrolled .bar { padding-block: 4px; background: #18181bf0; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
 .chip { border: 1px solid var(--line-2); background: none; color: var(--muted); border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; cursor: pointer; transition: all .15s; }
 .chip:hover { color: var(--text); border-color: #ff4fa388; }
-.chip[aria-pressed="true"] { background: var(--grad); color: var(--gc-ink); border-color: transparent; box-shadow: 0 4px 16px -6px #ff4fa3aa; }
+.chip[aria-current="true"] { background: var(--grad); color: var(--gc-ink); border-color: transparent; box-shadow: 0 4px 16px -6px #ff4fa3aa; }
 .chip small { opacity: .7; margin-left: 4px; }
 .ftools { display: flex; gap: 12px; align-items: center; justify-content: space-between; margin-top: 16px; flex-wrap: wrap; }
 .fsearch { flex: 1; min-width: 200px; display: flex; align-items: center; gap: 8px; padding: 8px 12px; border-radius: var(--r-sm); background: var(--bg); border: 1px solid var(--line); }
@@ -116,7 +116,7 @@ header.scrolled .bar { padding-block: 4px; background: #18181bf0; }
 .fsearch input:focus { outline: none; }
 .sorts { display: flex; gap: 4px; padding: 4px; border-radius: var(--r-sm); background: var(--bg); }
 .sorts button { border: 0; background: none; color: var(--muted); font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 6px; cursor: pointer; }
-.sorts button[aria-pressed="true"] { background: var(--card-2); color: var(--gc-2); }
+.sorts button[aria-current="true"] { background: var(--card-2); color: var(--gc-2); }
 .result-line { display: flex; justify-content: space-between; align-items: center; margin: 24px 0 12px; font-size: 14px; color: var(--muted); }
 .result-line b { color: var(--text); }
 .reset { color: var(--gc-2); font-weight: 700; font-size: 13px; background: none; border: 0; cursor: pointer; }
@@ -174,7 +174,7 @@ header.scrolled .bar { padding-block: 4px; background: #18181bf0; }
 /* Фірмові кольори платформ у фільтрі */
 /* Колір платформи задається у варіанті поля в адмінці (--p) */
 .chip.tinted { color: var(--p); border-color: color-mix(in srgb, var(--p) 45%, transparent); }
-.chip.tinted[aria-pressed="true"] { background: var(--p); color: #0b0618; box-shadow: 0 4px 18px -6px var(--p); }
+.chip.tinted[aria-current="true"] { background: var(--p); color: #0b0618; box-shadow: 0 4px 18px -6px var(--p); }
 @media (max-width: 1024px) { .bb-row { grid-template-columns: 1fr 1fr; } .band { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .bb-row { grid-template-columns: 1fr; } }
 
@@ -281,8 +281,8 @@ aside.side { display: grid; gap: 16px; position: sticky; top: 88px; }
 .soon-meta time { color: var(--gc-2); font-weight: 700; }
 .remind { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 999px; border: 1px solid var(--line-2); background: none; color: var(--muted); font-size: 12px; font-weight: 700; cursor: pointer; transition: all .2s; }
 .remind:hover { color: var(--gc-2); border-color: #ff4fa388; }
-.remind[aria-pressed="true"] { color: var(--gc-ink); background: var(--grad); border-color: transparent; }
-.remind[aria-pressed="true"] svg { animation: ring .6s ease; }
+.remind[aria-current="true"] { color: var(--gc-ink); background: var(--grad); border-color: transparent; }
+.remind[aria-current="true"] svg { animation: ring .6s ease; }
 @keyframes ring { 20% { transform: rotate(18deg); } 40% { transform: rotate(-14deg); } 60% { transform: rotate(8deg); } }
 .fame li { list-style: none; display: grid; grid-template-columns: 28px 1fr auto; gap: 8px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
 .fame ul { padding: 0; margin-top: 8px; }
@@ -353,7 +353,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .gcard .gact, .gcard .sticker, .gcard .gmeta { position: relative; z-index: 1; }
 /* Сортування й чипи — посилання (працюють і без скрипта), вигляд як у кнопок демо */
 .sorts a { color: var(--muted); font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 6px; }
-.sorts a[aria-pressed="true"] { background: var(--card-2); color: var(--gc-2); }
+.sorts a[aria-current="true"] { background: var(--card-2); color: var(--gc-2); }
 .chip { display: inline-block; }
 .fsearch button { display: none; }
 .more { display: flex; justify-content: center; margin-top: 16px; }

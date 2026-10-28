@@ -93,10 +93,10 @@
       @if ($edition)
         <h3>{{ $edition->label }}</h3>
         <div class="lever" role="group" aria-label="{{ $edition->label }}" data-swap="edition">
-          <a href="{{ $url([$edition->key => null]) }}" aria-pressed="{{ isset($active[$edition->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
+          <a href="{{ $url([$edition->key => null]) }}" aria-current="{{ isset($active[$edition->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
           @foreach ($edition->options as $option)
             @php $on = ($active[$edition->key] ?? null) === $option['value']; @endphp
-            <a href="{{ $url([$edition->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ ($option['short'] ?? '') ?: $option['label'] }}</a>
+            <a href="{{ $url([$edition->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ ($option['short'] ?? '') ?: $option['label'] }}</a>
           @endforeach
         </div>
       @endif
@@ -105,7 +105,7 @@
         <div class="slots" data-swap="versions">
           @foreach ($versions->options as $option)
             @php $n = $counts[$versions->id][$option['value']] ?? 0; $on = ($active[$versions->key] ?? null) === $option['value']; @endphp
-            <a class="slot" href="{{ $url([$versions->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" aria-label="{{ $versions->label }} {{ $option['label'] }}" data-filter-link>{{ $option['label'] }}<span class="cnt">{{ $n ?: '' }}</span></a>
+            <a class="slot" href="{{ $url([$versions->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" aria-label="{{ $versions->label }} {{ $option['label'] }}" data-filter-link>{{ $option['label'] }}<span class="cnt">{{ $n ?: '' }}</span></a>
           @endforeach
         </div>
       @endif
@@ -114,7 +114,7 @@
         <div class="slot-row" data-swap="field-{{ $field->key }}">
           @foreach ($field->options as $option)
             @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
-            <a class="mode-slot" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link><span class="ic">{!! McPixels::mode($option['value']) !!}</span>{{ $option['label'] }}<span class="cnt">{{ $n }}</span></a>
+            <a class="mode-slot" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link><span class="ic">{!! McPixels::mode($option['value']) !!}</span>{{ $option['label'] }}<span class="cnt">{{ $n }}</span></a>
           @endforeach
         </div>
       @endforeach
@@ -136,7 +136,7 @@
         <span data-swap="count">{{ __('ui.mc.servers') }} <span class="num" id="count">{{ $servers->total() }}</span></span>
         <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
           @foreach (['votes', 'online', 'ping', 'new', 'opening'] as $s)
-            <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.mc.sort_{$s}") }}</a>
+            <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.mc.sort_{$s}") }}</a>
           @endforeach
         </div>
       </div>

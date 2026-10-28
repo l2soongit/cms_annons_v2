@@ -21,11 +21,15 @@ class SecurityHeaders
         $headers->set('X-Content-Type-Options', 'nosniff', false);
         $headers->set('Referrer-Policy', 'strict-origin-when-cross-origin', false);
         $headers->set('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(self)', false);
-        $headers->set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups', false);
 
         // Віджети (SVG-картинки) вставляють на сайти серверів як <img> — фрейми їх не стосуються
         if (! $headers->has('X-Frame-Options')) {
             $headers->set('X-Frame-Options', 'SAMEORIGIN');
+        }
+
+        // Браузери ігнорують COOP без HTTPS і пишуть помилку в консоль
+        if ($request->isSecure()) {
+            $headers->set('Cross-Origin-Opener-Policy', 'same-origin-allow-popups', false);
         }
 
         if (app()->isProduction() && $request->isSecure()) {

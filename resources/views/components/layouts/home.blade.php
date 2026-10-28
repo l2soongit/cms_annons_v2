@@ -28,8 +28,8 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-{{-- Шрифти ігор (усі з кирилицею) --}}
-<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&display=swap" rel="stylesheet">
+{{-- Шрифти ігор (усі з кирилицею) — лише для логотипів у картках, тому не блокують перший показ --}}
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 @vite(['resources/css/home.css', 'resources/js/home.js'])
 <x-layouts.mobile-bar />
 </head>
@@ -69,17 +69,17 @@
   <div class="wrap">
     <div class="fgrid">
       <div><a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a><p>{{ __('ui.footer.tagline') }}</p></div>
-      <div><h4>{{ __('ui.nav.games') }}</h4><ul>
+      <div><h2>{{ __('ui.nav.games') }}</h2><ul>
         @foreach ($navGames as $navGame)
           <li><a href="{{ route('games.show', $navGame) }}">{{ $navGame->name }}</a></li>
         @endforeach
       </ul></div>
-      <div><h4>{{ __('ui.footer.owners') }}</h4><ul>
+      <div><h2>{{ __('ui.footer.owners') }}</h2><ul>
         <li><a href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a></li>
         @if (HomeContent::shows('plans'))<li><a href="#plans">{{ __('ui.home.plans_label') }}</a></li>@endif
         <li><a href="{{ route('developers') }}">{{ __('ui.footer.api') }}</a></li>
       </ul></div>
-      <div><h4>{{ __('ui.footer.portal') }}</h4><ul>
+      <div><h2>{{ __('ui.footer.portal') }}</h2><ul>
         <li><a href="{{ route('pages.show', 'rules') }}">{{ __('ui.footer.rules') }}</a></li>
         <li><a href="{{ route('pages.show', 'faq') }}">FAQ</a></li>
         <li><a href="{{ route('search') }}">{{ __('ui.search.title') }}</a></li>

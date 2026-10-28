@@ -57,11 +57,11 @@
       <section class="filters" aria-label="{{ __('ui.game.filters') }}" data-reveal>
         @foreach ($filters as $field)
           <div class="frow"><span>{{ $field->label }}</span><div class="chips">
-            <a class="chip" href="{{ $filterUrl($field->key, null) }}" aria-pressed="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
+            <a class="chip" href="{{ $filterUrl($field->key, null) }}" aria-current="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
             @foreach ($field->options as $option)
               @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
               @if ($n || $on)
-                <a class="chip" href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
+                <a class="chip" href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
               @endif
             @endforeach
           </div></div>
@@ -77,7 +77,7 @@
           </form>
           <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
             @foreach (['votes', 'online', 'new', 'opening'] as $s)
-              <a href="{{ $sortUrl($s) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.game.sort_short_{$s}") }}</a>
+              <a href="{{ $sortUrl($s) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.game.sort_short_{$s}") }}</a>
             @endforeach
           </div>
         </div>
@@ -92,7 +92,7 @@
       <x-ad-banner placement="sidebar" />
       @if ($game->showsBlock('soon'))
       <section class="panel" data-reveal>
-        <h3>{{ $game->pageText('home.coming_soon') }}</h3>
+        <h2>{{ $game->pageText('home.coming_soon') }}</h2>
         <div id="soon">
           @forelse ($comingSoon as $s)
             @php $opens = $s->opens_at->copy()->startOfDay(); @endphp
@@ -118,7 +118,7 @@
 
       @if ($game->showsBlock('fame'))
       <section class="panel fame" data-reveal>
-        <h3><span>{{ $game->pageText('game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h3>
+        <h2><span>{{ $game->pageText('game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h2>
         @if ($fame->isNotEmpty())
           <ul id="fame">
             @foreach ($fame as $i => $winner)
@@ -135,7 +135,7 @@
 
       @if ($shares && $game->showsBlock('popular'))
         <section class="panel" data-reveal>
-          <h3>{{ __('ui.game.popular_by')[$popularField->key] ?? __('ui.game.popular', ['field' => mb_strtolower($popularField->label)]) }}</h3>
+          <h2>{{ __('ui.game.popular_by')[$popularField->key] ?? __('ui.game.popular', ['field' => mb_strtolower($popularField->label)]) }}</h2>
           <div class="chron-bars" id="chron-bars">
             @foreach ($shares as $share)
               <div class="cb"><div class="l"><b>{{ $share['label'] }}</b><span class="num">{{ $share['percent'] }}%</span></div><div class="track"><i data-w="{{ $share['width'] }}"></i></div></div>

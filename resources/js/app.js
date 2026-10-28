@@ -1,5 +1,6 @@
 import './bootstrap';
-import 'trix';
+// Редактор Trix (~200 КБ) потрібен лише у формі сервера в кабінеті — вантажимо окремим шматком
+if (document.querySelector('trix-editor')) import('trix');
 
 // Без вкладень у редакторі опису: картинки сервера завантажуються окремо
 document.addEventListener('trix-file-accept', (event) => event.preventDefault());

@@ -123,7 +123,7 @@
                         </form>
                     @endunless
                 @else
-                    <p class="mt-6 text-sm text-moss"><a href="{{ route('login') }}" class="text-amber hover:underline">{{ __('ui.nav.login') }}</a>, {{ __('reviews.login_to_write') }}</p>
+                    <p class="mt-6 text-sm text-moss"><a href="{{ route('login') }}" class="text-amber underline">{{ __('ui.nav.login') }}</a>, {{ __('reviews.login_to_write') }}</p>
                 @endauth
 
                 <ul class="mt-6">

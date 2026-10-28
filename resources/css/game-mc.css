@@ -5,7 +5,7 @@
  */
 :root {
   --bg: #0b0f0a; --bg-2: #10150e; --card: #171d14; --line: #2a3424; --line-2: #3d4a34;
-  --text: #f1f5ee; --muted: #a3b09a; --faint: #74806c;
+  --text: #f1f5ee; --muted: #a3b09a; --faint: #859179;
   --grass: #6cc644; --grass-d: #4e9a2a; --dirt: #8b5a2b; --dirt-d: #6b4320; --stone: #7d7d7d; --stone-d: #5a5a5a;
   --sky: #78b6ff; --gold: #ffd84a; --diamond: #4ee6d6; --redstone: #e5332b;
   --pixel: 'Press Start 2P', monospace; --display: 'Unbounded', sans-serif; --font: 'Manrope', system-ui, sans-serif;
@@ -102,12 +102,12 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
 .slot { text-decoration: none; position: relative; aspect-ratio: 1; display: grid; place-items: center; background: #8b8b8b; border: 0; cursor: pointer; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; font: 8px var(--pixel); color: #fff; text-shadow: 1px 1px 0 #333; }
 .slot:hover { background: #a2a2a2; }
-.slot[aria-pressed="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8, 0 0 0 2px #fff; }
+.slot[aria-current="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8, 0 0 0 2px #fff; }
 .slot .cnt { position: absolute; right: 3px; bottom: 2px; font-size: 7px; }
 .slot-row { display: grid; gap: 4px; }
 .mode-slot { display: flex; align-items: center; gap: 8px; padding: 6px; width: 100%; background: #8b8b8b; border: 0; cursor: pointer; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; font: 8px var(--pixel); color: #fff; text-shadow: 1px 1px 0 #333; text-align: left; }
 .mode-slot:hover { background: #a2a2a2; }
-.mode-slot[aria-pressed="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8; }
+.mode-slot[aria-current="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8; }
 .mode-slot .ic { flex: none; width: 24px; height: 24px; display: grid; place-items: center; background: #0003; }
 .mode-slot .cnt { margin-left: auto; }
 .inv input { width: 100%; padding: 8px; font: 9px var(--pixel); color: #fff; background: #000; border: 2px solid #a0a0a0; }
@@ -227,9 +227,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 /* Перемикачі, слоти й сортування — посилання (працюють і без скрипта) */
 .lever a { display: block; text-align: center; padding: 8px 6px; font: 9px var(--pixel); background: #8b8b8b; color: #fff; text-shadow: 1px 1px 0 #333; box-shadow: inset 2px 2px 0 #aaa, inset -2px -2px 0 #555; }
 .lever a:hover { background: #9c9c9c; }
-.lever a[aria-pressed="true"] { background: var(--grass-d); box-shadow: inset 2px 2px 0 #7fcf55, inset -2px -2px 0 #2a5c16; }
+.lever a[aria-current="true"] { background: var(--grass-d); box-shadow: inset 2px 2px 0 #7fcf55, inset -2px -2px 0 #2a5c16; }
 .sorts a { display: block; padding: 6px 8px; font: 8px var(--pixel); color: #fff; background: #0006; border: 2px solid #555; }
-.sorts a[aria-pressed="true"] { border-color: #fff; background: #ffffff1a; }
+.sorts a[aria-current="true"] { border-color: #fff; background: #ffffff1a; }
 .inv .reset { display: flex; margin-top: 12px; width: 100%; }
 .info .name a:hover { color: var(--gold); }
 .info .name a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }

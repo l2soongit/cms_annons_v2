@@ -13,7 +13,7 @@
   --line-2: #3f3f46;      /* zinc-700 */
   --text: #f4f4f5;        /* zinc-100 */
   --muted: #a1a1aa;       /* zinc-400 */
-  --faint: #71717a;       /* zinc-500 */
+  --faint: #8a8a93;       /* світліший за zinc-500: контраст ≥ 4.5 на картках */
   --amber: #fbbf24;       /* amber-400 */
   --orange: #f97316;      /* orange-500 */
   --gold-ink: #1c1003;
@@ -259,7 +259,7 @@ tr:last-child td { border-bottom: 0; }
 footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 56px 0 32px; }
 .fgrid { display: grid; grid-template-columns: 1.5fr repeat(3, 1fr); gap: 40px; }
 .fgrid p { margin-top: 12px; color: var(--muted); font-size: 14px; max-width: 32ch; }
-.fgrid h4 { font: 700 13px var(--display); margin-bottom: 16px; }
+.fgrid h2 { font: 700 13px var(--display); margin-bottom: 16px; }
 .fgrid ul { list-style: none; padding: 0; display: grid; gap: 8px; color: var(--muted); font-size: 14px; }
 .fgrid ul a:hover { color: var(--text); }
 .fbottom { margin-top: 40px; padding-top: 24px; border-top: 1px solid var(--line); display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px; color: var(--faint); font-size: 13px; }
@@ -275,7 +275,8 @@ footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 56px 0 32
 @keyframes drift { 0% { transform: translate(0, 0) scale(1); } 50% { transform: translate(80px, 60px) scale(1.15); } 100% { transform: translate(-60px, 120px) scale(.95); } }
 /* Фон першого екрана: промені прожекторів і іскри, що здіймаються */
 .hero-fx { position: absolute; inset: -80px 0 0; z-index: 0; pointer-events: none; overflow: hidden; mask-image: linear-gradient(180deg, #000 70%, transparent); }
-.beam { position: absolute; top: -10%; width: 420px; height: 130%; transform-origin: 50% 0; filter: blur(18px); opacity: .55;
+/* Розміри фіксовані: від % промені «стрибали» б, коли перший екран змінює висоту після завантаження шрифтів (CLS) */
+.beam { position: absolute; top: -90px; width: 420px; height: 1100px; transform-origin: 50% 0; filter: blur(18px); opacity: .55;
   background: conic-gradient(from 180deg at 50% 0%, transparent 168deg, #fbbf2430 176deg, #f9731622 180deg, #fbbf2430 184deg, transparent 192deg); }
 .beam.b1 { left: 8%; animation: sway 11s ease-in-out infinite alternate; }
 .beam.b2 { right: 6%; animation: sway 13s ease-in-out -4s infinite alternate-reverse; opacity: .45; }

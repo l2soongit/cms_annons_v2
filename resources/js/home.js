@@ -96,6 +96,8 @@ $$('[data-scene]').forEach(el => { el.outerHTML = scene(el.dataset.scene); });
 const countUp = (el, to, ms = 1600) => {
   if (!el) return;
   if (calm) { el.textContent = fmtN(to); el.dataset.now = to; return; }
+  // Ширину кінцевого числа резервуємо заздалегідь, інакше сусідні блоки зсуваються на кожному кадрі (CLS)
+  if (!el.style.minWidth) { el.textContent = fmtN(to); el.style.minWidth = `${el.offsetWidth}px`; }
   const from = Number(el.dataset.now || 0), t0 = performance.now();
   const step = t => {
     const p = Math.min(1, (t - t0) / ms), e = 1 - Math.pow(1 - p, 4);

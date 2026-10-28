@@ -57,21 +57,21 @@
   <section class="controls" aria-label="{{ __('ui.game.filters') }}" data-reveal>
     @if ($switch)
       <div class="ver-switch" role="group" aria-label="{{ $switch->label }}" data-swap="versions">
-        <a href="{{ $url([$switch->key => null]) }}" aria-pressed="{{ isset($active[$switch->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}<small>{{ __('ui.cs.all_versions') }}</small></a>
+        <a href="{{ $url([$switch->key => null]) }}" aria-current="{{ isset($active[$switch->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}<small>{{ __('ui.cs.all_versions') }}</small></a>
         @foreach ($switch->options as $option)
           @php $on = ($active[$switch->key] ?? null) === $option['value']; @endphp
           {{-- Коротка назва, підпис (рушій) і колір — з варіанта поля в адмінці --}}
-          <a href="{{ $url([$switch->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" @if (! empty($option['color'])) style="--v:{{ $option['color'] }}" @endif data-filter-link>{{ ($option['short'] ?? '') ?: $option['label'] }}<small>{{ $option['note'] ?? '' }}</small></a>
+          <a href="{{ $url([$switch->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" @if (! empty($option['color'])) style="--v:{{ $option['color'] }}" @endif data-filter-link>{{ ($option['short'] ?? '') ?: $option['label'] }}<small>{{ $option['note'] ?? '' }}</small></a>
         @endforeach
       </div>
     @endif
     <div class="modes" data-swap="modes">
       @foreach ($chipFields as $field)
-        <a class="mode-chip" href="{{ $url([$field->key => null]) }}" aria-pressed="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
+        <a class="mode-chip" href="{{ $url([$field->key => null]) }}" aria-current="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
         @foreach ($field->options as $option)
           @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
           @if ($n || $on)
-            <a class="mode-chip" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
+            <a class="mode-chip" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
           @endif
         @endforeach
       @endforeach
@@ -87,7 +87,7 @@
       </form>
       <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
         @foreach (['votes', 'online', 'ping', 'new', 'opening'] as $s)
-          <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.cs.sort_{$s}") }}</a>
+          <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.cs.sort_{$s}") }}</a>
         @endforeach
       </div>
     </div>
@@ -96,12 +96,12 @@
   <div class="main">
     <!-- Меню закупівлі: швидкі фільтри, вмикаються кліком або клавішами 1–6 -->
     <aside class="pool" aria-label="{{ $game->pageText('cs.buy') }}" data-reveal>
-      <h3>{{ $game->pageText('cs.buy') }} <small>{{ __('ui.cs.buy_keys') }}</small></h3>
+      <h2>{{ $game->pageText('cs.buy') }} <small>{{ __('ui.cs.buy_keys') }}</small></h2>
       <div class="buy" data-swap="buy">
         @foreach (\App\Http\Controllers\GameController::PERKS as $i => $perk)
           @php $on = isset($active[$perk]); $n = $perks[$perk] ?? 0; @endphp
           @if ($n || $on)
-            <a class="buy-item" href="{{ $url([$perk => $on ? null : '1']) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-key="{{ $i + 1 }}" data-filter-link><kbd>{{ $i + 1 }}</kbd><span>{{ $perkLabels[$perk] }}</span><span class="n num">{{ $n }}</span></a>
+            <a class="buy-item" href="{{ $url([$perk => $on ? null : '1']) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-key="{{ $i + 1 }}" data-filter-link><kbd>{{ $i + 1 }}</kbd><span>{{ $perkLabels[$perk] }}</span><span class="n num">{{ $n }}</span></a>
           @else
             <span class="buy-item" aria-disabled="true" style="opacity:.4;cursor:not-allowed"><kbd>{{ $i + 1 }}</kbd><span>{{ $perkLabels[$perk] }}</span><span class="n num">0</span></span>
           @endif
@@ -112,7 +112,7 @@
 
     <!-- Таблиця рахунку -->
     <section class="board" aria-label="{{ $game->pageText('cs.board') }}" data-reveal>
-      <div class="board-head"><h3>{{ $game->pageText('cs.board') }}</h3><span class="live">{{ $game->pageText('cs.live') }}</span></div>
+      <div class="board-head"><h2>{{ $game->pageText('cs.board') }}</h2><span class="live">{{ $game->pageText('cs.live') }}</span></div>
       <div class="cols" aria-hidden="true"><span class="c">{{ __('ui.cs.col_rank') }}</span><span>{{ __('ui.game.col_server') }}</span><span>{{ __('ui.cs.col_map') }}</span><span>{{ __('ui.home.col_players') }}</span><span class="r">{{ __('ui.cs.col_ping') }}</span><span class="r c-votes">{{ __('ui.game.col_votes') }}</span><span></span></div>
       <div id="results" aria-live="polite">
         @include('games.themes.cs-list')
@@ -123,7 +123,7 @@
   <section class="band">
     @if ($game->showsBlock('soon'))
     <div class="panel" data-reveal>
-      <h3>{{ $game->pageText('cs.soon') }}</h3>
+      <h2>{{ $game->pageText('cs.soon') }}</h2>
       <div class="matches" id="soon">
         @forelse ($comingSoon as $s)
           @php $opens = $s->opens_at->copy()->startOfDay(); @endphp
@@ -144,7 +144,7 @@
     @endif
     @if ($game->showsBlock('fame'))
     <div class="panel" data-reveal>
-      <h3>{{ $game->pageText('cs.mvp') }}</h3>
+      <h2>{{ $game->pageText('cs.mvp') }}</h2>
       @if ($fame->isNotEmpty())
         <ul class="mvp" id="mvp">
           @foreach ($fame->take(3) as $winner)
@@ -160,7 +160,7 @@
     @endif
     @if ($game->showsBlock('popular'))
     <div class="panel" data-reveal>
-      <h3>{{ $game->pageText('cs.popular_maps') }}</h3>
+      <h2>{{ $game->pageText('cs.popular_maps') }}</h2>
       @if ($maps)
         <div class="popmaps" id="popmaps">
           @foreach ($maps as $m)

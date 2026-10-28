@@ -33,7 +33,8 @@ button { font: inherit; color: inherit; }
 
 /* Шапка */
 header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
-.bar { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 16px; border-radius: 4px; background: #10150ecc; backdrop-filter: blur(14px); border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--line); }
+/* Без backdrop-filter: розмиття під шапкою перераховувалось на кожному кадрі прокрутки списку й гальмувало слабкі відеокарти */
+.bar { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 16px; border-radius: 4px; background: #10150ef5; border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--line); }
 .logo { display: flex; align-items: center; gap: 12px; font: 700 17px var(--display); letter-spacing: -0.02em; }
 .logo i { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(90deg, #fbbf24, #f97316); display: grid; place-items: center; }
 .bar nav { display: flex; gap: 4px; margin: 0 auto; font-size: 14px; font-weight: 600; color: var(--muted); }
@@ -44,20 +45,24 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 
 /* ── Банер: піксельний світ ── */
 .mhero { position: relative; isolation: isolate; overflow: hidden; margin-top: 16px; height: 380px; border: 4px solid #000; box-shadow: inset 0 0 0 2px #ffffff22; image-rendering: pixelated; }
-.mhero .sky { position: absolute; inset: 0; z-index: -3; background: linear-gradient(180deg, #4a8fe0 0%, #78b6ff 55%, #b8dcff 100%); animation: daycycle 40s ease-in-out infinite alternate; }
-@keyframes daycycle { 70% { filter: hue-rotate(0deg) brightness(1); } 100% { filter: hue-rotate(-30deg) saturate(1.3) brightness(.8); } }
+.mhero .sky { position: absolute; inset: 0; z-index: -3; background: linear-gradient(180deg, #4a8fe0 0%, #78b6ff 55%, #b8dcff 100%); }
+/* Захід сонця — шар, що проявляється прозорістю (композитор), а не filter на все небо, який перемальовував шапку щокадру */
+.mhero .sky::after { content: ''; position: absolute; inset: 0; background: linear-gradient(180deg, #3b3f8f 0%, #b06a8a 60%, #e0a070 100%); opacity: 0; animation: daycycle 40s ease-in-out infinite alternate; }
+@keyframes daycycle { 70% { opacity: 0; } 100% { opacity: .45; } }
 .msun { position: absolute; z-index: -2; top: 36px; right: 22%; width: 64px; height: 64px; background: #fff7c2; box-shadow: 0 0 0 8px #fff3a066, 0 0 60px #fff3a0; }
 .mcloud { position: absolute; z-index: -2; height: 24px; background: #fff; box-shadow: 24px -24px 0 #fff, 48px -24px 0 #fff, 72px 0 0 #fff, 48px 0 0 #fff, 24px 0 0 #fff; opacity: .95; animation: cloud linear infinite; }
 @keyframes cloud { from { transform: translateX(-200px); } to { transform: translateX(1400px); } }
 /* Рельєф: стовпчики блоків різної висоти — трава, земля, камінь з рудами */
 .terrain { position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; display: flex; align-items: flex-end; height: 62%; }
 .col { flex: 1; display: flex; flex-direction: column; }
-.blk { aspect-ratio: 1; width: 100%; }
+.blk { position: relative; aspect-ratio: 1; width: 100%; }
 .blk.g { background: linear-gradient(180deg, #6cc644 0 35%, #8b5a2b 35%); box-shadow: inset 0 -2px 0 #0002, inset 2px 0 0 #fff1; }
 .blk.d { background: #8b5a2b; box-shadow: inset 0 -2px 0 #0002, inset 3px 3px 0 #a06a35, inset -3px -3px 0 #6b4320; }
 .blk.s { background: #7d7d7d; box-shadow: inset 3px 3px 0 #8f8f8f, inset -3px -3px 0 #626262; }
-.blk.o { background: radial-gradient(circle at 30% 35%, var(--ore) 0 14%, transparent 15%), radial-gradient(circle at 70% 65%, var(--ore) 0 12%, transparent 13%), #7d7d7d; box-shadow: inset 3px 3px 0 #8f8f8f, inset -3px -3px 0 #626262; animation: ore 2.4s ease-in-out infinite; }
-@keyframes ore { 50% { filter: brightness(1.35) drop-shadow(0 0 4px var(--ore)); } }
+.blk.o { background: radial-gradient(circle at 30% 35%, var(--ore) 0 14%, transparent 15%), radial-gradient(circle at 70% 65%, var(--ore) 0 12%, transparent 13%), #7d7d7d; box-shadow: inset 3px 3px 0 #8f8f8f, inset -3px -3px 0 #626262; }
+/* Відблиск руди — прозорість готового світіння замість анімованого drop-shadow на кожному блоці */
+.blk.o::after { content: ''; position: absolute; inset: 0; box-shadow: 0 0 6px 1px var(--ore), inset 0 0 6px var(--ore); opacity: 0; animation: ore 2.4s ease-in-out infinite; animation-delay: inherit; }
+@keyframes ore { 50% { opacity: .85; } }
 .tree { position: absolute; z-index: -1; display: grid; grid-template-columns: repeat(3, var(--b)); }
 .tree i { width: var(--b); height: var(--b); }
 .tree .lf { background: #3e8a2a; box-shadow: inset 3px 3px 0 #4fa335, inset -3px -3px 0 #2f6b1f; }
@@ -69,6 +74,8 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .cube i:nth-child(1) { transform: translateZ(48px); } .cube i:nth-child(2) { transform: rotateY(90deg) translateZ(48px); }
 .cube i:nth-child(3) { transform: rotateY(180deg) translateZ(48px); } .cube i:nth-child(4) { transform: rotateY(-90deg) translateZ(48px); }
 .cube i:nth-child(5) { transform: rotateX(90deg) translateZ(48px); background: #6cc644; } .cube i:nth-child(6) { transform: rotateX(-90deg) translateZ(48px); background: #6b4320; }
+/* Шапка поза екраном або вкладка прихована — анімації на паузі (game-mc.js) */
+.mhero.is-paused *, .mhero.is-paused *::before, .mhero.is-paused *::after { animation-play-state: paused !important; }
 @keyframes spin { from { transform: rotateX(-24deg) rotateY(0); } to { transform: rotateX(-24deg) rotateY(360deg); } }
 @keyframes bob { 50% { transform: translateY(-14px); } }
 .cube-shadow { position: absolute; right: calc(12% + 18px); top: calc(26% + 150px); width: 60px; height: 10px; background: #0004; filter: blur(4px); animation: shadow 3s ease-in-out infinite; }
@@ -127,7 +134,7 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .info { min-width: 0; }
 .info .name { font: 12px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; display: flex; align-items: center; gap: 8px; }
 .motd { margin-top: 8px; font: 9px/1.7 var(--pixel); color: #aaa; text-shadow: 1px 1px 0 #2a2a2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-.motd span.obf { animation: obf .15s steps(1) infinite; }
+.motd span.obf { animation: obf .6s steps(1) infinite; }
 @keyframes obf { 50% { opacity: .4; } }
 .tags { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
 .tag { font: 7px var(--pixel); padding: 3px 5px; color: #fff; background: #0006; border: 1px solid #555; }

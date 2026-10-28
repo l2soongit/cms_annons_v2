@@ -38,12 +38,21 @@ if (hero && terrain) {
   addEventListener('resize', plant, { passive: true });
 }
 
+// Шапка поза екраном (людина гортає список) або вкладка прихована — її анімації на паузі,
+// щоб хмари, куб і руди не навантажували відеокарту, поки їх не видно
+let heroVisible = true;
+if (hero) {
+  const sync = () => hero.classList.toggle('is-paused', !heroVisible || document.hidden);
+  if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; sync(); }).observe(hero);
+  document.addEventListener('visibilitychange', sync);
+}
+
 // Жовтий «сплеш»-напис, як у меню гри; фрази — з перекладів
 const splash = $('#splash');
 const lines = DATA.splash ?? [];
 if (splash && lines.length > 1 && !calm) {
   let i = 0;
-  setInterval(() => { splash.textContent = lines[++i % lines.length]; }, 4000);
+  setInterval(() => { if (heroVisible && !document.hidden) splash.textContent = lines[++i % lines.length]; }, 4000);
 }
 
 // Вибір рядка (біла рамка, як у грі) і копіювання адреси

@@ -97,6 +97,13 @@ return [
         'not_set' => 'Set a public handler URL first.',
     ],
 
+    'widgets' => [
+        'title' => 'Website widgets',
+        'lead' => 'Add a “Vote” button and a status banner to your server website or forum — online and ranking update automatically.',
+        'more' => 'About widgets and the API',
+        'sizes' => 'Sizes: button — :vote; banner — :status (the size= parameter in the image URL).',
+    ],
+
     'api' => [
         'title' => 'API key',
         'lead' => 'The key signs vote-callbacks and grants API access: check a vote by nickname or IP, push player counts. Send it in the Authorization: Bearer header.',

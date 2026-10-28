@@ -145,6 +145,37 @@
             @endif
         </section>
 
+        {{-- Віджети для сайту сервера (ТЗ 7.3) --}}
+        @if ($server->status === \App\Enums\ServerStatus::Published)
+            @php
+                $voteUrl = route('servers.vote', $server);
+                $voteImg = route('widgets.vote', ['server' => $server->id, 'size' => '120x40']);
+                $statusImg = route('widgets.status', ['server' => $server->id, 'size' => '468x60']);
+                $pageUrl = route('servers.show', $server);
+            @endphp
+            <section aria-labelledby="s-widgets" class="lg:col-span-2">
+                <h2 id="s-widgets" class="font-display text-lg font-medium">{{ __('cabinet.widgets.title') }}</h2>
+                <p class="mt-3 text-moss">{{ __('cabinet.widgets.lead') }} <a href="{{ route('developers') }}#widgets" class="text-amber hover:underline">{{ __('cabinet.widgets.more') }}</a></p>
+                <div class="mt-4 flex flex-wrap items-center gap-4">
+                    <img src="{{ $voteImg }}" alt="{{ __('widgets.vote') }}" width="120" height="40">
+                    <img src="{{ $statusImg }}" alt="{{ $server->name }}" width="468" height="60" class="max-w-full">
+                </div>
+                <div class="mt-4 grid gap-4 lg:grid-cols-2">
+                    <div>
+                        <label for="w-html" class="text-sm font-medium">HTML</label>
+                        <textarea id="w-html" readonly rows="4" onclick="this.select()" class="mt-1.5 w-full rounded-md border border-seam bg-slab px-3 py-2 font-mono text-xs text-bone">&lt;a href="{{ $voteUrl }}"&gt;&lt;img src="{{ $voteImg }}" alt="{{ __('widgets.vote') }}" width="120" height="40"&gt;&lt;/a&gt;
+&lt;a href="{{ $pageUrl }}"&gt;&lt;img src="{{ $statusImg }}" alt="{{ $server->name }}" width="468" height="60"&gt;&lt;/a&gt;</textarea>
+                    </div>
+                    <div>
+                        <label for="w-bb" class="text-sm font-medium">BBCode</label>
+                        <textarea id="w-bb" readonly rows="4" onclick="this.select()" class="mt-1.5 w-full rounded-md border border-seam bg-slab px-3 py-2 font-mono text-xs text-bone">[url={{ $voteUrl }}][img]{{ $voteImg }}[/img][/url]
+[url={{ $pageUrl }}][img]{{ $statusImg }}[/img][/url]</textarea>
+                    </div>
+                </div>
+                <p class="mt-2 text-xs text-moss">{{ __('cabinet.widgets.sizes', ['vote' => implode(', ', array_keys(\App\Http\Controllers\WidgetController::VOTE_SIZES)), 'status' => implode(', ', array_keys(\App\Http\Controllers\WidgetController::STATUS_SIZES))]) }}</p>
+            </section>
+        @endif
+
         {{-- Підтвердження власності --}}
         <section aria-labelledby="s-verify">
             <h2 id="s-verify" class="font-display text-lg font-medium">{{ __('cabinet.verify.title') }}</h2>

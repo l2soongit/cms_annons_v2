@@ -4,6 +4,7 @@ use App\Http\Controllers\AdsController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
+use App\Http\Controllers\DevelopersController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InboxController;
@@ -16,6 +17,7 @@ use App\Http\Controllers\ServerController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\VoteController;
+use App\Http\Controllers\WidgetController;
 use App\Livewire\Cabinet\ServerForm;
 use Illuminate\Support\Facades\Route;
 
@@ -79,6 +81,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// Документація API і віджети для сайтів серверів (ТЗ 7.2–7.3)
+Route::get('/developers', [DevelopersController::class, 'index'])->name('developers');
+Route::get('/developers/openapi.json', [DevelopersController::class, 'openapi'])->name('developers.openapi');
+Route::get('/widget/{server:id}/vote.svg', [WidgetController::class, 'vote'])->middleware('throttle:120,1')->name('widgets.vote');
+Route::get('/widget/{server:id}/status.svg', [WidgetController::class, 'status'])->middleware('throttle:120,1')->name('widgets.status');
+
 // Перехід з рекламного банера (лічильник кліків)
 Route::get('/ad/{banner}', [AdsController::class, 'click'])->middleware('throttle:60,1')->name('ads.click');
 
@@ -90,5 +98,5 @@ Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware(
 
 // Останнім, бо slug гри перехоплює будь-який сегмент першого рівня
 Route::get('/{game}', [GameController::class, 'show'])
-    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
+    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
     ->name('games.show');

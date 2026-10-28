@@ -74,7 +74,7 @@
       <div><h4>{{ __('ui.footer.owners') }}</h4><ul>
         <li><a href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a></li>
         @if (HomeContent::shows('plans'))<li><a href="#plans">{{ __('ui.home.plans_label') }}</a></li>@endif
-        <li><a href="#">{{ __('ui.footer.api') }}</a></li>
+        <li><a href="{{ route('developers') }}">{{ __('ui.footer.api') }}</a></li>
       </ul></div>
       <div><h4>{{ __('ui.footer.portal') }}</h4><ul>
         <li><a href="#">{{ __('ui.footer.rules') }}</a></li>

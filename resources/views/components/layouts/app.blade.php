@@ -72,7 +72,7 @@
         <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-moss sm:px-6">
             <span>© {{ date('Y') }} graj.club</span>
             <a href="#" class="hover:text-bone">{{ __('ui.footer.rules') }}</a>
-            <a href="#" class="hover:text-bone">{{ __('ui.footer.api') }}</a>
+            <a href="{{ route('developers') }}" class="hover:text-bone">{{ __('ui.footer.api') }}</a>
             <a href="#" class="hover:text-bone">{{ __('ui.footer.contacts') }}</a>
         </div>
     </footer>

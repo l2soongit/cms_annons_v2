@@ -553,3 +553,16 @@ tbody tr.in { opacity: 1; transform: none; }
 .runner .slogo, .chaser .slogo { width: 28px; height: 28px; }
 .chaser .who { display: flex; align-items: center; gap: 10px; min-width: 0; }/* Довгі назви й логотипи не розширюють колонки першого екрана */
 .hero-grid > *, .runners > *, .runner .top > div { min-width: 0; }
+/* Телефон: таблиця рейтингу вміщається в екран — вужчі відступи, довгі назви переносяться, без логотипів */
+@media (max-width: 640px) {
+  .table-card { padding: 4px 12px 12px; }
+  table { table-layout: fixed; }
+  th { padding: 8px 4px; }
+  td { padding: 12px 4px; font-size: 14px; }
+  th:first-child, td:first-child { width: 40px; }
+  th:nth-child(4), td:nth-child(4) { width: 64px; }
+  th:last-child, td:last-child { width: 96px; }
+  .sname { display: block; overflow-wrap: anywhere; }
+  .slogo { display: none; }
+  td:last-child .btn-sm { padding: 6px 10px; font-size: 12px; }
+}

@@ -40,6 +40,20 @@
                 </div>
             </div>
 
+            {{-- Телефон: голос, статус і адреса одразу під назвою (бічна колонка опиняється в самому низу) --}}
+            <div class="mt-5 grid gap-3 lg:hidden">
+                <div class="flex flex-wrap items-center justify-between gap-3">
+                    <p @class(['text-sm font-medium', 'text-signal' => $server->is_online, 'text-fade' => ! $server->is_online])>
+                        {{ $server->is_online ? __('ui.server.players', ['n' => $server->players, 'max' => $server->max_players]) : __('ui.server.offline') }}
+                    </p>
+                    <x-button :href="route('servers.vote', $server)">{{ __('ui.server.vote') }}</x-button>
+                </div>
+                <div class="flex items-center gap-2 rounded-md border border-seam bg-slab px-3 py-2 text-sm">
+                    <span class="min-w-0 flex-1 break-all" data-copy-source>{{ $server->address() }}</span>
+                    <button type="button" data-copy class="shrink-0 rounded border border-seam px-2 py-0.5 text-xs text-moss hover:text-bone" data-copied-label="{{ __('ui.server_page.copied') }}">{{ __('ui.server_page.copy') }}</button>
+                </div>
+            </div>
+
             {{-- Опис очищено HTMLPurifier при збереженні --}}
             <div class="prose-description mt-8 max-w-prose leading-relaxed">{!! \App\Support\HtmlSanitizer::render($server->description) !!}</div>
 

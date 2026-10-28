@@ -330,3 +330,9 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 
 /* Платне виділення в таблиці (ТЗ 3.7): бірюзова смуга й фон */
 .row.hl { background: linear-gradient(90deg, #34d39914, transparent 55%); box-shadow: inset 0 0 0 1px #34d39944; }
+
+/* Телефон: радар — прикраса на цілий екран перед списком; ховаємо, щоб таблиця була ближче */
+@media (max-width: 720px) {
+  .ghero .radar { display: none; }
+  .ghero { min-height: 0; }
+}

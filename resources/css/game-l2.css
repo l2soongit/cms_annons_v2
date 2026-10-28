@@ -265,3 +265,14 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 
 /* Платне виділення в списку (ТЗ 3.7): золота рамка й тепле тло */
 .srv.hl { background: linear-gradient(90deg, #e8b04a14, transparent 60%); box-shadow: inset 3px 0 0 #e8b04a, inset 0 0 0 1px #e8b04a44; }
+
+/* Телефон: назва з тегами — на всю ширину, нижче онлайн, голоси й кнопка; герб прихований */
+@media (max-width: 640px) {
+  .srv { grid-template-columns: 32px minmax(0, 1fr) auto auto; row-gap: 10px; column-gap: 10px; padding: 12px; }
+  .srv .rank { grid-row: 1 / 3; align-self: center; }
+  .srv .sname { grid-column: 2 / -1; min-width: 0; }
+  .srv .online { display: block; grid-column: 2; grid-row: 2; min-width: 0; font-size: 12px; }
+  .srv .votes { display: block; grid-column: 3; grid-row: 2; text-align: right; }
+  .srv .votes b { font-size: 18px; }
+  .srv .btn-sm { grid-column: 4; grid-row: 2; }
+}

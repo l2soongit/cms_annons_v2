@@ -29,6 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800{{ $fonts ? '&'.$fonts : '' }}&display=swap" rel="stylesheet">
 @vite($assets)
+<x-layouts.mobile-bar />
 </head>
 <body>
 {{ $background ?? '' }}
@@ -38,7 +39,7 @@
   <div class="wrap">
     <div class="bar">
       <a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a>
-      <nav aria-label="{{ __('ui.nav.games') }}">
+      <nav class="games-nav" aria-label="{{ __('ui.nav.games') }}">
         @foreach ($navGames as $navGame)
           <a href="{{ route('games.show', $navGame) }}" @if ($navGame->is($game)) aria-current="page" @endif>{{ $navGame->navName() }}</a>
         @endforeach
@@ -51,7 +52,7 @@
         @else
           <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>
         @endauth
-        {{ $headerCta }}
+        <span class="header-cta">{{ $headerCta }}</span>
       </div>
     </div>
   </div>

@@ -31,6 +31,7 @@
 {{-- Шрифти ігор (усі з кирилицею) --}}
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&display=swap" rel="stylesheet">
 @vite(['resources/css/home.css', 'resources/js/home.js'])
+<x-layouts.mobile-bar />
 </head>
 <body>
 <div class="aurora" aria-hidden="true"><i></i><i></i><i></i></div>
@@ -53,7 +54,7 @@
         @else
           <a class="btn btn-ghost btn-sm login" href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>
         @endauth
-        <a class="btn btn-hot btn-sm" href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a>
+        <a class="btn btn-hot btn-sm header-cta" href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a>
       </div>
     </div>
   </div>

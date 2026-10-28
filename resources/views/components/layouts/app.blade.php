@@ -34,31 +34,34 @@
                                    'bg-slab-2 text-bone' => request()->route('game')?->is($navGame),
                                    'text-moss hover:text-bone' => ! request()->route('game')?->is($navGame),
                                ])
-                               @if (request()->route('game')?->is($navGame)) aria-current="page" @endif>{{ $navGame->name }}</a>
+                               @if (request()->route('game')?->is($navGame)) aria-current="page" @endif>{{ $navGame->navName() }}</a>
                         </li>
                     @endforeach
                 </ul>
             </nav>
 
-            <div class="ml-auto flex items-center gap-2 text-sm">
-                <a href="{{ route('search') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.search.title') }}">
+            <div class="ml-auto flex items-center gap-0.5 text-sm sm:gap-2">
+                <a href="{{ route('search') }}" class="rounded-md px-2 py-2 text-moss hover:text-bone sm:px-3" aria-label="{{ __('ui.search.title') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
                 </a>
-                <button type="button" data-theme-toggle class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.theme') }}">
+                <button type="button" data-theme-toggle class="rounded-md px-2 py-2 text-moss hover:text-bone sm:px-3" aria-label="{{ __('ui.theme') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
                 </button>
                 <x-locale-switcher />
                 @auth
                     <x-notification-bell class="text-moss hover:text-bone" />
-                    <a href="{{ route('cabinet') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
-                    <form method="POST" action="{{ route('logout') }}">
+                    <a href="{{ route('cabinet') }}" class="inline-flex items-center gap-2 rounded-md px-2 py-2 text-moss hover:text-bone sm:px-3" title="{{ auth()->user()->name }}" aria-label="{{ __('cabinet.title') }}">
+                        <svg class="sm:hidden" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21a8 8 0 0 1 16 0"/></svg>
+                        <span class="hidden sm:inline">{{ __('cabinet.title') }}</span>
+                    </a>
+                    <form method="POST" action="{{ route('logout') }}" class="hidden sm:block">
                         @csrf
                         <button class="rounded-md px-3 py-2 text-moss hover:text-bone">{{ __('auth.ui.logout') }}</button>
                     </form>
                 @else
-                    <a href="{{ route('login') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone">{{ __('ui.nav.login') }}</a>
+                    <a href="{{ route('login') }}" class="rounded-md px-2 py-2 text-moss hover:text-bone sm:px-3">{{ __('ui.nav.login') }}</a>
                 @endauth
-                <a href="{{ route('cabinet.servers.create') }}" class="rounded-md bg-amber px-4 py-2 font-medium text-amber-ink hover:brightness-110">{{ __('ui.nav.add_server') }}</a>
+                <a href="{{ route('cabinet.servers.create') }}" class="hidden rounded-md bg-amber px-4 py-2 font-medium text-amber-ink hover:brightness-110 sm:inline-flex">{{ __('ui.nav.add_server') }}</a>
             </div>
         </div>
     </header>

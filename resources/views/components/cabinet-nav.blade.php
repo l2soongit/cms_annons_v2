@@ -24,6 +24,9 @@
                    ])>{{ $label }}</a>
             </li>
         @endforeach
+        <li class="sm:hidden">
+            <form method="POST" action="{{ route('logout') }}">@csrf<button class="block border-b-2 border-transparent px-3 py-2.5 text-moss hover:text-bone">{{ __('auth.ui.logout') }}</button></form>
+        </li>
         @if (auth()->user()->isStaff())
             <li><a href="/admin" class="block border-b-2 border-transparent px-3 py-2.5 text-moss hover:text-bone">{{ __('profile.nav.admin') }}</a></li>
         @endif

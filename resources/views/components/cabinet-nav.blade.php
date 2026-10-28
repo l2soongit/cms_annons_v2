@@ -1,6 +1,7 @@
 @php
     $items = [
         'cabinet' => __('cabinet.my_servers'),
+        'cabinet.balance' => __('billing.nav').' · '.\App\Billing\Money::format(auth()->user()->balance),
         'cabinet.profile' => __('profile.nav.profile'),
         'cabinet.security' => __('profile.nav.security'),
         'cabinet.notifications' => __('profile.nav.notifications'),

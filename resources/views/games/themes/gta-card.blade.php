@@ -25,7 +25,7 @@
     }
     $d .= ' V120 Z';
 @endphp
-<article @class(['srv', 'gcard', 'vip' => $vip, 'lead' => $lead]) data-name="{{ $server->id }}">
+<article @class(['srv', 'gcard', 'vip' => $vip, 'lead' => $lead, 'hl' => ! $vip && $server->isHighlighted()]) data-name="{{ $server->id }}">
   @if ($banner)
     <div class="cover photo" style="background-image:url('{{ \App\Support\HomePageData::url($banner->path) }}')" aria-hidden="true"><span class="cstreak"></span></div>
   @else

@@ -1,5 +1,6 @@
 <?php
 
+use App\Billing\Billing;
 use App\Rating\RatingCalculator;
 use App\Servers\ServerModeration;
 use Illuminate\Support\Facades\Artisan;
@@ -23,6 +24,8 @@ Schedule::command('rating:recalculate')->everyFiveMinutes()->withoutOverlapping(
 Schedule::command('rating:close-month')->monthlyOn(1, '00:05');
 Schedule::command('servers:aggregate')->hourlyAt(2);
 Schedule::command('servers:release-blocks')->everyFifteenMinutes();
+Schedule::command('billing:expire')->everyFiveMinutes()->withoutOverlapping();
+Schedule::command('billing:remind')->dailyAt('10:00');
 Schedule::command('queue:prune-failed --hours=168')->daily();
 
 Artisan::command('rating:recalculate', function (RatingCalculator $rating) {
@@ -38,3 +41,11 @@ Artisan::command('rating:close-month', function (RatingCalculator $rating) {
 Artisan::command('servers:release-blocks', function (ServerModeration $moderation) {
     $this->info('Розблоковано серверів: '.$moderation->releaseExpiredBlocks());
 })->purpose('Повернути в рейтинг сервери, чий термін блокування минув');
+
+Artisan::command('billing:expire', function (Billing $billing) {
+    $this->info('Оброблено послуг, що закінчилися: '.$billing->expire());
+})->purpose('Вимкнути платні послуги після терміну; з автопродовженням — оплатити наступний період');
+
+Artisan::command('billing:remind', function (Billing $billing) {
+    $this->info('Надіслано нагадувань: '.$billing->remindExpiring());
+})->purpose('Нагадати власникам про послуги, що скоро закінчаться');

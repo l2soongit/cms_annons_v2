@@ -51,6 +51,8 @@ class DemoServerSeeder extends Seeder
             ['email' => 'owner@graj.club'],
             ['name' => 'Demo Owner', 'password' => bcrypt('password'), 'email_verified_at' => now()],
         );
+        // Баланс для перевірки купівлі послуг у кабінеті
+        $owner->forceFill(['balance' => 5000])->save();
 
         foreach (Game::with('fields')->get() as $game) {
             foreach (self::NAMES[$game->slug] ?? [] as $i => $name) {
@@ -91,6 +93,22 @@ class DemoServerSeeder extends Seeder
                         'value' => fake()->randomElement($field->options)['value'],
                     ]);
                 }
+            }
+
+            // Оплачений анонс сервера, що скоро відкривається, і виділення одного сервера — для перегляду послуг
+            $soon = $game->servers()->where('opens_at', '>', now())->first();
+            $soonTariff = $game->tariffs()->where('service', 'coming_soon')->first();
+            if ($soon && $soonTariff) {
+                $soon->orders()->firstOrCreate(['tariff_id' => $soonTariff->id], [
+                    'user_id' => $owner->id, 'amount' => $soonTariff->price, 'starts_at' => now()->subDay(), 'ends_at' => $soon->opens_at->copy()->endOfDay(),
+                ]);
+            }
+            $highlightTariff = $game->tariffs()->where('service', 'highlight')->where('days', 30)->first();
+            if ($highlighted = $game->servers()->where('opens_at', '<', now())->inRandomOrder()->first()) {
+                $highlighted->orders()->firstOrCreate(['tariff_id' => $highlightTariff->id], [
+                    'user_id' => $owner->id, 'amount' => $highlightTariff->price, 'starts_at' => now()->subDays(2), 'ends_at' => now()->addDays(28),
+                ]);
+                $highlighted->forceFill(['highlighted_until' => now()->addDays(28)])->saveQuietly();
             }
 
             // Два VIP-місця в кожній грі для перегляду блоку VIP

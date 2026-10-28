@@ -327,3 +327,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .muted { color: var(--muted); font-size: 13px; margin-top: 10px; }
 .mvp a:hover b { color: var(--ct-2); }
 .match > a { position: absolute; inset: 0; z-index: 1; }
+
+/* Платне виділення в таблиці (ТЗ 3.7): бірюзова смуга й фон */
+.row.hl { background: linear-gradient(90deg, #34d39914, transparent 55%); box-shadow: inset 0 0 0 1px #34d39944; }

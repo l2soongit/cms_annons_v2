@@ -2,6 +2,9 @@
 
 namespace App\Filament\Resources;
 
+use App\Billing\Billing;
+use App\Billing\BillingException;
+use App\Billing\Money;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\ModerationLog;
 use App\Models\User;
@@ -12,6 +15,7 @@ use Filament\Actions\EditAction;
 use Filament\Forms\Components\DateTimePicker;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
+use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
@@ -66,6 +70,8 @@ class UserResource extends Resource
                 TextColumn::make('email')->searchable(),
                 TextColumn::make('roles.name')->label('Ролі')->badge(),
                 TextColumn::make('servers_count')->counts('servers')->label('Серверів'),
+                TextColumn::make('balance')->label('Баланс')->formatStateUsing(fn ($state) => Money::format($state))->sortable()
+                    ->visible(fn () => auth()->user()->can('billing.manage')),
                 TextColumn::make('banned_until')->label('Бан до')->dateTime('d.m.Y H:i'),
                 TextColumn::make('created_at')->label('Реєстрація')->since(),
             ])
@@ -73,6 +79,21 @@ class UserResource extends Resource
                 SelectFilter::make('roles')->relationship('roles', 'name')->label('Роль'),
             ])
             ->recordActions([
+                Action::make('balance')->label('Баланс')->icon(Heroicon::OutlinedBanknotes)
+                    ->visible(fn () => auth()->user()->can('billing.manage'))
+                    ->modalDescription(fn (User $u) => 'Зараз: '.Money::format($u->balance))
+                    ->schema([
+                        TextInput::make('amount')->label('Сума, ₴ (мінус — списати)')->numeric()->required()->notIn(['0']),
+                        TextInput::make('reason')->label('Причина')->required()->maxLength(160),
+                    ])
+                    ->action(function (User $u, array $data) {
+                        try {
+                            app(Billing::class)->adjust($u, Money::cents($data['amount']), $data['reason']);
+                            Notification::make()->title('Баланс змінено')->success()->send();
+                        } catch (BillingException $e) {
+                            Notification::make()->title($e->getMessage())->danger()->send();
+                        }
+                    }),
                 Action::make('warn')->label('Попередити')->color('warning')->icon(Heroicon::OutlinedExclamationTriangle)
                     ->visible(fn (User $u) => ! $u->isBanned() && ! $u->is(auth()->user()))
                     ->schema([TextInput::make('reason')->label('Причина')->required()])

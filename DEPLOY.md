@@ -38,6 +38,8 @@
 | Вхід через Google | console.cloud.google.com → OAuth client, redirect `https://graj.club/auth/google/callback` | `GOOGLE_CLIENT_ID`, `GOOGLE_CLIENT_SECRET` |
 | Вхід через Discord | discord.com/developers → OAuth2, redirect `https://graj.club/auth/discord/callback` | `DISCORD_CLIENT_ID`, `DISCORD_CLIENT_SECRET` |
 | Telegram-сповіщення | @BotFather → новий бот | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` (будь-який довгий рядок) |
+| Оплата LiqPay | liqpay.ua → магазин → ключі API. Адресу для зворотного виклику портал передає сам (`/api/billing/callback/liqpay`) | `LIQPAY_PUBLIC_KEY`, `LIQPAY_PRIVATE_KEY`, `LIQPAY_SANDBOX` (`true` — тестові платежі) |
+| Оплата Stripe | dashboard.stripe.com → Developers → API keys → обмежений ключ (rk_) з правом Write на Checkout Sessions; Webhooks → endpoint `https://graj.club/api/billing/callback/stripe` з подіями `checkout.session.completed`, `checkout.session.async_payment_succeeded`, `checkout.session.async_payment_failed`, `checkout.session.expired` | `STRIPE_SECRET`, `STRIPE_WEBHOOK_SECRET` (whsec_…) |
 | Капча | dash.cloudflare.com → Turnstile | `TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET` |
 | Виявлення VPN | ipqualityscore.com | `IPQS_KEY` |
 

@@ -15,7 +15,7 @@
     $motd = Motd::html($server->motd);
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
 @endphp
-<div @class(['entry', 'srv', 'vip' => $vip]) data-name="{{ $server->id }}">
+<div @class(['entry', 'srv', 'vip' => $vip, 'hl' => ! $vip && $server->isHighlighted()]) data-name="{{ $server->id }}">
   <span @class(['rank', 'r'.$rank => ! $vip && $rank <= 3])>{{ $vip ? '★' : $rank }}</span>
   @if ($logo)<img class="icon" src="{{ HomePageData::url($logo->path) }}" alt="" width="72" height="72" loading="lazy">@else{!! McPixels::icon($server->name) !!}@endif
   <div class="info">

@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServerController;
@@ -45,6 +47,11 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::delete('/servers/{server}/invitations/{invitation}', [CoOwnerController::class, 'cancelInvitation'])->name('.servers.invitations.cancel');
         Route::post('/servers/{server}/transfer', [CoOwnerController::class, 'transfer'])->middleware('throttle:5,1')->name('.servers.transfer');
         Route::get('/invitations/{token}', [CoOwnerController::class, 'accept'])->name('.invitations.accept');
+        Route::post('/servers/{server}/orders', [PromotionController::class, 'store'])->middleware('throttle:10,1')->name('.servers.orders');
+        Route::post('/orders/{order}/auto-renew', [PromotionController::class, 'autoRenew'])->name('.orders.auto-renew');
+        Route::get('/orders/{order}/receipt', [BillingController::class, 'receipt'])->name('.orders.receipt');
+        Route::get('/balance', [BillingController::class, 'index'])->name('.balance');
+        Route::post('/balance', [BillingController::class, 'deposit'])->middleware('throttle:10,1')->name('.balance.deposit');
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('.profile');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('.profile.destroy');
@@ -55,7 +62,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// Повернення з платіжної системи й тестова оплата (лише локально, посилання підписане)
+Route::get('/billing/return', [BillingController::class, 'returned'])->name('billing.return');
+Route::post('/billing/return', [BillingController::class, 'returned']);
+Route::get('/billing/test/{transaction}', [BillingController::class, 'testPage'])->middleware(['auth', 'signed'])->name('billing.test');
+Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware('auth')->name('billing.test.pay');
+
 // Останнім, бо slug гри перехоплює будь-який сегмент першого рівня
 Route::get('/{game}', [GameController::class, 'show'])
-    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
+    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
     ->name('games.show');

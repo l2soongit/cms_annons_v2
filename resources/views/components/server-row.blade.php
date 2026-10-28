@@ -13,6 +13,8 @@
     'grid-cols-[3rem_1fr_auto]' => $compact,
     'grid-cols-[3rem_1fr_auto] sm:grid-cols-[4rem_1fr_11rem_7rem_auto]' => ! $compact,
     'bg-amber/5 -mx-4 px-4 sm:-mx-5 sm:px-5' => $vip,
+    // Платне виділення (ТЗ 3.7): кольорова рамка й фон
+    '-mx-4 rounded-md border-l-2 border-l-signal bg-signal/5 px-4 sm:-mx-5 sm:px-5' => ! $vip && $server->isHighlighted(),
 ])>
     @if ($vip)
         <span class="flex justify-end text-amber">

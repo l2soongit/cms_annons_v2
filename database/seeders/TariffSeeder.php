@@ -24,6 +24,20 @@ class TariffSeeder extends Seeder
                     ['name' => ['uk' => "Виділення на {$days} днів", 'en' => "Highlight for {$days} days"], 'price' => $price / 2],
                 );
             }
+
+            // Підняття: бонусні бали до кінця місяця
+            foreach ([50 => 200, 150 => 500] as $points => $price) {
+                Tariff::updateOrCreate(
+                    ['game_id' => $game->id, 'service' => 'boost', 'points' => $points],
+                    ['name' => ['uk' => "Підняття +{$points} балів", 'en' => "Boost +{$points} points"], 'price' => $price],
+                );
+            }
+
+            // Анонс на головній до дати відкриття
+            Tariff::updateOrCreate(
+                ['game_id' => $game->id, 'service' => 'coming_soon'],
+                ['name' => ['uk' => 'Анонс «Скоро відкриття»', 'en' => '“Opening soon” announcement'], 'price' => 300],
+            );
         }
     }
 }

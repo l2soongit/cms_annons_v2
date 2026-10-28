@@ -43,12 +43,24 @@ return [
         'moderated_fields' => ['name', 'host', 'port', 'game_id'],
     ],
 
+    'billing' => [
+        // Баланс ведеться в гривнях; платіжні системи списують у цій валюті
+        'currency' => 'UAH',
+        'min_deposit' => 50,
+        'max_deposit' => 50000,
+        // За скільки днів до кінця послуги нагадати власнику
+        'remind_days' => 3,
+        // Платіжні системи для поповнення балансу, у порядку показу: ключ => клас App\Billing\Gateways\*
+        'gateways' => ['liqpay', 'stripe'],
+    ],
+
     'notifications' => [
         // Подія => канали за замовчуванням; користувач змінює їх у кабінеті
         'events' => [
             'moderation' => ['mail'],
             'server_offline' => ['mail'],
             'new_review' => ['mail'],
+            'billing' => ['mail'],
         ],
         // Скільки хвилин сервер має бути офлайн, щоб власник отримав сповіщення
         'offline_after_minutes' => 15,

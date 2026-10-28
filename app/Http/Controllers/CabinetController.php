@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Billing\Billing;
 use App\Jobs\DeliverVoteCallback;
 use App\Models\Server;
 use App\Models\ServerInvitation;
+use App\Models\Tariff;
 use App\Models\Vote;
 use App\Rules\PublicAddress;
 use App\Servers\OwnershipVerifier;
@@ -31,7 +33,7 @@ class CabinetController extends Controller
         return view('cabinet.index', compact('servers'));
     }
 
-    public function show(Request $request, Server $server, OwnershipVerifier $verifier): View
+    public function show(Request $request, Server $server, OwnershipVerifier $verifier, Billing $billing): View
     {
         $this->authorizeServer($request, $server);
 
@@ -46,6 +48,13 @@ class CabinetController extends Controller
 
         $recentVotes = $server->votes()->latest('created_at')->limit(10)->get();
 
+        // Просування: тарифи гри (і загальні), активні й оплачені наперед послуги сервера
+        $tariffs = Tariff::where('is_active', true)
+            ->where(fn ($q) => $q->where('game_id', $server->game_id)->orWhereNull('game_id'))
+            ->orderBy('service')->orderBy('price')->get()->groupBy('service');
+        $activeOrders = $server->orders()->with('tariff')->where('status', 'active')->where(fn ($q) => $q->whereNull('ends_at')->orWhere('ends_at', '>', now()))
+            ->orderBy('ends_at')->get();
+
         return view('cabinet.server', [
             'server' => $server,
             'verifyCode' => $verifier->code($server),
@@ -53,6 +62,9 @@ class CabinetController extends Controller
             'recentVotes' => $recentVotes,
             'invitations' => $invitations,
             'isMainOwner' => $server->user_id === $request->user()->id,
+            'tariffs' => $tariffs,
+            'activeOrders' => $activeOrders,
+            'vipTaken' => $billing->vipTaken($server),
         ]);
     }
 

@@ -160,8 +160,10 @@ final class HomePageData
 
     private function soon(): array
     {
+        // На головній — лише оплачені анонси (платна послуга «Скоро відкриття», ТЗ 3.7); на сторінках ігор — усі
         return Server::published()->where('opens_at', '>', today())
             ->whereHas('game', fn ($q) => $q->where('is_active', true))
+            ->whereHas('orders', fn ($q) => $q->active()->whereHas('tariff', fn ($t) => $t->where('service', 'coming_soon')))
             ->with(['game', 'fieldValues.field', 'media' => fn ($q) => $q->whereIn('type', ['logo', 'banner'])])->orderBy('opens_at')->limit(4)->get()
             ->map(fn (Server $s) => [
                 'name' => $s->name,

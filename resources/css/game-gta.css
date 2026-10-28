@@ -364,3 +364,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .fame a:hover b { color: var(--gc-2); }
 .bar .actions { display: flex; gap: 8px; }
 .bar .actions form { display: contents; }
+
+/* Платне виділення в сітці (ТЗ 3.7): неонова рамка */
+.gcard.hl { box-shadow: 0 0 0 2px #22d3ee, 0 0 28px -8px #22d3ee; }

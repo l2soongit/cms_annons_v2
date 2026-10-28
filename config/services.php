@@ -45,6 +45,20 @@ return [
         'redirect' => env('APP_URL').'/auth/discord/callback',
     ],
 
+    'liqpay' => [
+        'public_key' => env('LIQPAY_PUBLIC_KEY'),
+        'private_key' => env('LIQPAY_PRIVATE_KEY'),
+        // Тестовий режим LiqPay: гроші не списуються, оплата проходить з тестовою карткою
+        'sandbox' => (bool) env('LIQPAY_SANDBOX', true),
+    ],
+
+    'stripe' => [
+        // Краще обмежений ключ (rk_…) з дозволом лише на Checkout Sessions, ніж повний секретний (sk_…)
+        'secret' => env('STRIPE_SECRET'),
+        // Секрет підпису вебхука: Dashboard → Webhooks → endpoint https://graj.club/api/billing/callback/stripe
+        'webhook_secret' => env('STRIPE_WEBHOOK_SECRET'),
+    ],
+
     'ipqs' => [
         'key' => env('IPQS_KEY'),
     ],

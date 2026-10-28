@@ -14,6 +14,14 @@ class Tariff extends Model
 
     public array $translatable = ['name'];
 
+    /** Платні послуги з ТЗ (3.7): ключ => назва в адмінці */
+    public const SERVICES = [
+        'vip' => 'VIP-блок над рейтингом',
+        'highlight' => 'Виділення в списку',
+        'boost' => 'Підняття (бонусні бали)',
+        'coming_soon' => '«Скоро відкриття» на головній',
+    ];
+
     protected function casts(): array
     {
         return [

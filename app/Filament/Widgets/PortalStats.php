@@ -43,7 +43,9 @@ class PortalStats extends StatsOverviewWidget
             Stat::make('Користувачі', User::count())
                 ->description('+'.User::where('created_at', '>=', now()->subDays(7))->count().' за 7 днів'),
             Stat::make('Дохід за місяць', number_format((float) $revenue, 0, ',', ' ').' ₴')
-                ->description('з’явиться з платними послугами (етап 3)'),
+                ->description('поповнення балансу; за послуги списано '.number_format(-(float) Transaction::where('type', 'charge')
+                    ->where('created_at', '>=', now()->startOfMonth())->sum('amount'), 0, ',', ' ').' ₴')
+                ->url(auth()->user()?->can('billing.manage') ? route('filament.admin.pages.finance') : null),
         ];
     }
 }

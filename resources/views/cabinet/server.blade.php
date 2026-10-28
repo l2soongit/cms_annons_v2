@@ -45,7 +45,9 @@
             <p class="mt-3 text-xs text-moss">{{ $server->checked_at ? __('cabinet.stats.checked', ['time' => $server->checked_at->diffForHumans()]) : __('cabinet.stats.not_checked') }}</p>
 
             @if ($stats->isNotEmpty())
-                @php($maxPlayers = max(1, $stats->max('players_avg')))
+                @php
+                    $maxPlayers = max(1, $stats->max('players_avg'));
+                @endphp
                 <figure class="mt-6">
                     <figcaption class="text-sm text-moss">{{ __('cabinet.stats.chart') }}</figcaption>
                     <div class="mt-3 flex h-32 items-end gap-px" role="img" aria-label="{{ __('cabinet.stats.chart') }}">
@@ -54,6 +56,92 @@
                         @endforeach
                     </div>
                 </figure>
+            @endif
+        </section>
+
+        {{-- Просування: платні послуги з балансу --}}
+        @php
+            $balance = auth()->user()->balance;
+            $published = $server->status === \App\Enums\ServerStatus::Published;
+        @endphp
+        <section aria-labelledby="s-promo" id="s-promo" class="lg:col-span-2">
+            <div class="flex flex-wrap items-baseline justify-between gap-3">
+                <h2 id="s-promo" class="font-display text-lg font-medium">{{ __('billing.promo.title') }}</h2>
+                <p class="text-sm text-moss">{{ __('billing.promo.lead', ['balance' => \App\Billing\Money::format($balance)]) }}
+                    <a href="{{ route('cabinet.balance') }}" class="ml-2 text-amber hover:underline">{{ __('billing.promo.top_up') }}</a></p>
+            </div>
+
+            @if ($activeOrders->isNotEmpty())
+                <h3 class="mt-5 text-sm font-medium text-moss">{{ __('billing.promo.active') }}</h3>
+                <ul class="mt-2 divide-y divide-seam border-y border-seam text-sm">
+                    @foreach ($activeOrders as $order)
+                        <li class="flex flex-wrap items-center justify-between gap-3 py-3">
+                            <span><b class="font-medium">{{ $order->tariff->name }}</b>
+                                <span class="text-moss">{{ $order->starts_at->isFuture() ? $order->starts_at->format('d.m.Y').' – ' : '' }}{{ __('billing.promo.until', ['date' => $order->ends_at?->format('d.m.Y H:i') ?? '∞']) }}</span></span>
+                            @unless (in_array($order->tariff->service, ['boost', 'coming_soon'], true))
+                                <form method="POST" action="{{ route('cabinet.orders.auto-renew', $order) }}">
+                                    @csrf
+                                    <button class="inline-flex items-center gap-2 text-moss hover:text-bone" aria-pressed="{{ $order->auto_renew ? 'true' : 'false' }}">
+                                        <span @class(['inline-block size-3 rounded-full border', 'border-signal bg-signal' => $order->auto_renew, 'border-moss' => ! $order->auto_renew])></span>{{ __('billing.promo.auto_renew') }}
+                                    </button>
+                                </form>
+                            @endunless
+                        </li>
+                    @endforeach
+                </ul>
+            @endif
+
+            @if (! $published)
+                <p class="mt-4 text-sm text-moss">{{ __('billing.promo.unpublished') }}</p>
+            @elseif ($tariffs->isNotEmpty())
+                <form method="POST" action="{{ route('cabinet.servers.orders', $server) }}" class="mt-6">
+                    @csrf
+                    <fieldset>
+                        <legend class="text-sm font-medium">{{ __('billing.promo.buy') }}</legend>
+                        <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+                            @foreach ($tariffs as $service => $list)
+                                @php
+                                    $blocked = $service === 'coming_soon' && ! $server->opens_at?->isFuture();
+                                @endphp
+                                <div class="rounded-md border border-seam p-4">
+                                    <p class="font-medium">{{ __("billing.services.{$service}") }}</p>
+                                    <p class="mt-1 text-xs text-moss">{{ __("billing.service_hints.{$service}") }}</p>
+                                    @if ($service === 'vip')
+                                        <p class="mt-1 text-xs text-moss">{{ __('billing.promo.vip_slots', ['taken' => $vipTaken, 'total' => $server->game->vip_slots]) }}</p>
+                                    @endif
+                                    @if ($blocked)
+                                        <p class="mt-3 text-xs text-fade">{{ __('billing.promo.opening_needed') }}</p>
+                                    @else
+                                        <div class="mt-3 space-y-2">
+                                            @foreach ($list as $tariff)
+                                                <label class="flex items-center justify-between gap-2 rounded border border-seam px-2.5 py-2 text-sm has-checked:border-amber">
+                                                    @php
+                                                        $term = match ($service) {
+                                                            'boost' => __('billing.promo.points', ['n' => $tariff->points]),
+                                                            'coming_soon' => __('billing.promo.until_opening'),
+                                                            default => __('billing.promo.days', ['n' => $tariff->days]),
+                                                        };
+                                                    @endphp
+                                                    <span class="flex items-center gap-2"><input type="radio" name="tariff_id" value="{{ $tariff->id }}" @checked((int) old('tariff_id') === $tariff->id) required class="accent-amber">{{ $term }}</span>
+                                                    <span class="tabular-nums">{{ \App\Billing\Money::format($tariff->price) }}</span>
+                                                </label>
+                                            @endforeach
+                                        </div>
+                                    @endif
+                                </div>
+                            @endforeach
+                        </div>
+                    </fieldset>
+                    @error('tariff_id', 'promo') <p class="mt-3 text-sm text-fade" role="alert">{{ $message }}</p> @enderror
+                    <div class="mt-4 flex flex-wrap items-end gap-4">
+                        <div>
+                            <label for="promo_code" class="mb-1.5 block text-sm font-medium">{{ __('billing.promo.code') }} <span class="font-normal text-moss">({{ __('billing.promo.code_optional') }})</span></label>
+                            <input id="promo_code" name="promo_code" value="{{ old('promo_code') }}" maxlength="32" class="w-44 rounded-md border border-seam bg-slab px-3 py-2.5 uppercase text-bone focus:border-amber focus:outline-none">
+                        </div>
+                        <label class="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="auto_renew" value="1" @checked(old('auto_renew')) class="accent-amber">{{ __('billing.promo.renew_hint') }}</label>
+                        <x-button class="ml-auto">{{ __('billing.promo.submit') }}</x-button>
+                    </div>
+                </form>
             @endif
         </section>
 

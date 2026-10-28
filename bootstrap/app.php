@@ -13,7 +13,8 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        //
+        // Платіжна система повертає покупця POST-запитом зі свого домену; сторінка лише перенаправляє в кабінет
+        $middleware->validateCsrfTokens(except: ['billing/return']);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Помилки йдуть у Sentry, лише якщо задано SENTRY_LARAVEL_DSN

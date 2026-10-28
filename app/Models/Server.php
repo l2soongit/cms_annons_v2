@@ -31,6 +31,7 @@ class Server extends Model
             'languages' => 'array',
             'offline_since' => 'datetime',
             'blocked_until' => 'datetime',
+            'highlighted_until' => 'datetime',
             'offline_notified_at' => 'datetime',
             'suspicious_online' => 'boolean',
             'is_online' => 'boolean',
@@ -116,6 +117,12 @@ class Server extends Model
     public function scopeRanked(Builder $query): void
     {
         $query->published()->orderByDesc('score')->orderByDesc('votes_month');
+    }
+
+    /** Платне виділення в списках зараз діє */
+    public function isHighlighted(): bool
+    {
+        return $this->highlighted_until?->isFuture() ?? false;
     }
 
     public function address(): string

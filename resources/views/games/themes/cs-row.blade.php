@@ -14,7 +14,7 @@
     $ping = $server->ping_ms;
     $pingClass = ! $online || $ping === null ? 'off' : ($ping < 40 ? 'good' : ($ping < 90 ? 'mid' : 'bad'));
 @endphp
-<div @class(['row', 'srv', 'vip' => $vip]) data-name="{{ $server->id }}" @if ($side) style="--side:{{ $side }}" @endif>
+<div @class(['row', 'srv', 'vip' => $vip, 'hl' => ! $vip && $server->isHighlighted()]) data-name="{{ $server->id }}" @if ($side) style="--side:{{ $side }}" @endif>
   @if ($vip)
     <span class="rank vipr">VIP</span>
   @elseif ($rank <= 3)

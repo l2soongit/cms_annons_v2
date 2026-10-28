@@ -262,3 +262,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .sorts a { color: var(--muted); font-size: 13px; font-weight: 700; padding: 6px 12px; border-radius: 6px; }
 .sorts a[aria-pressed="true"] { background: var(--card-2); color: var(--gc-2); }
 .chip { display: inline-block; }
+
+/* Платне виділення в списку (ТЗ 3.7): золота рамка й тепле тло */
+.srv.hl { background: linear-gradient(90deg, #e8b04a14, transparent 60%); box-shadow: inset 3px 0 0 #e8b04a, inset 0 0 0 1px #e8b04a44; }

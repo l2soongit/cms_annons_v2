@@ -275,3 +275,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 @media (prefers-reduced-motion: reduce) {
   .mhero h1 .w { opacity: 1 !important; transform: none !important; }
 }
+
+/* Платне виділення (ТЗ 3.7): смарагдова рамка, як у вибраного предмета */
+.entry.hl { border-color: #55ff55aa; background: linear-gradient(90deg, #55ff5512, transparent 50%); }

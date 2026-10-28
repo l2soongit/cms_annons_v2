@@ -8,7 +8,7 @@
     $rankClass = $vip ? 'vipstar' : ($rank <= 3 ? 'm'.$rank : '');
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
 @endphp
-<a class="srv {{ $vip ? 'vip' : '' }}" href="{{ route('servers.show', $server) }}" data-name="{{ $server->id }}">
+<a @class(['srv', 'vip' => $vip, 'hl' => ! $vip && $server->isHighlighted()]) href="{{ route('servers.show', $server) }}" data-name="{{ $server->id }}">
   <span class="rank {{ $rankClass }}">{{ $vip ? '★' : $rank }}</span>
   <span class="crest" style="--c1:{{ $c1 }};--c2:{{ $c2 }}" aria-hidden="true">@if ($logo)<img src="{{ \App\Support\HomePageData::url($logo->path) }}" alt="" width="56" height="56" loading="lazy">@else{{ mb_substr($server->name, 0, 1) }}@endif</span>
   <div class="sname">

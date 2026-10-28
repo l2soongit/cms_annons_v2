@@ -6,6 +6,7 @@ use App\Enums\ServerStatus;
 use App\Filament\Pages\HomePageSettings;
 use App\Models\Game;
 use App\Models\Server;
+use App\Models\Tariff;
 use App\Models\User;
 use App\Models\Vote;
 use App\Support\HomePageData;
@@ -135,6 +136,9 @@ class HomePageTest extends TestCase
     public function test_owner_logo_banner_and_site_logo_are_shown(): void
     {
         $server = $this->makeServer(['opens_at' => now()->addDays(3)]);
+        // Анонс на головній — платна послуга «Скоро відкриття»
+        $tariff = Tariff::create(['game_id' => $server->game_id, 'service' => 'coming_soon', 'name' => ['uk' => 'Анонс'], 'price' => 300]);
+        $server->orders()->create(['user_id' => $server->user_id, 'tariff_id' => $tariff->id, 'amount' => 300, 'starts_at' => now(), 'ends_at' => now()->addDays(3)]);
         $server->media()->create(['type' => 'logo', 'path' => 'servers/logo.webp']);
         $server->media()->create(['type' => 'banner', 'path' => 'servers/banner.webp']);
         Game::where('slug', 'lineage2')->update(['icon' => 'games/icons/l2.webp']);

@@ -3,28 +3,29 @@
 namespace App\Support;
 
 /**
- * Специфікація OpenAPI 3.1 публічного API (ТЗ 7.2) для /developers/openapi.json.
+ * Специфікація OpenAPI 3.1 публічного API (ТЗ 7.2) для /developers/openapi.json. Описи — мовою сторінки (developers.spec.*).
  */
 final class OpenApi
 {
     public static function spec(): array
     {
+        $t = fn (string $key) => __("developers.spec.{$key}");
         $server = ['$ref' => '#/components/schemas/Server'];
-        $id = ['name' => 'id', 'in' => 'path', 'required' => true, 'description' => 'ID сервера (кабінет → API-ключ)', 'schema' => ['type' => 'integer']];
+        $id = ['name' => 'id', 'in' => 'path', 'required' => true, 'description' => $t('id_param'), 'schema' => ['type' => 'integer']];
         $json = fn (array $schema, string $description = 'OK') => ['description' => $description, 'content' => ['application/json' => ['schema' => $schema]]];
-        $unauthorized = ['401' => ['description' => 'Немає або неправильний ключ сервера']];
+        $unauthorized = ['401' => ['description' => $t('unauthorized')]];
 
         return [
             'openapi' => '3.1.0',
             'info' => [
                 'title' => 'graj.club API',
                 'version' => '1.0.0',
-                'description' => 'Публічні дані серверів і API власника: перевірка голосу, список голосів, передача онлайну. Ліміт — '.'60 запитів на хвилину.',
+                'description' => $t('info'),
             ],
             'servers' => [['url' => url('/api/v1')]],
             'components' => [
                 'securitySchemes' => [
-                    'serverKey' => ['type' => 'http', 'scheme' => 'bearer', 'description' => 'Секретний ключ сервера з кабінету: Authorization: Bearer <ключ>'],
+                    'serverKey' => ['type' => 'http', 'scheme' => 'bearer', 'description' => $t('security')],
                 ],
                 'schemas' => [
                     'Server' => ['type' => 'object', 'properties' => [
@@ -35,26 +36,26 @@ final class OpenApi
                         'online' => ['type' => 'boolean'],
                         'players' => ['type' => 'integer'],
                         'max_players' => ['type' => 'integer'],
-                        'uptime' => ['type' => 'number', 'description' => 'Аптайм за 30 днів, %'],
+                        'uptime' => ['type' => 'number', 'description' => $t('uptime')],
                         'votes_month' => ['type' => 'integer'],
-                        'rank' => ['type' => ['integer', 'null'], 'description' => 'Місце в рейтингу гри'],
+                        'rank' => ['type' => ['integer', 'null'], 'description' => $t('rank')],
                         'checked_at' => ['type' => ['string', 'null'], 'format' => 'date-time'],
                     ]],
                 ],
             ],
             'paths' => [
                 '/servers/{id}' => ['get' => [
-                    'summary' => 'Дані й статус сервера, місце в рейтингу',
+                    'summary' => $t('server_summary'),
                     'parameters' => [$id],
-                    'responses' => ['200' => $json(['type' => 'object', 'properties' => ['data' => $server]]), '404' => ['description' => 'Сервер не опублікований']],
+                    'responses' => ['200' => $json(['type' => 'object', 'properties' => ['data' => $server]]), '404' => ['description' => $t('not_published')]],
                 ]],
                 '/games/{slug}/top' => ['get' => [
-                    'summary' => 'Топ-100 серверів гри',
+                    'summary' => $t('top_summary'),
                     'parameters' => [['name' => 'slug', 'in' => 'path', 'required' => true, 'schema' => ['type' => 'string', 'example' => 'lineage2']]],
                     'responses' => ['200' => $json(['type' => 'object', 'properties' => ['data' => ['type' => 'array', 'items' => $server]]])],
                 ]],
                 '/servers/{id}/votes' => ['get' => [
-                    'summary' => 'Голоси за період (для власника, до 1000 останніх)',
+                    'summary' => $t('votes_summary'),
                     'security' => [['serverKey' => []]],
                     'parameters' => [$id,
                         ['name' => 'from', 'in' => 'query', 'schema' => ['type' => 'string', 'format' => 'date-time']],
@@ -64,7 +65,7 @@ final class OpenApi
                     ]]]]])] + $unauthorized,
                 ]],
                 '/servers/{id}/votes/check' => ['get' => [
-                    'summary' => 'Чи голосував нік або IP за останній інтервал (pull-режим для збірок без callback)',
+                    'summary' => $t('check_summary'),
                     'security' => [['serverKey' => []]],
                     'parameters' => [$id,
                         ['name' => 'nickname', 'in' => 'query', 'schema' => ['type' => 'string', 'maxLength' => 32]],
@@ -74,7 +75,7 @@ final class OpenApi
                     ]])] + $unauthorized,
                 ]],
                 '/servers/{id}/online' => ['post' => [
-                    'summary' => 'Передати онлайн із сервера (Lineage 2 та ігри без query-протоколу)',
+                    'summary' => $t('online_summary'),
                     'security' => [['serverKey' => []]],
                     'parameters' => [$id],
                     'requestBody' => ['required' => true, 'content' => ['application/json' => ['schema' => ['type' => 'object', 'required' => ['online', 'players'], 'properties' => [
@@ -85,14 +86,14 @@ final class OpenApi
             ],
             'webhooks' => [
                 'voteCallback' => ['post' => [
-                    'summary' => 'Vote-callback: портал надсилає на URL власника після кожного зарахованого голосу',
-                    'description' => 'Тіло підписане HMAC-SHA256 ключем сервера, підпис — у заголовку X-Graj-Signature. До 5 повторів зі зростаючою паузою, якщо відповідь не 2xx.',
+                    'summary' => $t('callback_summary'),
+                    'description' => $t('callback_description'),
                     'parameters' => [['name' => 'X-Graj-Signature', 'in' => 'header', 'required' => true, 'schema' => ['type' => 'string']]],
                     'requestBody' => ['content' => ['application/json' => ['schema' => ['type' => 'object', 'properties' => [
                         'server_id' => ['type' => 'integer'], 'vote_id' => ['type' => 'integer'], 'nickname' => ['type' => ['string', 'null']],
-                        'ip' => ['type' => 'string'], 'timestamp' => ['type' => 'integer', 'description' => 'Unix-час голосу'],
+                        'ip' => ['type' => 'string'], 'timestamp' => ['type' => 'integer', 'description' => $t('timestamp')],
                     ]]]]],
-                    'responses' => ['200' => ['description' => 'Бонус видано (будь-яка відповідь 2xx)']],
+                    'responses' => ['200' => ['description' => $t('reward_ok')]],
                 ]],
             ],
         ];

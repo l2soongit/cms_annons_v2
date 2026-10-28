@@ -107,6 +107,7 @@ return [
         'languages' => 'Languages on the server',
         'country' => 'Hosting country',
         'country_hint' => 'Where the server physically runs — affects players’ ping.',
+        'country_other' => 'Other',
         'media_current' => 'Uploaded images',
         'media_logo' => 'Logo',
         'media_banner' => 'Banner',

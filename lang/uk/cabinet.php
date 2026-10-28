@@ -107,6 +107,7 @@ return [
         'languages' => 'Мови на сервері',
         'country' => 'Країна хостингу',
         'country_hint' => 'Де фізично стоїть сервер — впливає на пінг гравців.',
+        'country_other' => 'Інша',
         'media_current' => 'Завантажені зображення',
         'media_logo' => 'Лого',
         'media_banner' => 'Банер',

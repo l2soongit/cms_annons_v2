@@ -26,7 +26,7 @@ X-Graj-Signature: 5d41402abc4b2a76b9719d911017c592…
 {"server_id": 42, "vote_id": 18731, "nickname": "Steve", "ip": "203.0.113.7", "timestamp": {{ now()->timestamp }}}</code></pre>
             <p class="mt-4 text-moss">{{ __('developers.callback.signature') }}</p>
             <pre class="{{ $codeClass }}"><code>&lt;?php
-$secret = 'КЛЮЧ_СЕРВЕРА';
+$secret = '{{ __('developers.key_placeholder') }}';
 $body = file_get_contents('php://input');
 $expected = hash_hmac('sha256', $body, $secret);
 
@@ -36,7 +36,7 @@ if (! hash_equals($expected, $_SERVER['HTTP_X_GRAJ_SIGNATURE'] ?? '')) {
 }
 
 $vote = json_decode($body, true);
-give_reward($vote['nickname']); // ваша видача бонусу
+give_reward($vote['nickname']); // {{ __('developers.code_comment') }}
 http_response_code(200);</code></pre>
             <p class="mt-3 text-sm text-moss">{{ __('developers.callback.interval', ['n' => $interval]) }}</p>
         </section>
@@ -69,7 +69,7 @@ http_response_code(200);</code></pre>
         <section id="check" aria-labelledby="h-check">
             <h2 id="h-check" class="font-display text-2xl font-bold">{{ __('developers.check.title') }}</h2>
             <p class="mt-3 text-moss">{{ __('developers.check.lead', ['n' => $interval]) }}</p>
-            <pre class="{{ $codeClass }}"><code>curl -H "Authorization: Bearer КЛЮЧ_СЕРВЕРА" \
+            <pre class="{{ $codeClass }}"><code>curl -H "Authorization: Bearer {{ __('developers.key_placeholder') }}" \
   "{{ $base }}/servers/42/votes/check?nickname=Steve"
 
 {"voted": true, "vote_id": 18731, "voted_at": "{{ now()->subHour()->toIso8601String() }}"}</code></pre>
@@ -78,7 +78,7 @@ http_response_code(200);</code></pre>
         <section id="online" aria-labelledby="h-online">
             <h2 id="h-online" class="font-display text-2xl font-bold">{{ __('developers.online.title') }}</h2>
             <p class="mt-3 text-moss">{{ __('developers.online.lead') }}</p>
-            <pre class="{{ $codeClass }}"><code>curl -X POST -H "Authorization: Bearer КЛЮЧ_СЕРВЕРА" -H "Content-Type: application/json" \
+            <pre class="{{ $codeClass }}"><code>curl -X POST -H "Authorization: Bearer {{ __('developers.key_placeholder') }}" -H "Content-Type: application/json" \
   -d '{"online": true, "players": 312, "max_players": 1000}' \
   {{ $base }}/servers/42/online</code></pre>
         </section>
@@ -106,7 +106,7 @@ http_response_code(200);</code></pre>
                     </figure>
                 </div>
             @endif
-            <pre class="{{ $codeClass }}"><code>&lt;a href="{{ url('/server/your-server/vote') }}"&gt;&lt;img src="{{ url('/widget/42/vote.svg?size=120x40') }}" alt="Голосувати" width="120" height="40"&gt;&lt;/a&gt;</code></pre>
+            <pre class="{{ $codeClass }}"><code>&lt;a href="{{ url('/server/your-server/vote') }}"&gt;&lt;img src="{{ url('/widget/42/vote.svg?size=120x40') }}" alt="{{ __('widgets.vote') }}" width="120" height="40"&gt;&lt;/a&gt;</code></pre>
         </section>
 
         <section id="openapi" aria-labelledby="h-openapi">

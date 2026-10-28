@@ -60,6 +60,10 @@ class HomePageSettings extends Page
         foreach (SettingsStore::HOME as $key) {
             Arr::set($values, $key, config("graj.{$key}"));
         }
+        // Старе збереження одним списком — список основної мови
+        foreach (['quick_links', 'search_hints'] as $name) {
+            Arr::set($values, "home.{$name}", HomeContent::byLocale($name));
+        }
 
         $this->form->fill($values);
     }
@@ -71,10 +75,8 @@ class HomePageSettings extends Page
                 ...$this->localized('hero_title', 'Заголовок', 'Перед виділеним словом'),
                 ...$this->localized('hero_accent', 'Виділене слово', 'Показується градієнтом у кінці заголовка'),
                 ...$this->localized('hero_lead', 'Підзаголовок', textarea: true),
-                TagsInput::make('home.quick_links')->label('«Часто шукають»')->columnSpanFull()
-                    ->helperText('Кожен пункт — посилання на пошук за цим текстом.'),
-                TagsInput::make('home.search_hints')->label('Підказки в полі пошуку')->columnSpanFull()
-                    ->helperText('Друкуються по черзі, поки поле порожнє.'),
+                ...$this->localizedTags('quick_links', '«Часто шукають»', 'Кожен пункт — посилання на пошук за цим текстом.'),
+                ...$this->localizedTags('search_hints', 'Підказки в полі пошуку', 'Друкуються по черзі, поки поле порожнє.'),
             ]),
             Section::make('Зображення')
                 ->description('Необов’язково, до 10 МБ — після завантаження стискаються у WebP. Без зображення лишається анімований фон. Обкладинки й іконки ігор — у розділі «Ігри», логотипи й банери серверів завантажують власники в кабінеті.')
@@ -109,6 +111,13 @@ class HomePageSettings extends Page
         return ImageField::make($key, 'home', $type)->label($label);
     }
 
+    /** Списки-теги для кожної мови сайту; порожній переклад — показується список основною мовою */
+    private function localizedTags(string $key, string $label, string $help): array
+    {
+        return array_map(fn (string $locale) => TagsInput::make("home.{$key}.{$locale}")->label("{$label} ({$locale})")->columnSpanFull()
+            ->helperText($locale === Locales::default() ? $help : null), array_keys(Locales::all()));
+    }
+
     /** Поле для кожної мови сайту; обов’язкове лише основною */
     private function localized(string $key, string $label, ?string $help = null, bool $textarea = false): array
     {
@@ -130,7 +139,8 @@ class HomePageSettings extends Page
             $name = substr($key, strlen('home.'));
             $values[$key] = match (true) {
                 in_array($name, HomeContent::LOCALIZED, true) => collect(array_keys(Locales::all()))->mapWithKeys(fn ($l) => [$l => trim((string) ($value[$l] ?? ''))])->all(),
-                in_array($name, ['quick_links', 'search_hints'], true) => array_values(array_filter(array_map('trim', (array) $value))),
+                in_array($name, ['quick_links', 'search_hints'], true) => collect(array_keys(Locales::all()))
+                    ->mapWithKeys(fn ($l) => [$l => array_values(array_filter(array_map('trim', (array) ($value[$l] ?? []))))])->all(),
                 $name === 'sections' => array_values(array_intersect(array_keys(HomeContent::SECTIONS), (array) $value)),
                 in_array($name, ['ranking_size', 'hero_image_opacity'], true) => (int) $value,
                 in_array($name, self::IMAGES, true) => is_string($value) && $value !== '' ? $value : null,

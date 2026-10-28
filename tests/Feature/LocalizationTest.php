@@ -148,6 +148,54 @@ class LocalizationTest extends TestCase
             ->assertHasErrors('data.locales');
     }
 
+    public function test_every_language_file_has_the_same_keys_as_ukrainian(): void
+    {
+        $flat = function (array $a, string $prefix = '') use (&$flat): array {
+            $out = [];
+            foreach ($a as $k => $v) {
+                $key = $prefix === '' ? (string) $k : "{$prefix}.{$k}";
+                $out += is_array($v) && ! array_is_list($v) ? $flat($v, $key) : [$key => true];
+            }
+
+            return $out;
+        };
+
+        foreach (glob(lang_path('uk/*.php')) as $file) {
+            $group = basename($file, '.php');
+            $uk = array_keys($flat(require $file));
+            foreach (['en', 'ru', 'pl'] as $locale) {
+                // Англійські валідація й паролі — стандартні файли Laravel
+                if ($locale === 'en' && in_array($group, ['validation', 'passwords'], true)) {
+                    continue;
+                }
+                $path = lang_path("{$locale}/{$group}.php");
+                $this->assertFileExists($path, "Немає {$locale}/{$group}.php");
+                $missing = array_diff($uk, array_keys($flat(require $path)));
+                $this->assertSame([], array_values($missing), "{$locale}/{$group}.php: бракує ключів");
+            }
+        }
+    }
+
+    public function test_seeded_content_is_translated_into_every_language(): void
+    {
+        $this->seed([GameSeeder::class, \Database\Seeders\TariffSeeder::class]);
+        \App\Support\ContentTranslations::fill();
+
+        $dayz = Game::where('slug', 'dayz')->first();
+        foreach (['uk', 'en', 'ru', 'pl'] as $locale) {
+            $this->assertNotEmpty($dayz->getTranslation('description', $locale, false), "DayZ без опису: {$locale}");
+        }
+        $this->assertSame('VIP na 7 dni', \App\Models\Tariff::where('service', 'vip')->where('days', 7)->first()->getTranslation('name', 'pl', false));
+        $this->assertSame('Header banner, 1 day', \App\Models\Tariff::where('placement', 'header')->where('days', 1)->first()->getTranslation('name', 'en', false));
+
+        app()->setLocale('ru');
+        $mode = Game::where('slug', 'minecraft')->first()->fields()->where('key', 'mode')->first();
+        $this->assertSame('Режим', $mode->label);
+        $this->assertContains('Выживание', collect($mode->options)->pluck('label')->all());
+
+        $this->get('/pl/dayz')->assertOk()->assertSee('Czarnoruś');
+    }
+
     public function test_static_pages_in_both_languages(): void
     {
         $this->get('/page/rules')->assertOk()->assertSee('Правила порталу');

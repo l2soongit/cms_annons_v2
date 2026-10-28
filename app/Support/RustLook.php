@@ -32,13 +32,17 @@ final class RustLook
             : str_repeat($person, 3).'<svg viewBox="0 0 8 18" aria-hidden="true"><text x="0" y="13" font-size="10" fill="currentColor">+</text></svg>';
     }
 
-    /** «4500» → «4,5к», «5000+» → «5к+» */
+    /** «4500» → «4,5к» (англійською «4.5k»), «5000+» → «5к+» */
     public static function size(string $label): string
     {
         if (! preg_match('/^(\d{4,5})(\+?)$/', trim($label), $m)) {
             return $label;
         }
 
-        return rtrim(rtrim(number_format((int) $m[1] / 1000, 1, ',', ''), '0'), ',').'к'.$m[2];
+        // «к» — тисячі українською й російською, «k» — іншими мовами
+        $k = in_array(app()->getLocale(), ['uk', 'ru'], true) ? 'к' : 'k';
+        $dot = app()->getLocale() === 'en' ? '.' : ',';
+
+        return rtrim(rtrim(number_format((int) $m[1] / 1000, 1, $dot, ''), '0'), $dot).$k.$m[2];
     }
 }

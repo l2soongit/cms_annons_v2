@@ -107,6 +107,7 @@ return [
         'languages' => 'Języki na serwerze',
         'country' => 'Kraj hostingu',
         'country_hint' => 'Gdzie fizycznie stoi serwer — wpływa na ping graczy.',
+        'country_other' => 'Inna',
         'media_current' => 'Przesłane obrazy',
         'media_logo' => 'Logo',
         'media_banner' => 'Baner',

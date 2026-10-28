@@ -135,9 +135,19 @@ return [
             'pl' => 'Uczciwy ranking serwerów gier. Liczbę graczy sprawdzamy co 5 minut, głosy są chronione przed oszustwami.',
         ],
         // Посилання «Часто шукають» під пошуком
-        'quick_links' => ['Interlude x50', 'FiveM RP', 'Анархія 1.21', 'Rust Solo'],
+        'quick_links' => [
+            'uk' => ['Interlude x50', 'FiveM RP', 'Анархія 1.21', 'Rust Solo'],
+            'en' => ['Interlude x50', 'FiveM RP', 'Anarchy 1.21', 'Rust Solo'],
+            'ru' => ['Interlude x50', 'FiveM RP', 'Анархия 1.21', 'Rust Solo'],
+            'pl' => ['Interlude x50', 'FiveM RP', 'Anarchia 1.21', 'Rust Solo'],
+        ],
         // Підказки, що «друкуються» в полі пошуку
-        'search_hints' => ['Interlude x50 PvP', 'FiveM RP з економікою', 'Minecraft анархія 1.21', 'Rust Solo, вайп щотижня', 'CS2 Retake 128 tick'],
+        'search_hints' => [
+            'uk' => ['Interlude x50 PvP', 'FiveM RP з економікою', 'Minecraft анархія 1.21', 'Rust Solo, вайп щотижня', 'CS2 Retake 128 tick'],
+            'en' => ['Interlude x50 PvP', 'FiveM RP with economy', 'Minecraft anarchy 1.21', 'Rust Solo, weekly wipe', 'CS2 Retake 128 tick'],
+            'ru' => ['Interlude x50 PvP', 'FiveM RP с экономикой', 'Minecraft анархия 1.21', 'Rust Solo, вайп каждую неделю', 'CS2 Retake 128 tick'],
+            'pl' => ['Interlude x50 PvP', 'FiveM RP z ekonomią', 'Minecraft anarchia 1.21', 'Rust Solo, wipe co tydzień', 'CS2 Retake 128 tick'],
+        ],
         'owners_title' => ['uk' => 'Від реєстрації до першого місця', 'en' => 'From sign-up to first place', 'ru' => 'От регистрации до первого места', 'pl' => 'Od rejestracji do pierwszego miejsca'],
         'owners_lead' => [
             'uk' => 'Додавання безкоштовне. Портал сам перевіряє онлайн і приводить гравців, які голосують саме за вас.',

@@ -195,7 +195,7 @@
                         {{ collect($server->languages)->map(fn ($code) => \App\Livewire\Cabinet\ServerForm::LANGUAGES[$code] ?? $code)->implode(', ') ?: '—' }}
                     </p>
                     @if ($server->country)
-                        <p class="mt-1 text-sm text-moss">{{ __('ui.server_page.hosted_in', ['country' => \App\Livewire\Cabinet\ServerForm::COUNTRIES[$server->country] ?? $server->country]) }}</p>
+                        <p class="mt-1 text-sm text-moss">{{ __('ui.server_page.hosted_in', ['country' => \App\Livewire\Cabinet\ServerForm::countryName($server->country)]) }}</p>
                     @endif
                 </div>
             @endif

@@ -100,8 +100,8 @@
                     <label for="country" class="mb-1.5 block text-sm font-medium">{{ __('cabinet.form.country') }}</label>
                     <select id="country" wire:model="country" class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone focus:border-amber focus:outline-none">
                         <option value="">—</option>
-                        @foreach (\App\Livewire\Cabinet\ServerForm::COUNTRIES as $code => $countryName)
-                            <option value="{{ $code }}">{{ $countryName }}</option>
+                        @foreach (array_keys(\App\Livewire\Cabinet\ServerForm::COUNTRIES) as $code)
+                            <option value="{{ $code }}">{{ \App\Livewire\Cabinet\ServerForm::countryName($code) }}</option>
                         @endforeach
                     </select>
                     <p class="mt-1.5 text-xs text-moss">{{ __('cabinet.form.country_hint') }}</p>

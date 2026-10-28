@@ -93,12 +93,17 @@ class HomePageTest extends TestCase
         Livewire::actingAs($admin)
             ->test(HomePageSettings::class)
             ->set('data.home.hero_accent.uk', 'перемагають')
-            ->set('data.home.quick_links', ['Interlude x5'])
+            ->set('data.home.quick_links.uk', ['Interlude x5', 'Анархія'])
+            ->set('data.home.quick_links.en', ['Interlude x5', 'Anarchy'])
+            ->set('data.home.quick_links.pl', [])
             ->call('save')
             ->assertHasNoErrors();
 
         $this->assertSame('перемагають', config('graj.home.hero_accent.uk'));
-        $this->assertSame(['Interlude x5'], config('graj.home.quick_links'));
+        $this->assertSame(['Interlude x5', 'Anarchy'], config('graj.home.quick_links.en'));
+        // Кожна мова — свої підказки; без перекладу — основною мовою
+        $this->get('/en')->assertOk()->assertSee('Anarchy')->assertDontSee('Анархія');
+        $this->get('/pl')->assertOk()->assertSee('Анархія');
     }
 
     public function test_live_feed_returns_new_counted_votes_only(): void

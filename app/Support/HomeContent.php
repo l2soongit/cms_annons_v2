@@ -38,8 +38,26 @@ final class HomeContent
     }
 
     /** @return list<string> */
+    /**
+     * Список мовою сторінки («Часто шукають», підказки пошуку): мова => пункти; порожній переклад — пункти основною мовою.
+     * Старе збереження одним списком на всі мови — це список основної мови.
+     */
     public static function list(string $key): array
     {
-        return array_values(array_filter(array_map('trim', (array) config("graj.home.{$key}"))));
+        return self::clean(self::byLocale($key)[app()->getLocale()] ?? []) ?: self::clean(self::byLocale($key)[Locales::default()] ?? []);
+    }
+
+    /** @return array<string, list<string>> */
+    public static function byLocale(string $key): array
+    {
+        $value = (array) config("graj.home.{$key}");
+
+        return array_is_list($value) ? [Locales::default() => $value] : $value;
+    }
+
+    /** @return list<string> */
+    private static function clean(mixed $items): array
+    {
+        return array_values(array_filter(array_map('trim', array_map('strval', (array) $items))));
     }
 }

@@ -13,7 +13,6 @@ use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
-use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
 
@@ -21,7 +20,6 @@ use Livewire\WithFileUploads;
  * @property-read Collection<int, Game> $games
  * @property-read Game|null $game
  */
-#[Title('Сервер | graj.club')]
 #[Layout('components.layouts.cabinet')]
 class ServerForm extends Component
 {
@@ -234,8 +232,25 @@ class ServerForm extends Component
 
     public const COUNTRIES = ['UA' => 'Україна', 'PL' => 'Польща', 'DE' => 'Німеччина', 'NL' => 'Нідерланди', 'FR' => 'Франція', 'FI' => 'Фінляндія', 'CZ' => 'Чехія', 'RO' => 'Румунія', 'US' => 'США', 'KZ' => 'Казахстан', 'other' => 'Інша'];
 
+    /** Назва країни мовою сторінки (ICU); список COUNTRIES — значення й запасні українські назви */
+    public static function countryName(?string $code): ?string
+    {
+        if ($code === null || $code === '') {
+            return null;
+        }
+        if ($code === 'other') {
+            return __('cabinet.form.country_other');
+        }
+        $name = class_exists(\Locale::class) ? \Locale::getDisplayRegion('-'.$code, app()->getLocale()) : '';
+
+        return $name !== '' && $name !== $code ? $name : (self::COUNTRIES[$code] ?? $code);
+    }
+
     public function render()
     {
-        return view('livewire.cabinet.server-form');
+        // Заголовок вкладки мовою сторінки: «Новий сервер» або «Редагування: …»
+        return view('livewire.cabinet.server-form')->title(($this->server
+            ? __('cabinet.form.edit_title', ['name' => $this->server->name])
+            : __('cabinet.form.create_title')).' | graj.club');
     }
 }

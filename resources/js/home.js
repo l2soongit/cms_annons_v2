@@ -212,7 +212,7 @@ renderArena(true);
   const el = $('#season-left');
   if (!el) return;
   const end = new Date(DATA.seasonEnd).getTime();
-  const d = DATA.locale === 'en' ? 'd' : 'д';
+  const d = { uk: 'д', ru: 'д' }[DATA.locale] ?? 'd';
   const p = n => String(n).padStart(2, '0');
   const tick = () => {
     const s = Math.max(0, Math.floor((end - Date.now()) / 1000));

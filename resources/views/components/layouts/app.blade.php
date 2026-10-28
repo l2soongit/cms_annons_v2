@@ -78,9 +78,11 @@
     </header>
 
     <main id="main" class="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        @if (request()->routeIs('servers.show', 'games.show', 'search'))
+        {{-- «Шапка всіх сторінок» — усі публічні сторінки, крім голосування (реклама конкурента відводила б гравця),
+             кабінету й службових сторінок оплати --}}
+        @unless (request()->routeIs('servers.vote', 'billing.*', 'cabinet', 'cabinet.*'))
             <x-ad-banner placement="header" gap="0 auto 32px" />
-        @endif
+        @endunless
         {{ $slot }}
     </main>
 

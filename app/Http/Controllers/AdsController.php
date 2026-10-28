@@ -85,7 +85,10 @@ class AdsController extends Controller
     public function click(Banner $banner): RedirectResponse
     {
         abort_unless($banner->is_active, 404);
-        $banner->increment('clicks');
+        // Зі сторінки, відкритої до кінця показу, перехід працює, але в статистику йде лише в оплачені дні
+        if ($banner->starts_at <= now() && $banner->ends_at > now()) {
+            $banner->increment('clicks');
+        }
 
         return redirect()->away($banner->url);
     }

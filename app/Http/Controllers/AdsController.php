@@ -29,12 +29,15 @@ class AdsController extends Controller
 
         $tariffs = Tariff::where('service', 'banner')->where('is_active', true)
             ->where(fn ($q) => $q->whereNull('game_id')->orWhereIn('game_id', $gameIds))
-            ->with('game')->orderBy('placement')->orderBy('days')->get();
+            ->with('game')->orderBy('placement')->orderBy('days')->get()
+            // Бічна колонка гри — лише там, де стиль сторінки її має
+            ->reject(fn (Tariff $t) => $t->placement === 'game_side' && ! in_array($t->game?->themeKey(), Banner::SIDE_COLUMN_THEMES, true))
+            ->values();
 
-        // Зайняті дні: шапка й сайдбар — спільні, сторінка гри — для кожної гри окремо
+        // Зайняті дні: шапка й сайдбар — спільні, місця на сторінці гри — для кожної гри окремо
         $busy = [];
         foreach ($tariffs as $tariff) {
-            $gameId = $tariff->placement === 'game' ? $tariff->game_id : null;
+            $gameId = Banner::isPerGame($tariff->placement) ? $tariff->game_id : null;
             $busy[$tariff->placement.'-'.$gameId] ??= $billing->busyDays($tariff->placement, $gameId);
         }
 

@@ -288,6 +288,11 @@ class Billing
         if (! $tariff->is_active || $tariff->service !== 'banner' || ! isset(Banner::PLACEMENTS[$tariff->placement]) || ($tariff->game_id && $tariff->game_id !== $server->game_id)) {
             throw BillingException::because('tariff');
         }
+        $server->loadMissing('game');
+        // Бічна колонка є не в кожному стилі сторінки гри — без неї місце не продаємо
+        if ($tariff->placement === 'game_side' && ! in_array($server->game?->themeKey(), Banner::SIDE_COLUMN_THEMES, true)) {
+            throw BillingException::because('tariff');
+        }
         if ($server->status !== ServerStatus::Published) {
             throw BillingException::because('not_published');
         }
@@ -300,13 +305,16 @@ class Billing
             throw BillingException::because('promo');
         }
 
-        $gameId = $tariff->placement === 'game' ? $server->game_id : null;
+        $gameId = Banner::isPerGame($tariff->placement) ? $server->game_id : null;
         $end = $start->copy()->addDays((int) $tariff->days);
 
         $banner = DB::transaction(function () use ($user, $server, $tariff, $promo, $start, $end, $gameId, $image, $url, $alt) {
             $user = User::whereKey($user->id)->lockForUpdate()->first();
             if ($this->bannerTaken($tariff->placement, $gameId, $start, $end)) {
                 throw BillingException::because('banner_busy');
+            }
+            if ($clash = $this->ownBannerClash($server, $tariff->placement, $start, $end)) {
+                throw BillingException::because('banner_own_clash', ['placement' => __("billing.ads.placements.{$clash->placement}"), 'until' => $clash->ends_at->format('d.m')]);
             }
             $cents = $this->price($tariff, $promo);
             if (Money::cents($user->balance) < $cents) {
@@ -355,6 +363,18 @@ class Billing
         return $this->bannersOn($placement, $gameId)->where('starts_at', '<', $end)->where('ends_at', '>', $start)->exists();
     }
 
+    /** Банер цього ж сервера на дати, що перетинаються, на місці, яке не показується разом із $placement */
+    public function ownBannerClash(Server $server, string $placement, CarbonInterface $start, CarbonInterface $end): ?Banner
+    {
+        return Banner::where('server_id', $server->id)
+            ->whereIn('placement', Banner::clashesWith($placement))
+            ->where('is_active', true)
+            ->where('starts_at', '<', $end)->where('ends_at', '>', $start)
+            ->where(fn ($q) => $q->whereNull('order_id')->orWhereHas('order', fn ($o) => $o->whereNotIn('status', ['cancelled', 'refunded'])))
+            ->orderBy('starts_at')
+            ->first();
+    }
+
     /**
      * Зайняті дні місця на найближчий період бронювання (для календаря в кабінеті).
      *
@@ -380,7 +400,7 @@ class Billing
     {
         return Banner::where('placement', $placement)
             ->where('is_active', true)
-            ->when($placement === 'game', fn ($q) => $q->where('game_id', $gameId), fn ($q) => $q->whereNull('game_id'))
+            ->when(Banner::isPerGame($placement), fn ($q) => $q->where('game_id', $gameId), fn ($q) => $q->whereNull('game_id'))
             ->where(fn ($q) => $q->whereNull('order_id')->orWhereHas('order', fn ($o) => $o->whereNotIn('status', ['cancelled', 'refunded'])));
     }
 

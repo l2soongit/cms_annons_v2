@@ -110,23 +110,50 @@ class BannerTest extends TestCase
         $this->assertContains(today()->addDays(8)->toDateString(), $billing->busyDays('sidebar', null));
     }
 
-    public function test_one_server_gets_one_banner_per_page(): void
+    public function test_server_cannot_buy_a_banner_that_would_be_hidden_by_its_own_banner(): void
     {
         $billing = app(Billing::class);
         $server = $this->server('lineage2');
-        $billing->bookBanner($server->owner, $server, $this->tariff('header', 1), today(), 'banners/h.webp', 'https://h.example.net', 'Шапка VEX');
-        $billing->bookBanner($server->owner, $server, $this->tariff('game', 1, 'lineage2'), today(), 'banners/g.webp', 'https://g.example.net', 'Гра VEX');
-        $billing->bookBanner($server->owner, $server, $this->tariff('sidebar', 1), today(), 'banners/s.webp', 'https://s.example.net', 'Сайдбар VEX');
+        $billing->bookBanner($server->owner, $server, $this->tariff('header', 7), today(), 'banners/h.webp', 'https://h.example.net', 'Шапка VEX');
+        $balance = $server->owner->fresh()->balance;
 
-        // Шапка головніша: банер гри й сайдбар того самого сервера на цій сторінці не дублюються
-        $this->get('/lineage2')->assertOk()->assertSee('Шапка VEX')->assertDontSee('Гра VEX')->assertDontSee('Сайдбар VEX');
-        $this->assertSame(1, Banner::where('alt', 'Шапка VEX')->value('impressions'));
+        // Шапка на всіх сторінках — будь-яке інше місце того ж сервера на ці дати було б приховане, а гроші списані
+        foreach ([['game', 'lineage2'], ['game_side', 'lineage2'], ['sidebar', null]] as [$placement, $game]) {
+            try {
+                $billing->bookBanner($server->owner, $server, $this->tariff($placement, 1, $game), today()->addDays(3), 'banners/x.webp', 'https://x.example.net');
+                $this->fail("{$placement} разом із власною шапкою мав бути відхилений");
+            } catch (BillingException $e) {
+                $this->assertStringContainsString('Шапка всіх сторінок', $e->getMessage());
+                $this->assertStringContainsString(today()->addDays(7)->format('d.m'), $e->getMessage());
+            }
+        }
+        $this->assertSame($balance, $server->owner->fresh()->balance);
+
+        // Після закінчення шапки — можна; банер гри й сайдбар серверів — на різних сторінках, тож разом можна
+        $billing->bookBanner($server->owner, $server, $this->tariff('game', 1, 'lineage2'), today()->addDays(7), 'banners/g.webp', 'https://g.example.net');
+        $billing->bookBanner($server->owner, $server, $this->tariff('sidebar', 1), today()->addDays(7), 'banners/s.webp', 'https://s.example.net');
+
+        // Банер гри й бічна колонка гри — на одній сторінці
+        $this->expectException(BillingException::class);
+        $billing->bookBanner($server->owner, $server, $this->tariff('game_side', 1, 'lineage2'), today()->addDays(7), 'banners/x.webp', 'https://x.example.net');
+    }
+
+    public function test_one_server_gets_one_banner_per_page_for_banners_added_by_admin(): void
+    {
+        // Банери без замовлення (додані адміністратором) не проходять перевірку покупки — на сторінці діє те саме правило
+        $server = $this->server('lineage2');
+        $game = Game::where('slug', 'lineage2')->value('id');
+        foreach ([['header', null, 'Шапка VEX'], ['game', $game, 'Гра VEX'], ['game_side', $game, 'Колонка VEX']] as [$placement, $gameId, $alt]) {
+            Banner::create(['server_id' => $server->id, 'game_id' => $gameId, 'placement' => $placement, 'image' => 'banners/a.webp', 'url' => 'https://a.example.net',
+                'alt' => $alt, 'starts_at' => today(), 'ends_at' => today()->addDay()]);
+        }
+
+        $this->get('/lineage2')->assertOk()->assertSee('Шапка VEX')->assertDontSee('Гра VEX')->assertDontSee('Колонка VEX');
         $this->assertSame(0, Banner::where('alt', 'Гра VEX')->value('impressions'));
 
-        // Інший сервер у сайдбарі показується поруч із шапкою
-        $other = $this->server('lineage2');
-        Banner::where('alt', 'Сайдбар VEX')->update(['server_id' => $other->id]);
-        $this->get('/lineage2')->assertOk()->assertSee('Шапка VEX')->assertSee('Сайдбар VEX');
+        // Інший сервер у бічній колонці показується поруч із шапкою
+        Banner::where('alt', 'Колонка VEX')->update(['server_id' => $this->server('lineage2')->id]);
+        $this->get('/lineage2')->assertOk()->assertSee('Шапка VEX')->assertSee('Колонка VEX');
     }
 
     public function test_game_page_banner_shows_only_on_its_game(): void

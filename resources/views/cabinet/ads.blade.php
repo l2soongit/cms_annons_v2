@@ -34,14 +34,14 @@
                     <fieldset>
                         <legend class="mb-1.5 text-sm font-medium">{{ __('billing.ads.tariff') }}</legend>
                         <div class="space-y-4">
-                            @foreach ($tariffs->groupBy(fn ($t) => $t->placement.'-'.($t->placement === 'game' ? $t->game_id : '')) as $key => $group)
+                            @foreach ($tariffs->groupBy(fn ($t) => $t->placement.'-'.(Banner::isPerGame($t->placement) ? $t->game_id : '')) as $key => $group)
                                 @php
                                     $first = $group->first();
                                     [, $w, $h] = Banner::PLACEMENTS[$first->placement];
-                                    $busyDays = $busy[$first->placement.'-'.($first->placement === 'game' ? $first->game_id : '')] ?? [];
+                                    $busyDays = $busy[$first->placement.'-'.(Banner::isPerGame($first->placement) ? $first->game_id : '')] ?? [];
                                 @endphp
                                 <div class="rounded-md border border-seam p-4">
-                                    <p class="font-medium">{{ __("billing.ads.placements.{$first->placement}") }}@if ($first->placement === 'game' && $first->game) · {{ $first->game->name }}@endif</p>
+                                    <p class="font-medium">{{ __("billing.ads.placements.{$first->placement}") }}@if (Banner::isPerGame($first->placement) && $first->game) · {{ $first->game->name }}@endif</p>
                                     <p class="mt-1 text-xs text-moss">{{ __('billing.ads.size', ['w' => $w, 'h' => $h]) }}</p>
                                     <div class="mt-3 flex flex-wrap gap-2">
                                         @foreach ($group as $tariff)
@@ -61,6 +61,7 @@
                                 </div>
                             @endforeach
                         </div>
+                        <p class="mt-3 text-xs text-moss">{{ __('billing.ads.clash_hint') }}</p>
                         @error('tariff_id') <p class="mt-3 text-sm text-fade" role="alert">{{ $message }}</p> @enderror
                     </fieldset>
 

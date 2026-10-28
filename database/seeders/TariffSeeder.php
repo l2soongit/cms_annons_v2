@@ -2,6 +2,7 @@
 
 namespace Database\Seeders;
 
+use App\Models\Banner;
 use App\Models\Game;
 use App\Models\Tariff;
 use Illuminate\Database\Seeder;
@@ -50,6 +51,16 @@ class TariffSeeder extends Seeder
                     ['game_id' => $game->id, 'service' => 'banner', 'placement' => 'game', 'days' => $days],
                     ['name' => ['uk' => "Банер на сторінці гри, {$days} дн.", 'en' => "Game page banner, {$days} days"], 'price' => $price],
                 );
+            }
+
+            // Бічна колонка сторінки гри — лише там, де стиль її має
+            if (in_array($game->themeKey(), Banner::SIDE_COLUMN_THEMES, true)) {
+                foreach ([1 => 70, 7 => 350, 30 => 1200] as $days => $price) {
+                    Tariff::updateOrCreate(
+                        ['game_id' => $game->id, 'service' => 'banner', 'placement' => 'game_side', 'days' => $days],
+                        ['name' => ['uk' => "Банер у бічній колонці гри, {$days} дн.", 'en' => "Game side column banner, {$days} days"], 'price' => $price],
+                    );
+                }
             }
 
             // Анонс на головній до дати відкриття

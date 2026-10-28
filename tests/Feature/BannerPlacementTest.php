@@ -92,6 +92,29 @@ class BannerPlacementTest extends TestCase
         $this->get('/server/'.$this->server->slug)->assertOk()->assertSee('BANNER-SIDEBAR', false);
     }
 
+    public function test_game_side_column_is_a_separate_paid_placement(): void
+    {
+        // Сайдбар серверів у бічну колонку гри не потрапляє; поки місце вільне — запрошення купити рекламу
+        $this->get('/lineage2')->assertOk()->assertDontSee('BANNER-SIDEBAR', false)
+            ->assertSee(__('billing.ads.free_title'))->assertSee(route('cabinet.ads'), false);
+
+        $server = $this->server('lineage2');
+        $tariff = Tariff::where('service', 'banner')->where('placement', 'game_side')->where('days', 1)->where('game_id', $server->game_id)->firstOrFail();
+        app(Billing::class)->bookBanner($server->owner, $server, $tariff, today(), 'banners/side.webp', 'https://side.example.net', 'BANNER-SIDE-L2');
+
+        $this->get('/lineage2')->assertOk()->assertSee('BANNER-SIDE-L2', false)->assertDontSee(__('billing.ads.free_title'));
+        $this->get('/server/'.$this->server->slug)->assertOk()->assertDontSee('BANNER-SIDE-L2', false);
+        foreach (Game::where('is_active', true)->where('slug', '!=', 'lineage2')->pluck('slug') as $slug) {
+            $this->get("/{$slug}")->assertOk()->assertDontSee('BANNER-SIDE-L2', false);
+        }
+
+        // Ігри без бічної колонки в стилі цього місця не мають
+        $this->assertFalse(Tariff::where('placement', 'game_side')->where('game_id', Game::where('slug', 'minecraft')->value('id'))->exists());
+        $owner = $server->owner;
+        $owner->forceFill(['email_verified_at' => now()])->save();
+        $this->actingAs($owner)->get('/cabinet/ads')->assertOk()->assertSee(__('billing.ads.placements.game_side'));
+    }
+
     public function test_every_themed_game_page_has_its_game_slot(): void
     {
         foreach (Game::where('is_active', true)->where('slug', '!=', 'lineage2')->get() as $game) {

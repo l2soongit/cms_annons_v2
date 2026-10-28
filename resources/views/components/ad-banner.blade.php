@@ -1,4 +1,5 @@
-@props(['placement', 'game' => null, 'gap' => null, 'inset' => 0, 'max' => null])
+{{-- promo: на вільному місці показати запрошення купити рекламу (для місць, де порожнеча помітна) --}}
+@props(['placement', 'game' => null, 'gap' => null, 'inset' => 0, 'max' => null, 'promo' => false])
 @php
     use App\Models\Banner;
 
@@ -30,4 +31,10 @@
         </a>
         <span style="position:absolute;top:6px;right:6px;padding:1px 6px;border-radius:4px;background:#000a;color:#fff;font:600 10px/1.6 system-ui,sans-serif;letter-spacing:.04em;text-transform:uppercase">{{ __('billing.ads.sponsored') }}</span>
     </aside>
+@elseif ($promo)
+    <a href="{{ route('cabinet.ads') }}" {{ $attributes->merge(['class' => 'gj-place-free']) }}
+       style="display:block;max-width:{{ $max ?? $w }}px;margin:{{ $gap ?? '0 auto' }};padding:18px 16px;border:1px dashed currentColor;border-radius:8px;opacity:.7;text-align:center;text-decoration:none;color:inherit;font:14px/1.45 system-ui,sans-serif">
+        <strong style="display:block;font-size:15px">{{ __('billing.ads.free_title') }}</strong>
+        <span style="display:block;margin-top:4px;font-size:12px">{{ __('billing.ads.free_text', ['w' => $w, 'h' => $h]) }}</span>
+    </a>
 @endif

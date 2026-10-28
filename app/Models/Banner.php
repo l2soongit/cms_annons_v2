@@ -17,8 +17,35 @@ class Banner extends Model
     public const PLACEMENTS = [
         'header' => ['Шапка всіх сторінок', 1200, 150],
         'game' => ['Сторінка гри, під банером гри', 1200, 150],
-        'sidebar' => ['Сайдбар картки сервера', 300, 250],
+        'game_side' => ['Бічна колонка сторінки гри', 300, 250],
+        'sidebar' => ['Сайдбар сторінок серверів', 300, 250],
     ];
+
+    /** Місця, що продаються окремо для кожної гри */
+    public const PER_GAME = ['game', 'game_side'];
+
+    /** Стилі сторінки гри, де є бічна колонка (місце game_side) */
+    public const SIDE_COLUMN_THEMES = ['l2'];
+
+    /**
+     * Місця, що не показуються одночасно для того самого сервера (правило «один сервер — один банер на сторінці»):
+     * шапка є на кожній сторінці, тож конфліктує з усіма; банер гри й бічна колонка — на одній сторінці гри.
+     * Такі покупки на дати, що перетинаються, заборонені — інакше оплачений банер просто не показався б.
+     */
+    public static function clashesWith(string $placement): array
+    {
+        return match ($placement) {
+            'header' => array_values(array_diff(array_keys(self::PLACEMENTS), ['header'])),
+            'game' => ['header', 'game_side'],
+            'game_side' => ['header', 'game'],
+            default => ['header'],
+        };
+    }
+
+    public static function isPerGame(string $placement): bool
+    {
+        return in_array($placement, self::PER_GAME, true);
+    }
 
     protected function casts(): array
     {
@@ -53,7 +80,7 @@ class Banner extends Model
         $query->where('placement', $placement)
             ->where('is_active', true)
             ->where('starts_at', '<=', now())->where('ends_at', '>', now())
-            ->where(fn (Builder $q) => $placement === 'game' ? $q->where('game_id', $gameId) : $q->whereNull('game_id'))
+            ->where(fn (Builder $q) => self::isPerGame($placement) ? $q->where('game_id', $gameId) : $q->whereNull('game_id'))
             ->where(fn (Builder $q) => $q->whereNull('order_id')->orWhereHas('order', fn ($o) => $o->whereIn('status', ['active', 'expired'])));
     }
 

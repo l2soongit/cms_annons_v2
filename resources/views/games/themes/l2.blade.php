@@ -89,7 +89,8 @@
     </div>
 
     <aside class="side">
-      <x-ad-banner placement="sidebar" />
+      {{-- Окреме платне місце; сайдбар серверів сюди не потрапляє --}}
+      <x-ad-banner placement="game_side" :game="$game" gap="0 auto 20px" promo />
       @if ($game->showsBlock('soon'))
       <section class="panel" data-reveal>
         <h2>{{ $game->pageText('home.coming_soon') }}</h2>

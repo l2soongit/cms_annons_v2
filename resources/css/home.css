@@ -568,3 +568,46 @@ tbody tr.in { opacity: 1; transform: none; }
   .slogo { display: none; }
   td:last-child .btn-sm { padding: 6px 10px; font-size: 12px; }
 }
+
+/* ═══ Легкий режим для телефонів і планшетів ═══════════════════════════
+ * Мобільні браузери (особливо Safari на iPhone) не тягнуть великі розмиті шари, розмиття під шапкою,
+ * canvas і десятки постійних анімацій: мерехтіння, ривки при прокрутці, перезавантаження вкладки.
+ * Тут лишаються лише дешеві анімації (поява блоків, стрічка, лічильники, таймери, сповіщення).
+ */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  /* Фон: статичний градієнт замість трьох розмитих плям, без іскор і прожекторів */
+  .aurora i, .hero-fx { display: none; }
+  .aurora { background: radial-gradient(120% 55% at 100% 0%, #f9731630, transparent 60%), radial-gradient(90% 45% at 0% 40%, #fbbf2414, transparent 60%); }
+  .bar, .toast { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .bar, header.scrolled .bar { background: #18181bf5; }
+  .toast { background: #18181b; }
+
+  /* Заголовок: простий прояв без розмиття */
+  .reveal-words .w, .grad.shimmer { filter: none; animation: word-in-lite .5s ease-out both; animation-delay: calc(var(--i) * 60ms); }
+  @keyframes word-in-lite { from { opacity: 0; transform: translateY(.25em); } to { opacity: 1; transform: none; } }
+
+  /* Топ місяця: рамки й картки без постійного обертання, відблисків і сцен */
+  .ring, .arena-body .champ, .arena-body .runner, .arena-body .chaser { animation: none !important; }
+  .ring { background: linear-gradient(135deg, var(--c1), var(--c2)); }
+  .champ .inner > .sweep, .crown { animation: none; }
+  .champ .inner > .sweep { display: none; }
+  .btn-hot.pulse { animation: none; }
+
+  /* Сцени ігор, фото й фони — нерухомі */
+  .scene, .scene *, .scene-img, .hero-img, .cta-img, .art-l2, .art-gta, .art-mc, .art-rust, .art-cs, .art-dayz { animation: none !important; }
+  .world, .tile { transform: none !important; transition: border-color .2s; }
+  .world .shine, .tile .shine { display: none; }
+  .world h3, .world .wmeta, .world .wlead, .gicon, .tile h3, .tile .tmeta, .tile .lead { transform: none; }
+
+  /* Вкладки топу місяця не вилазять за екран: переносяться й гортаються */
+  .arena-head { flex-wrap: wrap; }
+  .seg { max-width: 100%; overflow-x: auto; scrollbar-width: none; }
+  .seg::-webkit-scrollbar { display: none; }
+  .seg button { flex: none; }
+}
+/* Телефон: призери топу одне під одним (назви не обрізаються), рядки погоні в один рядок */
+@media (max-width: 640px) {
+  .runners { grid-template-columns: 1fr; }
+  .chaser { grid-template-columns: 24px minmax(0, 1fr) auto; }
+  .chaser .gap-bar { display: none; }
+}

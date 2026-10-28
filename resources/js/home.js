@@ -8,6 +8,8 @@ const T = DATA.t;
 const LOCALE = DATA.locale === 'en' ? 'en-US' : 'uk-UA';
 
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Телефони й планшети: без canvas, 3D-нахилу й підсвітки під пальцем (див. легкий режим у home.css)
+const lite = matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)').matches;
 const $ = (s, root = document) => root.querySelector(s);
 const $$ = (s, root = document) => [...root.querySelectorAll(s)];
 const fmtN = n => Math.round(n).toLocaleString(LOCALE);
@@ -332,7 +334,7 @@ $$('#rank-chips button').forEach(btn => btn.addEventListener('click', () => {
 })();
 
 // 7. Підсвітка під курсором на картках
-$$('.feature, .plan, .soon-card, .stat-card, .table-card, .arena, .steps li').forEach(el => {
+if (!lite) $$('.feature, .plan, .soon-card, .stat-card, .table-card, .arena, .steps li').forEach(el => {
   el.classList.add('spot');
   el.addEventListener('pointermove', e => {
     const r = el.getBoundingClientRect();
@@ -343,7 +345,7 @@ $$('.feature, .plan, .soon-card, .stat-card, .table-card, .arena, .steps li').fo
 
 // 8. 3D-нахил і відблиск на картках ігор
 $$('.world').forEach(tile => {
-  if (calm) return;
+  if (calm || lite) return;
   tile.addEventListener('pointermove', e => {
     const r = tile.getBoundingClientRect();
     const x = (e.clientX - r.left) / r.width, y = (e.clientY - r.top) / r.height;
@@ -358,7 +360,7 @@ $$('.world').forEach(tile => {
 // 9. Іскри першого екрана: легкий canvas, пауза у фоновій вкладці та поза екраном
 (() => {
   const canvas = $('#embers');
-  if (calm || !canvas) return;
+  if (calm || lite || !canvas) return;
   const ctx = canvas.getContext('2d');
   const dpr = Math.min(devicePixelRatio || 1, 2);
   let w, h, parts = [], visible = true;

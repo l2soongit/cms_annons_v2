@@ -8,6 +8,9 @@ return [
     'deposit' => [
         'title' => 'Top up balance',
         'amount' => 'Amount, ₴',
+        'amount_plain' => 'Amount',
+        'currency' => 'Currency',
+        'rates_hint' => 'The balance is kept in hryvnias; the amount is converted at the NBU rate:',
         'gateway' => 'Payment method',
         'submit' => 'Proceed to payment',
         'unavailable' => 'Online payment is not set up yet. Contact support to top up your balance.',
@@ -123,6 +126,7 @@ return [
     'errors' => [
         'deposit_range' => 'Top-up amount must be between :min and :max.',
         'gateway' => 'This payment method is not available.',
+        'currency' => 'Top-ups in this currency are not available right now.',
         'tariff' => 'This plan is not available for the server.',
         'not_published' => 'Services can only be bought for a published server.',
         'promo' => 'The promo code is not valid for this service.',

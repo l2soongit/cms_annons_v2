@@ -1,6 +1,7 @@
 <?php
 
 use App\Billing\Billing;
+use App\Billing\ExchangeRates;
 use App\Rating\RatingCalculator;
 use App\Servers\ServerModeration;
 use Illuminate\Support\Facades\Artisan;
@@ -27,6 +28,8 @@ Schedule::command('servers:aggregate')->hourlyAt(2);
 Schedule::command('servers:release-blocks')->everyFifteenMinutes();
 Schedule::command('billing:expire')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('billing:remind')->dailyAt('10:00');
+// НБУ встановлює курс на наступний день близько 15:30; ранковий запуск — на випадок, якщо вечірній не вдався
+Schedule::command('billing:rates')->twiceDaily(6, 16)->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->daily();
 Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping(60);
 
@@ -50,6 +53,10 @@ Artisan::command('servers:release-blocks', function (ServerModeration $moderatio
 Artisan::command('billing:expire', function (Billing $billing) {
     $this->info('Оброблено послуг, що закінчилися: '.$billing->expire());
 })->purpose('Вимкнути платні послуги після терміну; з автопродовженням — оплатити наступний період');
+
+Artisan::command('billing:rates', function (ExchangeRates $rates) {
+    $this->info('Оновлено курсів НБУ: '.$rates->refresh());
+})->purpose('Завантажити курси валют НБУ для поповнення в USD/EUR');
 
 Artisan::command('billing:remind', function (Billing $billing) {
     $this->info('Надіслано нагадувань: '.$billing->remindExpiring());

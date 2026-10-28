@@ -4,8 +4,10 @@ namespace Tests\Feature;
 
 use App\Billing\Billing;
 use App\Billing\BillingException;
+use App\Billing\ExchangeRates;
 use App\Billing\Gateways\LiqPayGateway;
 use App\Billing\Gateways\TestGateway;
+use App\Billing\Money;
 use App\Billing\PaymentResult;
 use App\Enums\ServerStatus;
 use App\Filament\Resources\OrderResource;
@@ -20,6 +22,8 @@ use Database\Seeders\GameSeeder;
 use Database\Seeders\RoleSeeder;
 use Database\Seeders\TariffSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Notification;
 use Tests\TestCase;
 
@@ -264,5 +268,65 @@ class BillingTest extends TestCase
         }
         $this->actingAs(User::factory()->create()->assignRole('moderator'))->get(OrderResource::getUrl())->assertForbidden();
         $this->actingAs($server->owner)->get(route('cabinet.servers.show', $server))->assertOk()->assertSee('Просування')->assertSee('Автопродовження');
+    }
+
+    public function test_nbu_rates_are_loaded_for_deposit_currencies(): void
+    {
+        Http::fake(['bank.gov.ua/*' => Http::response([
+            ['cc' => 'USD', 'rate' => 41.2512, 'exchangedate' => today()->format('d.m.Y')],
+            ['cc' => 'EUR', 'rate' => 44.1, 'exchangedate' => today()->format('d.m.Y')],
+            ['cc' => 'PLN', 'rate' => 10.3, 'exchangedate' => today()->format('d.m.Y')],
+        ])]);
+
+        $this->artisan('billing:rates')->assertSuccessful();
+
+        $rates = app(ExchangeRates::class);
+        $this->assertSame([41.2512, 44.1], [$rates->rate('USD'), $rates->rate('EUR')]);
+        $this->assertNull($rates->rate('PLN'));
+        $this->assertSame(['UAH', 'USD', 'EUR'], $rates->depositCurrencies());
+    }
+
+    public function test_foreign_currency_deposit_charges_currency_and_credits_hryvnias(): void
+    {
+        DB::table('exchange_rates')->insert(['currency' => 'USD', 'rate' => 41.25, 'rate_date' => today()->toDateString()]);
+        $user = User::factory()->create();
+        $deposit = app(Billing::class)->startDeposit($user, 1000, 'liqpay', 'USD');
+
+        $this->assertSame(['412.50', 'UAH', '10.00', 'USD'], [$deposit->amount, $deposit->currency, $deposit->paid_amount, $deposit->paid_currency]);
+
+        $params = json_decode(base64_decode(app(LiqPayGateway::class)->checkout($deposit)->fields['data']), true);
+        $this->assertSame(['10.00', 'USD'], [$params['amount'], $params['currency']]);
+
+        // Та сама сума, але в гривнях — не зараховується
+        $wrong = $this->liqpayCallback(['order_id' => $params['order_id'], 'status' => 'success', 'amount' => 10, 'currency' => 'UAH']);
+        $this->post('/api/billing/callback/liqpay', $wrong)->assertOk();
+        $this->assertSame(['0.00', 'failed'], [$user->fresh()->balance, $deposit->fresh()->status]);
+
+        $second = app(Billing::class)->startDeposit($user, 1000, 'liqpay', 'USD');
+        $orderId = $second->id.'-'.$second->created_at->timestamp;
+        $this->post('/api/billing/callback/liqpay', $this->liqpayCallback(['order_id' => $orderId, 'status' => 'success', 'amount' => 10, 'currency' => 'USD']))->assertOk();
+        $this->assertSame('412.50', $user->fresh()->balance);
+
+        $this->actingAs($user)->get(route('cabinet.balance'))->assertOk()->assertSee(Money::formatIn(1000, 'USD'), false)->assertSee('USD');
+    }
+
+    public function test_currency_without_fresh_rate_or_out_of_range_is_rejected(): void
+    {
+        $user = User::factory()->create();
+        DB::table('exchange_rates')->insert(['currency' => 'EUR', 'rate' => 44, 'rate_date' => today()->subDays(10)->toDateString()]);
+
+        foreach ([[1000, 'EUR', 'currency'], [1000, 'RUB', 'currency'], [100, 'UAH', 'deposit_range']] as [$cents, $currency, $error]) {
+            try {
+                app(Billing::class)->startDeposit($user, $cents, 'liqpay', $currency);
+                $this->fail("{$currency} мав бути відхилений");
+            } catch (BillingException $e) {
+                $this->assertSame(__("billing.errors.{$error}", ['min' => Money::format(5000, true), 'max' => Money::format(5000000, true)]), $e->getMessage());
+            }
+        }
+
+        // Межі поповнення — у гривнях після перерахунку: 1 $ = 41,25 ₴ — замало
+        DB::table('exchange_rates')->insert(['currency' => 'USD', 'rate' => 41.25, 'rate_date' => today()->toDateString()]);
+        $this->expectException(BillingException::class);
+        app(Billing::class)->startDeposit($user, 100, 'liqpay', 'USD');
     }
 }

@@ -111,19 +111,19 @@ class LocalizationTest extends TestCase
 
     public function test_new_language_works_without_code_changes(): void
     {
-        config(['graj.locales' => ['uk' => 'Українська', 'en' => 'English', 'pl' => 'Polski']]);
-        Translations::save('pl', 'ui.footer.rules', 'Regulamin');
+        config(['graj.locales' => ['uk' => 'Українська', 'en' => 'English', 'de' => 'Deutsch']]);
+        Translations::save('de', 'ui.footer.rules', 'Portalregeln');
 
-        $this->get('/pl/search')->assertOk()
-            ->assertSee('<html lang="pl"', false)
-            ->assertSee('Regulamin')
+        $this->get('/de/search')->assertOk()
+            ->assertSee('<html lang="de"', false)
+            ->assertSee('Portalregeln')
             // Решта текстів — резервною мовою (англійською), поки немає перекладу
             ->assertSee('Search servers')
-            ->assertSee('hreflang="pl"', false);
+            ->assertSee('hreflang="de"', false);
 
         // Форма гри в адмінці отримує поля для нової мови
         $this->actingAs(User::factory()->create()->assignRole('admin'));
-        Livewire::test(EditGame::class, ['record' => Game::first()->getRouteKey()])->assertSee('Назва (pl)');
+        Livewire::test(EditGame::class, ['record' => Game::first()->getRouteKey()])->assertSee('Назва (de)');
     }
 
     public function test_static_pages_in_both_languages(): void

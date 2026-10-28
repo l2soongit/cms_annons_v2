@@ -8,7 +8,7 @@ return [
 
     'voting' => [
         // Через скільки годин можна знову голосувати за той самий сервер
-        'interval_hours' => (int) env('VOTE_INTERVAL_HOURS', 12),
+        'interval_hours' => (int) env('VOTE_INTERVAL_HOURS', 24),
 
         // Скільки голосів з однієї підмережі /24 за інтервал вважаються нормою
         'subnet_limit' => (int) env('VOTE_SUBNET_LIMIT', 5),
@@ -61,11 +61,17 @@ return [
     'locales' => [
         'uk' => 'Українська',
         'en' => 'English',
+        'ru' => 'Русский',
+        'pl' => 'Polski',
     ],
 
     'billing' => [
-        // Баланс ведеться в гривнях; платіжні системи списують у цій валюті
+        // Баланс ведеться в гривнях; поповнити можна в будь-якій з валют нижче — сума перераховується за курсом НБУ
         'currency' => 'UAH',
+        // RUB відкладено: LiqPay і Stripe не приймають рублі
+        'deposit_currencies' => ['UAH', 'USD', 'EUR'],
+        // Курс старший за стільки днів вважається застарілим — валюта тимчасово недоступна для поповнення
+        'rate_max_age_days' => 4,
         'min_deposit' => 50,
         'max_deposit' => 50000,
         // За скільки днів до кінця послуги нагадати власнику
@@ -120,23 +126,32 @@ return [
     'home' => [
         // Порядок фіксований у шаблоні, тут лише які секції показувати
         'sections' => ['arena', 'marquee', 'games', 'ranking', 'soon', 'owners', 'plans', 'cta'],
-        'hero_title' => ['uk' => 'Знайди сервер, де справді', 'en' => 'Find a server where people actually'],
-        'hero_accent' => ['uk' => 'грають', 'en' => 'play'],
+        'hero_title' => ['uk' => 'Знайди сервер, де справді', 'en' => 'Find a server where people actually', 'ru' => 'Найди сервер, где действительно', 'pl' => 'Znajdź serwer, na którym naprawdę'],
+        'hero_accent' => ['uk' => 'грають', 'en' => 'play', 'ru' => 'играют', 'pl' => 'grają'],
         'hero_lead' => [
             'uk' => 'Чесний рейтинг ігрових серверів. Онлайн перевіряємо кожні 5 хвилин, голоси — без накрутки.',
             'en' => 'Honest game server rankings. Player counts are checked every 5 minutes, votes are protected from cheating.',
+            'ru' => 'Честный рейтинг игровых серверов. Онлайн проверяем каждые 5 минут, голоса — без накрутки.',
+            'pl' => 'Uczciwy ranking serwerów gier. Liczbę graczy sprawdzamy co 5 minut, głosy są chronione przed oszustwami.',
         ],
         // Посилання «Часто шукають» під пошуком
         'quick_links' => ['Interlude x50', 'FiveM RP', 'Анархія 1.21', 'Rust Solo'],
         // Підказки, що «друкуються» в полі пошуку
         'search_hints' => ['Interlude x50 PvP', 'FiveM RP з економікою', 'Minecraft анархія 1.21', 'Rust Solo, вайп щотижня', 'CS2 Retake 128 tick'],
-        'owners_title' => ['uk' => 'Від реєстрації до першого місця', 'en' => 'From sign-up to first place'],
+        'owners_title' => ['uk' => 'Від реєстрації до першого місця', 'en' => 'From sign-up to first place', 'ru' => 'От регистрации до первого места', 'pl' => 'Od rejestracji do pierwszego miejsca'],
         'owners_lead' => [
             'uk' => 'Додавання безкоштовне. Портал сам перевіряє онлайн і приводить гравців, які голосують саме за вас.',
             'en' => 'Listing is free. We check your server automatically and bring players who vote for you.',
+            'ru' => 'Добавление бесплатное. Портал сам проверяет онлайн и приводит игроков, которые голосуют именно за вас.',
+            'pl' => 'Dodanie jest bezpłatne. Portal sam sprawdza serwer i przyprowadza graczy, którzy głosują właśnie na was.',
         ],
-        'cta_title' => ['uk' => 'Твій сервер заслуговує на гравців', 'en' => 'Your server deserves players'],
-        'cta_text' => ['uk' => 'Додай його за 3 хвилини. Модерація зазвичай займає до доби.', 'en' => 'Add it in 3 minutes. Moderation usually takes under a day.'],
+        'cta_title' => ['uk' => 'Твій сервер заслуговує на гравців', 'en' => 'Your server deserves players', 'ru' => 'Твой сервер заслуживает игроков', 'pl' => 'Twój serwer zasługuje na graczy'],
+        'cta_text' => [
+            'uk' => 'Додай його за 3 хвилини. Модерація зазвичай займає до доби.',
+            'en' => 'Add it in 3 minutes. Moderation usually takes under a day.',
+            'ru' => 'Добавь его за 3 минуты. Модерация обычно занимает до суток.',
+            'pl' => 'Dodaj go w 3 minuty. Moderacja zwykle trwa do doby.',
+        ],
         'ranking_size' => 10,
         // Власні зображення (шлях на диску public); без них — анімований фон із демо
         'hero_image' => null,

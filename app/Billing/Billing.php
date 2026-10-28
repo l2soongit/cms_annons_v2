@@ -24,14 +24,26 @@ use Illuminate\Support\Facades\DB;
  */
 class Billing
 {
-    public function __construct(private GatewayRegistry $gateways) {}
+    public function __construct(private GatewayRegistry $gateways, private ExchangeRates $rates) {}
 
-    /** Створити поповнення, що чекає оплати в платіжній системі */
-    public function startDeposit(User $user, int $cents, string $gateway): Transaction
+    /**
+     * Створити поповнення, що чекає оплати в платіжній системі. Сума — у валюті оплати;
+     * на баланс зараховується в гривнях за курсом НБУ на момент створення.
+     */
+    public function startDeposit(User $user, int $cents, string $gateway, ?string $currency = null): Transaction
     {
+        $base = (string) config('graj.billing.currency');
+        $currency ??= $base;
+        if (! in_array($currency, $this->rates->depositCurrencies(), true)) {
+            throw BillingException::because('currency');
+        }
+
+        $rate = (float) $this->rates->rate($currency);
+        $baseCents = $this->rates->toBase($cents, $rate);
+
         $min = (int) config('graj.billing.min_deposit') * 100;
         $max = (int) config('graj.billing.max_deposit') * 100;
-        if ($cents < $min || $cents > $max) {
+        if ($baseCents < $min || $baseCents > $max) {
             throw BillingException::because('deposit_range', ['min' => Money::format($min, true), 'max' => Money::format($max, true)]);
         }
         if (! isset($this->gateways->available()[$gateway])) {
@@ -40,8 +52,11 @@ class Billing
 
         return $user->transactions()->create([
             'type' => 'deposit',
-            'amount' => Money::decimal($cents),
-            'currency' => config('graj.billing.currency'),
+            'amount' => Money::decimal($baseCents),
+            'currency' => $base,
+            'paid_amount' => $currency === $base ? null : Money::decimal($cents),
+            'paid_currency' => $currency === $base ? null : $currency,
+            'rate' => $currency === $base ? null : $rate,
             'provider' => $gateway,
             'status' => 'pending',
         ]);
@@ -58,8 +73,10 @@ class Billing
                 return $deposit;
             }
 
-            // Сума з відповіді має збігатися з тією, що ми виставили
-            $succeeded = $result->status === PaymentResult::SUCCEEDED && $result->amountCents === Money::cents($deposit->amount);
+            // Сума й валюта з відповіді мають збігатися з тими, що ми виставили
+            $succeeded = $result->status === PaymentResult::SUCCEEDED
+                && $result->amountCents === $deposit->chargeCents()
+                && ($result->currency === null || strtoupper($result->currency) === $deposit->chargeCurrency());
             $deposit->update([
                 'status' => $succeeded ? 'succeeded' : 'failed',
                 'external_id' => $result->externalId,

@@ -27,7 +27,7 @@ final class HomePageData
 
     public static function forget(): void
     {
-        foreach (['uk', 'en'] as $locale) {
+        foreach (array_keys(Locales::all()) as $locale) {
             Cache::forget("home.data.{$locale}");
         }
     }

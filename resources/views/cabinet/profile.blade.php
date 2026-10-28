@@ -12,8 +12,9 @@
                 <div>
                     <label for="locale" class="mb-1.5 block text-sm font-medium">{{ __('profile.locale') }}</label>
                     <select id="locale" name="locale" class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone">
-                        <option value="uk" @selected($user->locale === 'uk')>Українська</option>
-                        <option value="en" @selected($user->locale === 'en')>English</option>
+                        @foreach (\App\Support\Locales::all() as $code => $name)
+                            <option value="{{ $code }}" @selected($user->locale === $code)>{{ $name }}</option>
+                        @endforeach
                     </select>
                     <p class="mt-1.5 text-xs text-moss">{{ __('profile.locale_hint') }}</p>
                 </div>

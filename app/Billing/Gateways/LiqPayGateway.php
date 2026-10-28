@@ -38,14 +38,15 @@ class LiqPayGateway implements PaymentGateway
             'version' => 3,
             'public_key' => config('services.liqpay.public_key'),
             'action' => 'pay',
-            'amount' => Money::decimal(Money::cents($deposit->amount)),
-            'currency' => $deposit->currency,
+            'amount' => Money::decimal($deposit->chargeCents()),
+            'currency' => $deposit->chargeCurrency(),
             'description' => __('billing.deposit_description', ['id' => $deposit->id, 'email' => $deposit->user->email]),
             // Номер замовлення унікальний для мерчанта: id + час, щоб тестова й робоча база не перетиналися
             'order_id' => $deposit->id.'-'.$deposit->created_at->timestamp,
             'result_url' => route('billing.return'),
             'server_url' => route('billing.callback', $this->key()),
-            'language' => app()->getLocale() === 'en' ? 'en' : 'uk',
+            // LiqPay має лише українську й англійську сторінку оплати
+            'language' => app()->getLocale() === 'uk' ? 'uk' : 'en',
             'sandbox' => config('services.liqpay.sandbox') ? '1' : null,
         ], fn ($v) => $v !== null);
 
@@ -74,6 +75,7 @@ class LiqPayGateway implements PaymentGateway
             Money::cents($payload['amount'] ?? 0),
             isset($payload['payment_id']) ? (string) $payload['payment_id'] : null,
             $payload,
+            isset($payload['currency']) ? (string) $payload['currency'] : null,
         );
     }
 

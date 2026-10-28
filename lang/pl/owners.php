@@ -1,0 +1,33 @@
+<?php
+
+return [
+    'title' => 'Współwłaściciele',
+    'lead' => 'Współwłaściciele mogą edytować serwer, przeglądać statystyki i odpowiadać na opinie. Zarządzać listą i przekazywać uprawnienia może tylko główny właściciel.',
+    'owner' => 'Główny właściciel',
+    'invite_email' => 'Email nowego współwłaściciela',
+    'invite' => 'Wyślij zaproszenie',
+    'pending' => 'Oczekuje na potwierdzenie do :date',
+    'cancel' => 'Anuluj',
+    'remove' => 'Usuń',
+    'remove_confirm' => 'Usunąć :name ze współwłaścicieli?',
+    'transfer_title' => 'Przekaż serwer',
+    'transfer_lead' => 'Nowy główny właściciel otrzyma pełną kontrolę, a Ty pozostaniesz współwłaścicielem.',
+    'transfer_to' => 'Komu przekazać',
+    'transfer' => 'Przekaż uprawnienia',
+    'password' => 'Twoje hasło do potwierdzenia',
+    'invited' => 'Zaproszenie wysłane na :email.',
+    'already' => 'Ta osoba ma już dostęp do serwera.',
+    'limit' => 'Nie więcej niż 10 współwłaścicieli i zaproszeń na serwer.',
+    'invalid' => 'Zaproszenie jest nieważne lub wygasło. Poproś o wysłanie nowego.',
+    'wrong_account' => 'Zaproszenie wysłano na :email. Zaloguj się tym adresem email, aby je przyjąć.',
+    'accepted' => 'Jesteś teraz współwłaścicielem tego serwera.',
+    'removed' => 'Współwłaściciel usunięty.',
+    'cancelled' => 'Zaproszenie anulowane.',
+    'transferred' => 'Serwer przekazany: :name jest teraz głównym właścicielem.',
+    'mail' => [
+        'subject' => 'Zaproszenie do zarządzania serwerem :server',
+        'line' => ':inviter zaprasza Cię do zostania współwłaścicielem serwera :server na graj.club.',
+        'accept' => 'Przyjmij zaproszenie',
+        'expires' => 'Link jest ważny do :date. Jeśli nie spodziewałeś się tej wiadomości, po prostu ją zignoruj.',
+    ],
+];

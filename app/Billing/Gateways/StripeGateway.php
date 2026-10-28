@@ -23,6 +23,9 @@ class StripeGateway implements PaymentGateway
     /** Мітка сесій у Dashboard для порівняння потоків оплати (суфікс — 8 випадкових літер) */
     private const INTEGRATION_IDENTIFIER = 'graj_balance_topup_qkvmzrtw';
 
+    /** Мови сайту, якими перекладено Stripe Checkout */
+    private const LOCALES = ['uk', 'en', 'ru', 'pl', 'de', 'cs', 'ro'];
+
     public function key(): string
     {
         return 'stripe';
@@ -46,15 +49,16 @@ class StripeGateway implements PaymentGateway
             'line_items' => [[
                 'quantity' => 1,
                 'price_data' => [
-                    'currency' => strtolower($deposit->currency),
-                    'unit_amount' => Money::cents($deposit->amount),
+                    'currency' => strtolower($deposit->chargeCurrency()),
+                    'unit_amount' => $deposit->chargeCents(),
                     'product_data' => ['name' => __('billing.deposit_description', ['id' => $deposit->id, 'email' => $deposit->user->email])],
                 ],
             ]],
             'client_reference_id' => (string) $deposit->id,
             'metadata' => ['transaction_id' => (string) $deposit->id],
             'customer_email' => $deposit->user->email,
-            'locale' => app()->getLocale() === 'en' ? 'en' : 'uk',
+            // Мова сайту, якщо Stripe Checkout її має; інакше Stripe визначить сам за браузером
+            'locale' => in_array(app()->getLocale(), self::LOCALES, true) ? app()->getLocale() : 'auto',
             'success_url' => route('billing.return'),
             'cancel_url' => route('cabinet.balance'),
             'integration_identifier' => self::INTEGRATION_IDENTIFIER,
@@ -84,7 +88,7 @@ class StripeGateway implements PaymentGateway
             default => PaymentResult::PENDING,
         };
 
-        return new PaymentResult($transactionId, $status, (int) ($session->amount_total ?? 0), $session->id ?? null, ['event' => $event->id, 'type' => $event->type]);
+        return new PaymentResult($transactionId, $status, (int) ($session->amount_total ?? 0), $session->id ?? null, ['event' => $event->id, 'type' => $event->type], isset($session->currency) ? (string) $session->currency : null);
     }
 
     private function client(): StripeClient

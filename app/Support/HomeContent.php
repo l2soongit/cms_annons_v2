@@ -20,7 +20,7 @@ final class HomeContent
 
     public const LOCALIZED = ['hero_title', 'hero_accent', 'hero_lead', 'owners_title', 'owners_lead', 'cta_title', 'cta_text'];
 
-    /** Текст поточною мовою; порожній переклад замінюється українським */
+    /** Текст поточною мовою; порожній переклад замінюється текстом основною мовою */
     public static function text(string $key): string
     {
         $value = config("graj.home.{$key}");
@@ -29,7 +29,7 @@ final class HomeContent
             return (string) $value;
         }
 
-        return (string) (($value[app()->getLocale()] ?? null) ?: ($value['uk'] ?? ''));
+        return (string) (($value[app()->getLocale()] ?? null) ?: ($value[Locales::default()] ?? ''));
     }
 
     public static function shows(string $section): bool

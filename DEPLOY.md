@@ -24,7 +24,9 @@
    php artisan storage:link
    php artisan optimize
    php artisan user:make-admin you@graj.club
+   php artisan billing:rates
    ```
+   Останній рядок одразу завантажує курси НБУ для поповнення в USD/EUR (далі cron оновлює їх о 06:00 і 16:00). Без свіжого курсу іноземна валюта просто не показується у формі поповнення.
 6. Додайте cron-задачу:
    ```
    * * * * * cd /шлях/до/проєкту && php artisan schedule:run >> /dev/null 2>&1
@@ -61,6 +63,8 @@ GitHub → Actions → «Deploy to hosting» → Run workflow. Потім чер
 php artisan migrate --force
 php artisan optimize
 ```
+
+Після оновлення, де з'явилося поповнення в USD/EUR, один раз виконайте `php artisan billing:rates`.
 
 ## Бекапи
 

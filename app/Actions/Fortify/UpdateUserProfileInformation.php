@@ -4,6 +4,7 @@ namespace App\Actions\Fortify;
 
 use App\Models\User;
 use Illuminate\Support\Facades\Validator;
+use App\Support\Locales;
 use Illuminate\Validation\Rule;
 use Illuminate\Validation\ValidationException;
 use Laravel\Fortify\Contracts\UpdatesUserProfileInformation;
@@ -30,7 +31,7 @@ class UpdateUserProfileInformation implements UpdatesUserProfileInformation
                 Rule::unique('users')->ignore($user->id),
             ],
 
-            'locale' => ['required', Rule::in(['uk', 'en'])],
+            'locale' => ['required', Rule::in(array_keys(Locales::all()))],
         ])->validateWithBag('updateProfileInformation');
 
         // User реалізує MustVerifyEmail: новий email потребує повторного підтвердження

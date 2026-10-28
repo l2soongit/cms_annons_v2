@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Billing\Billing;
 use App\Billing\BillingException;
+use App\Billing\ExchangeRates;
 use App\Billing\GatewayRegistry;
 use App\Billing\Gateways\TestGateway;
 use App\Billing\Money;
@@ -21,13 +22,15 @@ use Throwable;
  */
 class BillingController extends Controller
 {
-    public function index(Request $request, GatewayRegistry $gateways): View
+    public function index(Request $request, GatewayRegistry $gateways, ExchangeRates $rates): View
     {
         $user = $request->user();
 
         return view('cabinet.balance', [
             'user' => $user,
             'gateways' => $gateways->available(),
+            // Валюта => курс до гривні; іноземні з’являються, лише коли є свіжий курс НБУ
+            'currencies' => collect($rates->depositCurrencies())->mapWithKeys(fn (string $c) => [$c => $rates->rate($c)])->all(),
             'transactions' => $user->transactions()->with('order.tariff')->latest('id')->paginate(20),
             'orders' => $user->orders()->with(['tariff', 'server'])->latest('id')->limit(50)->get(),
         ]);
@@ -38,10 +41,11 @@ class BillingController extends Controller
         $data = $request->validate([
             'amount' => ['required', 'numeric', 'min:1'],
             'gateway' => ['required', 'string'],
+            'currency' => ['nullable', 'string', 'size:3'],
         ]);
 
         try {
-            $deposit = $billing->startDeposit($request->user(), Money::cents($data['amount']), $data['gateway']);
+            $deposit = $billing->startDeposit($request->user(), Money::cents($data['amount']), $data['gateway'], $data['currency'] ?? null);
         } catch (BillingException $e) {
             return back()->withInput()->withErrors(['amount' => $e->getMessage()]);
         }

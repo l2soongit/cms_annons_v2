@@ -45,7 +45,7 @@ class TestGateway implements PaymentGateway
             return null;
         }
 
-        return new PaymentResult($id, $status, Money::cents(Transaction::find($id)?->amount), 'test-'.$id);
+        return new PaymentResult($id, $status, (int) Transaction::find($id)?->chargeCents(), 'test-'.$id);
     }
 
     public function sign(int $transactionId, string $status): string

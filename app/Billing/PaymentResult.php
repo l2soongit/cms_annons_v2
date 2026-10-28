@@ -19,5 +19,7 @@ final class PaymentResult
         public readonly int $amountCents,
         public readonly ?string $externalId = null,
         public readonly array $payload = [],
+        // Валюта, у якій провайдер списав кошти; null — провайдер її не повідомляє
+        public readonly ?string $currency = null,
     ) {}
 }

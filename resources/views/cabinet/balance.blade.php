@@ -63,7 +63,7 @@
                                         <td class="py-3 tabular-nums text-moss">{{ $t->created_at->format('d.m.Y H:i') }}</td>
                                         <td class="py-3">{{ __("billing.types.{$t->type}") }}@if ($t->order?->tariff)<span class="block text-xs text-moss">{{ $t->order->tariff->name }}</span>@endif</td>
                                         <td @class(['py-3', 'text-fade' => $t->status === 'failed', 'text-moss' => $t->status === 'pending'])>{{ __("billing.statuses.{$t->status}") }}</td>
-                                        <td @class(['py-3 text-right tabular-nums', 'text-signal' => $t->amount > 0 && $t->status === 'succeeded'])>{{ $t->amount > 0 ? '+' : '' }}{{ Money::format($t->amount) }}</td>
+                                        <td @class(['py-3 text-right tabular-nums', 'text-signal' => $t->amount > 0 && $t->status === 'succeeded'])>{{ $t->amount > 0 ? '+' : '' }}{{ Money::format($t->amount) }}@if ($t->paid_currency)<span class="block text-xs text-moss">{{ Money::formatIn(Money::cents($t->paid_amount), $t->paid_currency) }}</span>@endif</td>
                                     </tr>
                                 @endforeach
                             </tbody>
@@ -84,8 +84,29 @@
                 @if ($gateways)
                     <form method="POST" action="{{ route('cabinet.balance.deposit') }}" class="mt-4 space-y-4">
                         @csrf
-                        <x-field name="amount" :label="__('billing.deposit.amount')" type="number" inputmode="decimal"
-                                 :min="config('graj.billing.min_deposit')" :max="config('graj.billing.max_deposit')" step="1" :value="500" required />
+                        @if (count($currencies) > 1)
+                            {{-- Межі суми задані в гривнях, тож для іноземної валюти їх перевіряє сервер --}}
+                            <div class="flex gap-2">
+                                <div class="min-w-0 flex-1">
+                                    <x-field name="amount" :label="__('billing.deposit.amount_plain')" type="number" inputmode="decimal" min="1" step="0.01" :value="500" required />
+                                </div>
+                                <div>
+                                    <label for="currency" class="mb-1.5 block text-sm font-medium">{{ __('billing.deposit.currency') }}</label>
+                                    <select id="currency" name="currency" class="rounded-md border border-seam bg-slab px-3 py-2.5 text-bone">
+                                        @foreach ($currencies as $code => $rate)
+                                            <option value="{{ $code }}" @selected(old('currency', array_key_first($currencies)) === $code)>{{ $code }}</option>
+                                        @endforeach
+                                    </select>
+                                </div>
+                            </div>
+                            <p class="text-xs text-moss">
+                                {{ __('billing.deposit.rates_hint') }}
+                                {{ collect($currencies)->except(config('graj.billing.currency'))->map(fn ($rate, $code) => Money::formatIn(100, $code).' = '.Money::format($rate))->implode(', ') }}
+                            </p>
+                        @else
+                            <x-field name="amount" :label="__('billing.deposit.amount')" type="number" inputmode="decimal"
+                                     :min="config('graj.billing.min_deposit')" :max="config('graj.billing.max_deposit')" step="1" :value="500" required />
+                        @endif
                         <fieldset>
                             <legend class="mb-1.5 text-sm font-medium">{{ __('billing.deposit.gateway') }}</legend>
                             <div class="space-y-2">

@@ -6,6 +6,7 @@ use App\Filament\Support\ImageField;
 use App\Models\ModerationLog;
 use App\Support\HomeContent;
 use App\Support\HomePageData;
+use App\Support\Locales;
 use App\Support\Settings as SettingsStore;
 use BackedEnum;
 use Filament\Forms\Components\CheckboxList;
@@ -108,15 +109,15 @@ class HomePageSettings extends Page
         return ImageField::make($key, 'home', $type)->label($label);
     }
 
-    /** Поле українською (обов’язкове) і англійською */
+    /** Поле для кожної мови сайту; обов’язкове лише основною */
     private function localized(string $key, string $label, ?string $help = null, bool $textarea = false): array
     {
         $make = fn (string $locale) => ($textarea ? Textarea::make("home.{$key}.{$locale}")->rows(2) : TextInput::make("home.{$key}.{$locale}"))
             ->label("{$label} ({$locale})")
             ->maxLength(300)
-            ->helperText($locale === 'uk' ? $help : null);
+            ->helperText($locale === Locales::default() ? $help : null);
 
-        return [$make('uk')->required(), $make('en')];
+        return array_map(fn (string $locale) => $locale === Locales::default() ? $make($locale)->required() : $make($locale), array_keys(Locales::all()));
     }
 
     public function save(): void
@@ -128,7 +129,7 @@ class HomePageSettings extends Page
             $value = Arr::get($state, $key);
             $name = substr($key, strlen('home.'));
             $values[$key] = match (true) {
-                in_array($name, HomeContent::LOCALIZED, true) => ['uk' => trim((string) ($value['uk'] ?? '')), 'en' => trim((string) ($value['en'] ?? ''))],
+                in_array($name, HomeContent::LOCALIZED, true) => collect(array_keys(Locales::all()))->mapWithKeys(fn ($l) => [$l => trim((string) ($value[$l] ?? ''))])->all(),
                 in_array($name, ['quick_links', 'search_hints'], true) => array_values(array_filter(array_map('trim', (array) $value))),
                 $name === 'sections' => array_values(array_intersect(array_keys(HomeContent::SECTIONS), (array) $value)),
                 in_array($name, ['ranking_size', 'hero_image_opacity'], true) => (int) $value,

@@ -14,10 +14,19 @@
         <rect x="8" y="14" width="26" height="5" rx="1.5" style="{{ $muted }}"/>
         <rect x="120" y="14" width="72" height="5" rx="1.5" style="{{ $muted }}"/>
 
-        {{-- Шапка є на всіх сторінках --}}
-        <rect x="8" y="23" width="184" height="12" rx="2" style="{{ $placement === 'header' ? $spot : $muted }}" opacity="{{ $placement === 'header' ? 1 : .45 }}"/>
+        {{-- Шапка є на всіх сторінках, крім голосування --}}
+        @unless ($placement === 'vote')
+            <rect x="8" y="23" width="184" height="12" rx="2" style="{{ $placement === 'header' ? $spot : $muted }}" opacity="{{ $placement === 'header' ? 1 : .45 }}"/>
+        @endunless
 
-        @if ($placement === 'sidebar')
+        @if ($placement === 'vote')
+            {{-- Сторінка голосування: вузька колонка — заголовок, поле нікнейму, кнопка, під нею банер --}}
+            <rect x="62" y="26" width="76" height="7" rx="1.5" style="{{ $muted }}"/>
+            <rect x="62" y="37" width="56" height="4" rx="1" style="{{ $soft }}"/>
+            <rect x="62" y="47" width="76" height="10" rx="2" style="{{ $soft }}"/>
+            <rect x="62" y="61" width="76" height="9" rx="2" style="{{ $muted }}"/>
+            <rect x="70" y="78" width="60" height="44" rx="2" style="{{ $spot }}"/>
+        @elseif ($placement === 'sidebar')
             {{-- Сторінка сервера: назва, опис зліва, бічна колонка справа --}}
             <rect x="8" y="40" width="20" height="20" rx="3" style="{{ $muted }}"/>
             <rect x="32" y="42" width="60" height="6" rx="1.5" style="{{ $muted }}"/>

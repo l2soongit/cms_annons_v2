@@ -96,12 +96,13 @@ return [
     'ads' => [
         'nav' => 'Advertising',
         'title' => 'Banner ads',
-        'lead' => 'Book a spot for your server banner: the header of every page, the game page, the game side column or the server pages sidebar. The diagram next to each spot shows exactly where the banner will appear. One spot — one advertiser per day.',
+        'lead' => 'Book a spot for your server banner: the header of every page, the game page, the game side column, the server pages sidebar or the vote page. The diagram next to each spot shows exactly where the banner will appear. One spot — one advertiser per day.',
         'placements' => [
             'header' => 'Header of every page',
             'game' => 'Game page',
             'game_side' => 'Game page side column',
             'sidebar' => 'Server pages sidebar',
+            'vote' => 'Vote page',
         ],
         'size' => ':w × :h px (WebP, PNG, JPG or GIF up to 2 MB)',
         'book' => 'Book a banner',
@@ -121,6 +122,7 @@ return [
             'game' => 'On your game page, below the game block, above the server list',
             'game_side' => 'On the game page, in the side column to the right of the server list',
             'sidebar' => 'On server pages, in the side column on the right',
+            'vote' => 'On the server vote page, below the “Vote” button',
         ],
         'free_title' => 'Your ad could be here',
         'free_text' => 'A :w×:h banner on the game page — book it in your dashboard',

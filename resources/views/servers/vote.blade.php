@@ -25,5 +25,8 @@
                 <x-button class="w-full py-3 text-base">{{ __('vote.submit') }}</x-button>
             </form>
         @endif
+
+        {{-- Окреме платне місце; лише під формою, щоб гравець спершу проголосував. Шапки тут немає --}}
+        <x-ad-banner placement="vote" gap="40px auto 0" />
     </div>
 </x-layouts.app>

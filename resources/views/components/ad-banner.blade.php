@@ -9,7 +9,8 @@
     // Один сервер — один банер на сторінці. Шапка головніша (вона на кожній сторінці), далі — у порядку виводу:
     // вміст сторінки рендериться раніше за макет, тому шапку перевіряємо запитом, а решту — за вже показаними
     $shown = request()->attributes->get('banner_servers', []);
-    if ($banner && $placement !== 'header') {
+    // На сторінці голосування шапки немає — там вона банер не витісняє
+    if ($banner && in_array('header', Banner::clashesWith($placement), true)) {
         $shown[] = Banner::live('header')->latest('starts_at')->value('server_id');
     }
     if ($banner?->server_id && in_array($banner->server_id, $shown, true)) {

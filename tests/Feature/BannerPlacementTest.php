@@ -68,7 +68,7 @@ class BannerPlacementTest extends TestCase
         $missing = array_values(array_filter($pages, fn ($url) => ! str_contains($this->get($url)->assertOk()->getContent(), 'BANNER-HEADER')));
         $this->assertSame([], $missing, 'Немає банера в шапці на сторінках');
 
-        // На сторінці голосування реклами немає: гравець прийшов голосувати саме за цей сервер
+        // На сторінці голосування шапки немає: там своє платне місце під кнопкою
         $this->get('/server/'.$this->server->slug.'/vote')->assertOk()->assertDontSee('BANNER-HEADER', false);
 
         $owner = $this->server->owner;
@@ -78,6 +78,22 @@ class BannerPlacementTest extends TestCase
             $this->actingAs($owner)->get($url)->assertOk()->assertDontSee('BANNER-HEADER', false);
         }
         $this->actingAs($owner)->get('/page/rules')->assertOk()->assertSee('BANNER-HEADER', false);
+    }
+
+    public function test_vote_page_has_its_own_paid_placement_below_the_form(): void
+    {
+        $voteUrl = '/server/'.$this->server->slug.'/vote';
+        $this->get($voteUrl)->assertOk()->assertDontSee('gj-place-vote', false)->assertDontSee(__('billing.ads.free_title'));
+
+        // Покупець шапки купує й сторінку голосування на ті самі дати: шапки там немає, тож конфлікту нема
+        $headerServer = Banner::where('alt', 'BANNER-HEADER')->firstOrFail()->server;
+        $tariff = Tariff::where('service', 'banner')->where('placement', 'vote')->where('days', 1)->firstOrFail();
+        app(Billing::class)->bookBanner($headerServer->owner, $headerServer, $tariff, today(), 'banners/vote.webp', 'https://vote.example.net', 'BANNER-VOTE');
+
+        $html = $this->get($voteUrl)->assertOk()->assertSee('BANNER-VOTE', false)->assertDontSee('BANNER-HEADER', false)->getContent();
+        $this->assertGreaterThan(strpos($html, __('vote.submit')), strpos($html, 'BANNER-VOTE'), 'Банер має стояти під кнопкою');
+        $this->get('/server/'.$this->server->slug)->assertOk()->assertDontSee('BANNER-VOTE', false);
+        $this->get('/lineage2')->assertOk()->assertDontSee('BANNER-VOTE', false);
     }
 
     public function test_game_banner_only_on_its_game_and_sidebar_on_server_card(): void

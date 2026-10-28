@@ -96,12 +96,13 @@ return [
     'ads' => [
         'nav' => 'Reklama',
         'title' => 'Banery reklamowe',
-        'lead' => 'Zarezerwuj miejsce na baner swojego serwera: nagłówek wszystkich stron, strona gry, kolumna boczna gry lub pasek boczny stron serwerów. Schemat przy każdym miejscu pokazuje, gdzie dokładnie pojawi się baner. Jedno miejsce — jeden reklamodawca dziennie.',
+        'lead' => 'Zarezerwuj miejsce na baner swojego serwera: nagłówek wszystkich stron, strona gry, kolumna boczna gry, pasek boczny stron serwerów lub strona głosowania. Schemat przy każdym miejscu pokazuje, gdzie dokładnie pojawi się baner. Jedno miejsce — jeden reklamodawca dziennie.',
         'placements' => [
             'header' => 'Nagłówek wszystkich stron',
             'game' => 'Strona gry',
             'game_side' => 'Kolumna boczna strony gry',
             'sidebar' => 'Pasek boczny stron serwerów',
+            'vote' => 'Strona głosowania',
         ],
         'size' => ':w × :h px (WebP, PNG, JPG lub GIF do 2 MB)',
         'book' => 'Zarezerwuj baner',
@@ -121,6 +122,7 @@ return [
             'game' => 'Na stronie Twojej gry, pod blokiem gry, nad listą serwerów',
             'game_side' => 'Na stronie gry, w kolumnie bocznej po prawej od listy serwerów',
             'sidebar' => 'Na stronach serwerów, w kolumnie bocznej po prawej',
+            'vote' => 'Na stronie głosowania na serwer, pod przyciskiem „Głosuj”',
         ],
         'free_title' => 'Tu może być Twoja reklama',
         'free_text' => 'Baner :w×:h na stronie gry — zarezerwuj w panelu',

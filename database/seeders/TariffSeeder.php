@@ -14,10 +14,15 @@ class TariffSeeder extends Seeder
 {
     public function run(): void
     {
-        // Банери в шапці й сайдбарі — спільні для всього сайту
-        foreach (['header' => [1 => 150, 7 => 700, 30 => 2500], 'sidebar' => [1 => 80, 7 => 400, 30 => 1400]] as $placement => $prices) {
+        // Банери в шапці, сайдбарі й на сторінці голосування — спільні для всього сайту
+        $labels = [
+            'header' => ['uk' => 'Банер у шапці', 'en' => 'Header banner'],
+            'sidebar' => ['uk' => 'Банер у сайдбарі', 'en' => 'Sidebar banner'],
+            'vote' => ['uk' => 'Банер на сторінці голосування', 'en' => 'Vote page banner'],
+        ];
+        foreach (['header' => [1 => 150, 7 => 700, 30 => 2500], 'sidebar' => [1 => 80, 7 => 400, 30 => 1400], 'vote' => [1 => 90, 7 => 450, 30 => 1600]] as $placement => $prices) {
             foreach ($prices as $days => $price) {
-                $label = $placement === 'header' ? ['uk' => 'Банер у шапці', 'en' => 'Header banner'] : ['uk' => 'Банер у сайдбарі', 'en' => 'Sidebar banner'];
+                $label = $labels[$placement];
                 Tariff::updateOrCreate(
                     ['game_id' => null, 'service' => 'banner', 'placement' => $placement, 'days' => $days],
                     ['name' => ['uk' => "{$label['uk']}, {$days} дн.", 'en' => "{$label['en']}, {$days} days"], 'price' => $price],

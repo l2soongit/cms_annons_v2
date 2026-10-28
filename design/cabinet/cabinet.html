@@ -1,0 +1,779 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Кабінет власника | graj.club</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо кабінету власника: «пульт сервера». Палітра й шрифти — як на затвердженій головній (zinc + amber→orange).
+ * Головне питання власника — «як справи в мого сервера і що зробити, щоб піднятися» — відповідає перший екран:
+ * місце й відрив до сусідів у рейтингу, голоси, онлайн, аптайм, список справ і послуги, що закінчуються.
+ * Вкладки: Огляд, Сервер, Просування, Реклама (схема місць і календар), Баланс (UAH/USD/EUR за курсом НБУ), Повідомлення.
+ */
+:root {
+  --bg: #09090b; --bg-2: #0f0f12; --card: #18181b; --card-2: #1f1f23; --line: #27272a; --line-2: #3f3f46;
+  --text: #f4f4f5; --muted: #a1a1aa; --faint: #71717a;
+  --amber: #fbbf24; --orange: #f97316; --ink: #1c1003; --up: #34d399; --down: #fb7185; --info: #60a5fa;
+  --grad: linear-gradient(90deg, #fbbf24, #f97316);
+  --display: 'Unbounded', sans-serif; --font: 'Manrope', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
+  --r-sm: 8px; --r: 12px; --r-lg: 16px;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+body { background: var(--bg); color: var(--text); font: 15px/1.55 var(--font); -webkit-font-smoothing: antialiased; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  background: radial-gradient(900px 500px at 100% -10%, #f9731614, transparent 60%), radial-gradient(700px 500px at -10% 30%, #fbbf240d, transparent 60%); }
+a { color: inherit; text-decoration: none; }
+button, input, select { font: inherit; color: inherit; }
+button { cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 2px; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); font-size: 13px; }
+.muted { color: var(--muted); }
+.faint { color: var(--faint); }
+.up { color: var(--up); } .down { color: var(--down); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Кнопки */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border-radius: var(--r-sm);
+  border: 1px solid var(--line-2); background: var(--card-2); font-weight: 700; font-size: 14px; white-space: nowrap; transition: border-color .15s, background .15s, filter .15s; }
+.btn:hover { border-color: #52525b; background: #27272a; }
+.btn:disabled { opacity: .4; cursor: not-allowed; filter: grayscale(.6); }
+.btn.go { background: var(--grad); color: var(--ink); border-color: transparent; }
+.btn.go:hover { filter: brightness(1.08); }
+.btn.sm { padding: 6px 11px; font-size: 13px; }
+.btn.ghost { background: transparent; }
+
+/* Каркас: бічне меню + вміст */
+.app { display: grid; grid-template-columns: 248px 1fr; min-height: 100vh; }
+.side { position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 4px; padding: 20px 14px; border-right: 1px solid var(--line); background: #0c0c0ecc; backdrop-filter: blur(12px); }
+.logo { display: flex; align-items: center; gap: 10px; padding: 4px 8px 20px; font: 700 17px var(--display); letter-spacing: -.02em; }
+.logo i { width: 30px; height: 30px; border-radius: 8px; background: var(--grad); display: grid; place-items: center; font-style: normal; color: var(--ink); font-size: 15px; }
+.side a { display: flex; align-items: center; gap: 12px; padding: 9px 12px; border-radius: var(--r-sm); color: var(--muted); font-weight: 600; font-size: 14px; }
+.side a svg { width: 18px; height: 18px; flex: none; stroke: currentColor; fill: none; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+.side a:hover { color: var(--text); background: var(--card); }
+.side a[aria-current] { color: var(--text); background: var(--card-2); box-shadow: inset 2px 0 0 var(--amber); }
+.side a .badge { margin-left: auto; min-width: 20px; padding: 0 6px; border-radius: 999px; background: var(--orange); color: var(--ink); font-size: 11px; font-weight: 800; text-align: center; line-height: 20px; }
+.side .sep { margin: 12px 12px 6px; font-size: 11px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; color: var(--faint); }
+.side .me { margin-top: auto; display: flex; align-items: center; gap: 10px; padding: 12px; border-radius: var(--r); background: var(--card); border: 1px solid var(--line); }
+.ava { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-weight: 800; color: var(--ink); background: var(--grad); flex: none; }
+.me small { display: block; color: var(--faint); font-size: 12px; }
+
+main { min-width: 0; padding: 20px 32px 64px; }
+.top { display: flex; align-items: center; gap: 12px; margin-bottom: 24px; }
+.top h1 { font: 700 24px/1.2 var(--display); letter-spacing: -.02em; }
+.top .sub { color: var(--muted); font-size: 14px; margin-top: 4px; }
+.top .tools { margin-left: auto; display: flex; align-items: center; gap: 8px; }
+.chip { display: inline-flex; align-items: center; gap: 8px; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-size: 13px; font-weight: 700; white-space: nowrap; }
+.chip .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 0 3px #34d39926; }
+.bell { position: relative; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); display: grid; place-items: center; }
+.bell svg { width: 18px; height: 18px; stroke: var(--muted); fill: none; stroke-width: 1.8; }
+.bell b { position: absolute; top: -5px; right: -5px; min-width: 18px; height: 18px; border-radius: 9px; background: var(--down); color: #2a0a10; font-size: 11px; display: grid; place-items: center; }
+.menu-btn { display: none; }
+
+/* Картки й сітки */
+.card { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-lg); padding: 20px; }
+.card h2 { font: 700 15px var(--display); letter-spacing: -.01em; display: flex; align-items: center; gap: 10px; }
+.card h2 .more { margin-left: auto; font: 600 13px var(--font); color: var(--muted); }
+.card h2 .more:hover { color: var(--text); }
+.grid { display: grid; gap: 16px; }
+.g-kpi { grid-template-columns: repeat(4, 1fr); }
+.g-main { grid-template-columns: minmax(0, 1.7fr) minmax(0, 1fr); align-items: start; }
+.stack { display: grid; gap: 16px; }
+.view { display: none; }
+.view.on { display: block; animation: rise .25s ease; }
+@keyframes rise { from { opacity: 0; transform: translateY(6px); } }
+@media (prefers-reduced-motion: reduce) { .view.on { animation: none; } * { transition: none !important; } }
+
+/* Перемикач серверів */
+.servers-tabs { display: flex; gap: 8px; margin-bottom: 16px; overflow-x: auto; padding-bottom: 2px; }
+.stab { display: flex; align-items: center; gap: 10px; padding: 8px 14px 8px 8px; border-radius: var(--r); border: 1px solid var(--line); background: var(--card); white-space: nowrap; font-weight: 700; font-size: 14px; }
+.stab .lg { width: 28px; height: 28px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 800; color: #fff; }
+.stab small { color: var(--faint); font-weight: 600; }
+.stab[aria-pressed="true"] { border-color: var(--amber); background: #fbbf240f; }
+.stab.add { color: var(--muted); padding: 8px 14px; border-style: dashed; }
+
+/* Перегони в рейтингу */
+.race { position: relative; overflow: hidden; display: grid; grid-template-columns: auto 1fr auto; gap: 24px; align-items: center; padding: 24px; margin-bottom: 16px;
+  background: linear-gradient(120deg, #1f1a0e, #18181b 55%); border-color: #fbbf2433; }
+.race::after { content: ''; position: absolute; right: -60px; top: -80px; width: 280px; height: 280px; border-radius: 50%; background: radial-gradient(circle, #f9731633, transparent 65%); pointer-events: none; }
+.place { text-align: center; }
+.place b { display: block; font: 800 64px/1 var(--display); background: var(--grad); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.place span { font-size: 12px; font-weight: 700; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.ladder { display: grid; gap: 8px; }
+.rung { display: grid; grid-template-columns: 28px 1fr auto; gap: 12px; align-items: center; font-size: 14px; }
+.rung .pos { font-weight: 800; color: var(--faint); text-align: right; }
+.rung .bar { position: relative; height: 30px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--line); overflow: hidden; }
+.rung .bar i { position: absolute; inset: 0 auto 0 0; border-radius: 7px; background: #3f3f46; }
+.rung .bar span { position: relative; z-index: 1; display: block; padding: 0 12px; line-height: 28px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.rung.me .bar { border-color: #fbbf2466; }
+.rung.me .bar i { background: var(--grad); }
+.rung.me .bar span { color: var(--ink); }
+.rung .v { font-weight: 800; min-width: 56px; text-align: right; }
+.gap { position: relative; z-index: 1; max-width: 230px; }
+.gap p { font-size: 13px; color: var(--muted); }
+.gap strong { display: block; margin: 4px 0 12px; font: 700 20px/1.3 var(--display); }
+.gap strong em { font-style: normal; color: var(--amber); }
+
+/* KPI */
+.kpi { padding: 16px 18px; }
+.kpi .lbl { display: flex; align-items: center; gap: 8px; color: var(--muted); font-size: 13px; font-weight: 600; }
+.kpi .val { margin-top: 8px; font: 700 26px/1.1 var(--display); letter-spacing: -.02em; }
+.kpi .val small { font: 600 14px var(--font); color: var(--faint); }
+.kpi .delta { margin-top: 6px; font-size: 12px; font-weight: 700; }
+.kpi svg.spark { display: block; width: 100%; height: 34px; margin-top: 10px; }
+.live { width: 8px; height: 8px; border-radius: 50%; background: var(--up); animation: pulse 2s infinite; }
+@keyframes pulse { 0% { box-shadow: 0 0 0 0 #34d39966; } 70% { box-shadow: 0 0 0 8px #34d39900; } 100% { box-shadow: 0 0 0 0 #34d39900; } }
+
+/* Графік голосів */
+.seg { display: inline-flex; padding: 3px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); margin-left: auto; }
+.seg button { border: 0; background: none; padding: 5px 10px; border-radius: 7px; font: 700 12px var(--font); color: var(--muted); }
+.seg button[aria-pressed="true"] { background: var(--card-2); color: var(--text); }
+.chart { position: relative; margin-top: 16px; }
+.chart svg { display: block; width: 100%; height: 200px; }
+.chart .tip { position: absolute; pointer-events: none; transform: translate(-50%, -110%); padding: 6px 10px; border-radius: 8px; background: #000d; border: 1px solid var(--line-2); font-size: 12px; white-space: nowrap; opacity: 0; transition: opacity .1s; }
+.legend { display: flex; gap: 16px; margin-top: 8px; font-size: 12px; color: var(--muted); }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* Список справ */
+.todo { list-style: none; padding: 0; display: grid; gap: 8px; margin-top: 14px; }
+.todo li { display: flex; align-items: center; gap: 12px; padding: 10px 12px; border-radius: var(--r); background: var(--bg-2); border: 1px solid var(--line); font-size: 14px; }
+.todo .ck { width: 22px; height: 22px; flex: none; border-radius: 50%; border: 2px solid var(--line-2); display: grid; place-items: center; }
+.todo li.done .ck { background: var(--up); border-color: var(--up); }
+.todo li.done .ck::after { content: '✓'; color: #052e1c; font-size: 12px; font-weight: 900; }
+.todo li.done span { color: var(--faint); text-decoration: line-through; }
+.todo li .btn { margin-left: auto; }
+.todo small { display: block; color: var(--faint); font-size: 12px; }
+.progress { height: 6px; border-radius: 3px; background: var(--bg-2); overflow: hidden; margin-top: 12px; }
+.progress i { display: block; height: 100%; background: var(--grad); border-radius: 3px; }
+
+/* Послуги */
+.svc { display: grid; gap: 10px; margin-top: 14px; }
+.svc-row { display: grid; grid-template-columns: 36px 1fr auto; gap: 12px; align-items: center; padding: 12px; border-radius: var(--r); border: 1px solid var(--line); background: var(--bg-2); }
+.svc-row .ic { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; font-size: 16px; }
+.svc-row b { font-size: 14px; }
+.svc-row small { display: block; color: var(--faint); font-size: 12px; }
+.svc-row .left { height: 4px; border-radius: 2px; background: var(--line); margin-top: 6px; overflow: hidden; }
+.svc-row .left i { display: block; height: 100%; background: var(--amber); }
+.svc-row.warn { border-color: #fb718555; }
+.svc-row.warn .left i { background: var(--down); }
+.switch { position: relative; width: 38px; height: 22px; border-radius: 11px; background: var(--line-2); border: 0; flex: none; transition: background .15s; }
+.switch::after { content: ''; position: absolute; top: 3px; left: 3px; width: 16px; height: 16px; border-radius: 50%; background: #fff; transition: transform .15s; }
+.switch[aria-checked="true"] { background: var(--up); }
+.switch[aria-checked="true"]::after { transform: translateX(16px); }
+.ar { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--muted); }
+
+/* Стрічка голосів */
+.feed { list-style: none; padding: 0; margin-top: 10px; }
+.feed li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px solid var(--line); font-size: 14px; }
+.feed li:last-child { border-bottom: 0; }
+.feed .nick { font-weight: 700; }
+.feed .cb { margin-left: auto; font-size: 12px; font-weight: 700; padding: 2px 8px; border-radius: 999px; }
+.cb.ok { background: #34d3991a; color: var(--up); }
+.cb.retry { background: #fbbf241a; color: var(--amber); }
+.feed time { color: var(--faint); font-size: 12px; min-width: 52px; text-align: right; }
+.feed li.new { animation: flash 1.2s ease; }
+@keyframes flash { from { background: #fbbf2422; } }
+
+/* Сервер: інтеграція */
+.field { display: grid; gap: 6px; margin-top: 14px; }
+.field label { font-size: 13px; font-weight: 700; }
+.inp { display: flex; align-items: center; gap: 8px; padding: 9px 12px; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--bg-2); min-width: 0; }
+.inp input { flex: 1; min-width: 0; border: 0; background: none; outline: none; }
+.inp .mono { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.hint { font-size: 12px; color: var(--faint); }
+.status { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12px; font-weight: 800; }
+.status.ok { background: #34d3991a; color: var(--up); }
+.status.wait { background: #60a5fa1a; color: var(--info); }
+.status.bad { background: #fb71851a; color: var(--down); }
+.kv { display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; margin-top: 14px; font-size: 14px; }
+.kv dt { color: var(--muted); }
+.kv dd { margin: 0; font-weight: 700; }
+.owners { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+.owner { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border-radius: 999px; border: 1px solid var(--line); background: var(--bg-2); font-size: 13px; font-weight: 700; }
+.owner .ava { width: 24px; height: 24px; border-radius: 50%; font-size: 11px; }
+.uptime { display: grid; grid-template-columns: repeat(30, 1fr); gap: 3px; margin-top: 14px; }
+.uptime i { height: 28px; border-radius: 3px; background: var(--up); opacity: .85; }
+.uptime i.p { background: var(--amber); }
+.uptime i.x { background: var(--down); }
+
+/* Просування */
+.offers { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+.offer { position: relative; display: flex; flex-direction: column; gap: 10px; }
+.offer .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; font-size: 20px; }
+.offer h3 { font: 700 16px var(--display); }
+.offer p { font-size: 13px; color: var(--muted); flex: 1; }
+.offer .price { font: 700 20px var(--display); }
+.offer .price small { font: 600 13px var(--font); color: var(--faint); }
+.offer .tag { position: absolute; top: 16px; right: 16px; padding: 3px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; background: var(--grad); color: var(--ink); }
+.offer .eff { font-size: 12px; font-weight: 700; color: var(--up); }
+.days { display: flex; gap: 6px; }
+.days button { flex: 1; padding: 6px 0; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg-2); font-size: 12px; font-weight: 700; }
+.days button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); }
+
+/* Реклама: схема й календар */
+.ads { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 16px; align-items: start; }
+.places { display: grid; gap: 10px; margin-top: 14px; }
+.place-opt { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; align-items: center; padding: 12px 14px; border-radius: var(--r); border: 1px solid var(--line); background: var(--bg-2); text-align: left; }
+.place-opt b { font-size: 14px; }
+.place-opt small { grid-column: 1; color: var(--faint); font-size: 12px; }
+.place-opt .pr { grid-row: 1 / 3; grid-column: 2; font-weight: 800; }
+.place-opt[aria-pressed="true"] { border-color: var(--amber); background: #fbbf240d; }
+.mock { position: relative; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--bg-2); overflow: hidden; }
+.mock svg { display: block; width: 100%; height: auto; }
+.mock .spot { fill: var(--amber); transition: opacity .2s; animation: glow 1.6s ease-in-out infinite; }
+@keyframes glow { 50% { opacity: .55; } }
+.mock .dim { fill: #27272a; }
+.mock .soft { fill: #1f1f23; }
+.mock-cap { margin-top: 10px; font-size: 13px; color: var(--muted); }
+.cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
+.cal .dw { font-size: 11px; font-weight: 700; color: var(--faint); text-align: center; padding-bottom: 2px; }
+.cal button { aspect-ratio: 1; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-2); font-size: 13px; font-weight: 700; }
+.cal button:disabled { cursor: not-allowed; color: var(--faint); background: repeating-linear-gradient(45deg, #18181b, #18181b 4px, #1f1f23 4px, #1f1f23 8px); text-decoration: line-through; }
+.cal button.sel { background: var(--grad); color: var(--ink); border-color: transparent; }
+.cal button.in { background: #fbbf2426; border-color: #fbbf2455; }
+.cal .pad { visibility: hidden; }
+.sum { display: grid; gap: 6px; margin-top: 16px; padding-top: 14px; border-top: 1px solid var(--line); font-size: 14px; }
+.sum div { display: flex; justify-content: space-between; }
+.sum .tot { font: 700 18px var(--display); margin-top: 4px; }
+.drop { margin-top: 14px; padding: 18px; border-radius: var(--r); border: 1.5px dashed var(--line-2); text-align: center; font-size: 13px; color: var(--muted); }
+.drop b { color: var(--text); }
+.warnbox { display: none; margin-top: 12px; padding: 10px 12px; border-radius: var(--r-sm); background: #fb71851a; border: 1px solid #fb718544; color: #fecdd3; font-size: 13px; }
+
+/* Баланс */
+.wallet { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 16px; align-items: start; }
+.big-bal { padding: 24px; background: linear-gradient(135deg, #1f1a0e, #18181b 60%); border-color: #fbbf2433; }
+.big-bal .v { font: 800 40px/1.1 var(--display); margin: 8px 0 4px; }
+.cur { display: flex; gap: 6px; margin-top: 14px; }
+.cur button { flex: 1; padding: 8px 0; border-radius: 8px; border: 1px solid var(--line-2); background: var(--bg-2); font-weight: 800; font-size: 13px; }
+.cur button[aria-pressed="true"] { border-color: var(--amber); color: var(--amber); background: #fbbf240d; }
+.quick { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; margin-top: 10px; }
+.quick button { padding: 6px 0; border-radius: 8px; border: 1px solid var(--line); background: var(--bg-2); font-size: 12px; font-weight: 700; color: var(--muted); }
+.conv { margin-top: 12px; padding: 12px; border-radius: var(--r-sm); background: var(--bg-2); border: 1px solid var(--line); font-size: 13px; color: var(--muted); }
+.conv b { color: var(--text); }
+.pay { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-top: 12px; }
+.pay label { display: flex; align-items: center; gap: 8px; padding: 10px 12px; border-radius: var(--r-sm); border: 1px solid var(--line-2); background: var(--bg-2); font-weight: 700; font-size: 14px; cursor: pointer; }
+.pay label:has(input:checked) { border-color: var(--amber); }
+.pay input { accent-color: var(--amber); }
+table { width: 100%; border-collapse: collapse; font-size: 14px; margin-top: 10px; }
+th { text-align: left; font-size: 12px; font-weight: 700; color: var(--faint); padding: 8px 0; border-bottom: 1px solid var(--line); }
+td { padding: 11px 0; border-bottom: 1px solid var(--line); }
+td:last-child, th:last-child { text-align: right; }
+td small { display: block; color: var(--faint); font-size: 12px; }
+
+/* Повідомлення */
+.inbox { display: grid; grid-template-columns: 320px minmax(0, 1fr); min-height: 520px; padding: 0; overflow: hidden; }
+.threads { border-right: 1px solid var(--line); }
+.thread { display: flex; gap: 10px; padding: 14px 16px; border-bottom: 1px solid var(--line); font-size: 14px; cursor: pointer; }
+.thread[aria-current] { background: var(--card-2); box-shadow: inset 2px 0 0 var(--amber); }
+.thread .ava { width: 34px; height: 34px; font-size: 13px; }
+.thread p { color: var(--faint); font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 210px; }
+.thread .t { margin-left: auto; font-size: 11px; color: var(--faint); }
+.chat { display: flex; flex-direction: column; }
+.chat-head { padding: 14px 20px; border-bottom: 1px solid var(--line); font-weight: 800; }
+.chat-head small { display: block; font-weight: 600; color: var(--faint); font-size: 12px; }
+.msgs { flex: 1; display: flex; flex-direction: column; gap: 10px; padding: 20px; }
+.msg { max-width: 72%; padding: 10px 14px; border-radius: 14px; background: var(--card-2); font-size: 14px; }
+.msg.mine { align-self: flex-end; background: #fbbf2422; border: 1px solid #fbbf2433; }
+.msg time { display: block; margin-top: 4px; font-size: 11px; color: var(--faint); }
+.compose { display: flex; gap: 8px; padding: 14px 20px; border-top: 1px solid var(--line); }
+.compose .inp { flex: 1; }
+
+/* Тост */
+.toast { position: fixed; left: 50%; bottom: 24px; transform: translate(-50%, 200%); visibility: hidden; padding: 12px 18px; border-radius: var(--r); background: #18181bf2; border: 1px solid var(--line-2); font-size: 14px; font-weight: 700; box-shadow: 0 20px 50px -20px #000; transition: transform .25s; z-index: 60; }
+.toast.on { transform: translate(-50%, 0); visibility: visible; }
+
+/* Адаптив */
+@media (max-width: 1180px) {
+  .g-kpi { grid-template-columns: repeat(2, 1fr); }
+  .g-main, .ads, .wallet { grid-template-columns: 1fr; }
+  .offers { grid-template-columns: repeat(2, 1fr); }
+}
+@media (max-width: 860px) {
+  .app { grid-template-columns: 1fr; }
+  .side { position: fixed; z-index: 50; inset: 0 auto 0 0; width: 260px; transform: translateX(-100%); transition: transform .2s; }
+  .side.open { transform: none; box-shadow: 30px 0 60px #000a; }
+  .menu-btn { display: grid; place-items: center; width: 38px; height: 38px; border-radius: 10px; border: 1px solid var(--line); background: var(--card); }
+  main { padding: 16px 16px 48px; }
+  .race { grid-template-columns: 1fr; text-align: left; }
+  .place { text-align: left; display: flex; align-items: baseline; gap: 12px; }
+  .place b { font-size: 48px; }
+  .gap { max-width: none; }
+  .inbox { grid-template-columns: 1fr; }
+  .threads { display: none; }
+  .top .tools .chip.hide-sm { display: none; }
+}
+@media (max-width: 520px) {
+  .offers { grid-template-columns: 1fr; }
+  .kpi { padding: 14px; }
+  .kpi .val { font-size: 21px; }
+  .top { align-items: flex-start; }
+  .top h1 { font-size: 19px; }
+  .top .sub { font-size: 13px; }
+  .pay { grid-template-columns: 1fr; }
+}
+@media (max-width: 380px) {
+  .g-kpi { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+  <aside class="side" id="side" aria-label="Меню кабінету">
+    <a class="logo" href="#"><i aria-hidden="true">g</i>graj.club</a>
+    <a href="#overview" data-view="overview" aria-current="page"><svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="9" rx="1.5"/><rect x="14" y="3" width="7" height="5" rx="1.5"/><rect x="14" y="12" width="7" height="9" rx="1.5"/><rect x="3" y="16" width="7" height="5" rx="1.5"/></svg>Огляд</a>
+    <a href="#server" data-view="server"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/></svg>Сервер</a>
+    <a href="#promo" data-view="promo"><svg viewBox="0 0 24 24"><path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/></svg>Просування</a>
+    <a href="#ads" data-view="ads"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M8 15h4"/></svg>Реклама</a>
+    <a href="#wallet" data-view="wallet"><svg viewBox="0 0 24 24"><path d="M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H5a1 1 0 01-1-1V7zM4 7l11-3v3M16 13.5h.01"/></svg>Баланс</a>
+    <a href="#inbox" data-view="inbox"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H8l-4 4z"/></svg>Повідомлення<span class="badge">2</span></a>
+    <div class="sep">Акаунт</div>
+    <a href="#"><svg viewBox="0 0 24 24"><path d="M12 3l8 3v6c0 4.5-3.4 8.3-8 9-4.6-.7-8-4.5-8-9V6z"/></svg>Безпека · 2FA</a>
+    <a href="#"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M10.3 20a2 2 0 003.4 0"/></svg>Сповіщення</a>
+    <a href="#"><svg viewBox="0 0 24 24"><path d="M12 12a4 4 0 100-8 4 4 0 000 8zM4 21a8 8 0 0116 0"/></svg>Профіль</a>
+    <div class="me"><span class="ava">О</span><div><b>Олег</b><small>owner@graj.club</small></div></div>
+  </aside>
+
+  <main>
+    <div class="top">
+      <button class="menu-btn" id="menuBtn" aria-label="Меню" aria-controls="side" aria-expanded="false"><svg viewBox="0 0 24 24" width="18" height="18" stroke="currentColor" fill="none" stroke-width="2"><path d="M4 7h16M4 12h16M4 17h16"/></svg></button>
+      <div>
+        <h1 id="title">Добрий вечір, Олеже</h1>
+        <p class="sub" id="subtitle">До кінця сезону 3 дні 11 год — ще можна піднятися на 2-ге місце</p>
+      </div>
+      <div class="tools">
+        <span class="chip hide-sm"><span class="dot"></span>Сервер онлайн · 312 гравців</span>
+        <a class="chip" href="#wallet" data-view="wallet"><span class="num" id="balChip">5 000,00 ₴</span></a>
+        <button class="bell" aria-label="Сповіщення: 3 нові"><svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M10.3 20a2 2 0 003.4 0"/></svg><b>3</b></button>
+      </div>
+    </div>
+
+    <!-- ── Огляд ── -->
+    <section class="view on" id="view-overview" aria-labelledby="title">
+      <div class="servers-tabs" role="group" aria-label="Мої сервери">
+        <button class="stab" aria-pressed="true"><span class="lg" style="background:linear-gradient(135deg,#a16207,#713f12)">A</span>Aden Legacy <small>L2 · #3</small></button>
+        <button class="stab" aria-pressed="false"><span class="lg" style="background:linear-gradient(135deg,#7c3aed,#4c1d95)">G</span>Giran Nights <small>L2 · #7</small></button>
+        <button class="stab" aria-pressed="false"><span class="lg" style="background:linear-gradient(135deg,#4d7c0f,#1a2e05)">D</span>Deer Isle Hardcore <small>DayZ · модерація</small></button>
+        <a class="stab add" href="#">+ Додати сервер</a>
+      </div>
+
+      <div class="card race">
+        <div class="place"><b>#3</b><span>Lineage 2 · жовтень</span></div>
+        <div class="ladder" aria-label="Сусіди в рейтингу">
+          <div class="rung"><span class="pos">1</span><div class="bar"><i style="width:100%"></i><span>Rune Interlude</span></div><span class="v num">3 120</span></div>
+          <div class="rung"><span class="pos">2</span><div class="bar"><i style="width:79%"></i><span>Goddard RvR</span></div><span class="v num">2 471</span></div>
+          <div class="rung me"><span class="pos">3</span><div class="bar"><i style="width:74%"></i><span>Aden Legacy — ви</span></div><span class="v num" id="myVotes">2 295</span></div>
+          <div class="rung"><span class="pos">4</span><div class="bar"><i style="width:61%"></i><span>Giran Nights</span></div><span class="v num">1 902</span></div>
+        </div>
+        <div class="gap">
+          <p>До 2-го місця бракує</p>
+          <strong><em class="num" id="gapVotes">176</em> голосів</strong>
+          <p style="margin-bottom:12px">≈ 2 дні при нинішньому темпі. «Підняття +150» закриє відрив сьогодні.</p>
+          <a class="btn go" href="#promo" data-view="promo">Піднятися</a>
+        </div>
+      </div>
+
+      <div class="grid g-kpi">
+        <div class="card kpi"><div class="lbl">Голоси за місяць</div><div class="val num">2 295</div><div class="delta up">▲ 18% до вересня</div><svg class="spark" data-spark="votes" aria-hidden="true"></svg></div>
+        <div class="card kpi"><div class="lbl"><span class="live"></span>Онлайн зараз</div><div class="val num" id="online">312 <small>/ 1 000</small></div><div class="delta up">пік 486 о 21:00</div><svg class="spark" data-spark="online" aria-hidden="true"></svg></div>
+        <div class="card kpi"><div class="lbl">Аптайм 30 днів</div><div class="val num">99,4%</div><div class="delta muted">1 збій · 40 хв 12.10</div><svg class="spark" data-spark="uptime" aria-hidden="true"></svg></div>
+        <div class="card kpi"><div class="lbl">Перегляди сторінки</div><div class="val num">8 940</div><div class="delta down">▼ 4% за тиждень</div><svg class="spark" data-spark="views" aria-hidden="true"></svg></div>
+      </div>
+
+      <div class="grid g-main" style="margin-top:16px">
+        <div class="stack">
+          <div class="card">
+            <h2>Голоси й онлайн
+              <span class="seg" role="group" aria-label="Період"><button aria-pressed="false" data-range="7">7 днів</button><button aria-pressed="true" data-range="30">30 днів</button></span>
+            </h2>
+            <div class="chart" id="chart"><svg viewBox="0 0 600 200" preserveAspectRatio="none" aria-label="Голоси по днях"></svg><div class="tip" id="tip"></div></div>
+            <div class="legend"><span><i style="background:var(--amber)"></i>голоси</span><span><i style="background:var(--info)"></i>онлайн (середній)</span><span><i style="background:var(--up)"></i>дні з «Підняттям»</span></div>
+          </div>
+          <div class="card">
+            <h2>Останні голоси <span class="more">vote-callback працює</span></h2>
+            <ul class="feed" id="feed">
+              <li><span class="nick">DarkElf_Mira</span><span class="faint">з Києва</span><span class="cb ok">бонус видано</span><time>щойно</time></li>
+              <li><span class="nick">Tyrant88</span><span class="faint">з Варшави</span><span class="cb ok">бонус видано</span><time>4 хв</time></li>
+              <li><span class="nick">kamael_x</span><span class="faint">з Харкова</span><span class="cb retry">повтор через 5 хв</span><time>11 хв</time></li>
+              <li><span class="nick">Orc_Shaman</span><span class="faint">зі Львова</span><span class="cb ok">бонус видано</span><time>18 хв</time></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="stack">
+          <div class="card">
+            <h2>Що зробити <span class="more num">3 / 5</span></h2>
+            <div class="progress"><i style="width:60%"></i></div>
+            <ul class="todo">
+              <li class="done"><span class="ck"></span><span>Сервер опубліковано</span></li>
+              <li class="done"><span class="ck"></span><span>Власність підтверджено</span></li>
+              <li class="done"><span class="ck"></span><span>Vote-callback налаштовано</span></li>
+              <li><span class="ck"></span><span>Додати 3+ скріншоти<small>картки зі скріншотами отримують на 40% більше переходів</small></span><a class="btn sm" href="#server" data-view="server">Додати</a></li>
+              <li><span class="ck"></span><span>Віджет на сайт сервера<small>голоси з віджета — третина всіх голосів у топ-10</small></span><a class="btn sm" href="#server" data-view="server">Код</a></li>
+            </ul>
+          </div>
+          <div class="card">
+            <h2>Активні послуги <a class="more" href="#promo" data-view="promo">усі</a></h2>
+            <div class="svc">
+              <div class="svc-row warn"><span class="ic" style="background:#fbbf241a">★</span><div><b>VIP-місце</b><small>закінчується через 2 дні · 31.10</small><div class="left"><i style="width:8%"></i></div></div>
+                <div class="ar"><button class="switch" role="switch" aria-checked="false" aria-label="Автопродовження VIP"></button></div></div>
+              <div class="svc-row"><span class="ic" style="background:#60a5fa1a">◆</span><div><b>Виділення кольором</b><small>до 19.11 · автопродовження</small><div class="left"><i style="width:70%"></i></div></div>
+                <div class="ar"><button class="switch" role="switch" aria-checked="true" aria-label="Автопродовження виділення"></button></div></div>
+              <div class="svc-row"><span class="ic" style="background:#f973161a">▣</span><div><b>Банер · бічна колонка L2</b><small>01.11 – 07.11 · 1 204 покази · CTR 3,1%</small><div class="left"><i style="width:0%"></i></div></div><span class="status wait">з 01.11</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Сервер ── -->
+    <section class="view" id="view-server" aria-label="Сервер">
+      <div class="grid g-main">
+        <div class="stack">
+          <div class="card">
+            <h2>Aden Legacy <span class="status ok">● Опубліковано</span><a class="more" href="#">Відкрити сторінку ↗</a></h2>
+            <dl class="kv">
+              <dt>Адреса</dt><dd class="mono">aden-legacy.example.org:7777</dd>
+              <dt>Гра</dt><dd>Lineage 2 · Gracia Final x10 · Мультипрофа</dd>
+              <dt>Відкриття</dt><dd>17 листопада 2026 · анонс на головній оплачено</dd>
+              <dt>Пінг з Києва</dt><dd class="num">18 мс</dd>
+            </dl>
+            <div class="uptime" aria-label="Аптайм за 30 днів">
+              <i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="x" title="12.10 — офлайн 40 хв"></i><i></i><i></i><i></i><i></i><i></i><i></i><i class="p" title="21.10 — 2 пропущені перевірки"></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i><i></i>
+            </div>
+            <p class="hint" style="margin-top:6px">Кожна смужка — доба. Онлайн перевіряємо кожні 5 хвилин.</p>
+          </div>
+          <div class="card">
+            <h2>Інтеграція</h2>
+            <div class="field"><label for="cb">Vote-callback URL</label>
+              <div class="inp"><input id="cb" value="https://aden-legacy.example.org/api/vote?nick={nickname}"><button class="btn sm" data-toast="Тестовий голос надіслано — сервер відповів 200 OK за 142 мс">Перевірити</button></div>
+              <p class="hint">Після кожного голосу надсилаємо нік гравця; невдалі спроби повторюємо 5 разів.</p></div>
+            <div class="field"><label>API-ключ</label>
+              <div class="inp"><span class="mono" id="key">gk_live_••••••••••••••••7f3a</span><button class="btn sm ghost" id="showKey">Показати</button><button class="btn sm" data-toast="Новий ключ створено, старий перестане працювати за 24 год">Новий</button></div></div>
+            <div class="field"><label>Віджет для сайту сервера</label>
+              <div class="inp"><span class="mono">&lt;iframe src="https://graj.club/w/aden-legacy" width="240" height="90"&gt;</span><button class="btn sm" data-toast="Код віджета скопійовано">Копіювати</button></div></div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="card">
+            <h2>Підтвердження власності <span class="status ok">✓ готово</span></h2>
+            <p class="muted" style="margin-top:10px;font-size:14px">Перевірено 12.10 через MOTD сервера. Галочка біля назви додає довіри гравців.</p>
+          </div>
+          <div class="card">
+            <h2>Співвласники</h2>
+            <div class="owners"><span class="owner"><span class="ava">О</span>Олег · власник</span><span class="owner"><span class="ava" style="background:linear-gradient(135deg,#60a5fa,#2563eb)">М</span>Марта · модератор</span></div>
+            <div class="inp" style="margin-top:12px"><input placeholder="Email співвласника" aria-label="Email співвласника"><button class="btn sm" data-toast="Запрошення надіслано">Запросити</button></div>
+          </div>
+          <div class="card">
+            <h2>Скріншоти <span class="more num">1 / 10</span></h2>
+            <div class="drop"><b>Перетягніть зображення</b> або натисніть, щоб вибрати<br>WebP, PNG, JPG до 10 МБ — стискаємо самі</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Просування ── -->
+    <section class="view" id="view-promo" aria-label="Просування">
+      <div class="offers">
+        <div class="card offer"><span class="tag">закриє відрив</span><span class="ic" style="background:#34d3991a">▲</span><h3>Підняття</h3><p>Бонусні бали до кінця місяця. +150 балів ≈ 176 голосів до 2-го місця.</p>
+          <div class="days" role="group" aria-label="Скільки балів"><button aria-pressed="false" data-price="200">+50</button><button aria-pressed="true" data-price="500">+150</button></div>
+          <div class="price num">500 ₴</div><button class="btn go" data-buy="Підняття +150">Купити</button></div>
+        <div class="card offer"><span class="ic" style="background:#fbbf241a">★</span><h3>VIP-місце</h3><p>Закріплення над рейтингом гри. Вільно 1 з 3 місць.</p>
+          <div class="days" role="group" aria-label="Термін"><button aria-pressed="true" data-price="300">7 днів</button><button aria-pressed="false" data-price="1000">30 днів</button></div>
+          <div class="price num">300 ₴</div><div class="eff">у середньому +62% переходів</div><button class="btn go" data-buy="VIP на 7 днів">Продовжити</button></div>
+        <div class="card offer"><span class="ic" style="background:#60a5fa1a">◆</span><h3>Виділення</h3><p>Кольорова рамка в списку. Діє до 19.11, автопродовження увімкнено.</p>
+          <div class="days" role="group" aria-label="Термін"><button aria-pressed="true" data-price="150">7 днів</button><button aria-pressed="false" data-price="500">30 днів</button></div>
+          <div class="price num">150 ₴</div><button class="btn" data-buy="Виділення на 7 днів">Подовжити</button></div>
+        <div class="card offer"><span class="ic" style="background:#f973161a">⏱</span><h3>Анонс відкриття</h3><p>Блок «Скоро відкриття» на головній до 17.11.</p><div class="price">Оплачено</div><span class="status ok" style="align-self:flex-start">● показується</span></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h2>Історія замовлень <a class="more" href="#wallet" data-view="wallet">квитанції</a></h2>
+        <table><thead><tr><th>Послуга</th><th>Період</th><th>Сума</th></tr></thead><tbody>
+          <tr><td>VIP-місце<small>Aden Legacy</small></td><td>24.10 – 31.10</td><td class="num">300,00 ₴</td></tr>
+          <tr><td>Виділення<small>автопродовження</small></td><td>19.10 – 19.11</td><td class="num">500,00 ₴</td></tr>
+          <tr><td>Анонс відкриття<small>промокод START10 −10%</small></td><td>до 17.11</td><td class="num">270,00 ₴</td></tr>
+        </tbody></table>
+      </div>
+    </section>
+
+    <!-- ── Реклама ── -->
+    <section class="view" id="view-ads" aria-label="Реклама">
+      <div class="ads">
+        <div class="stack">
+          <div class="card">
+            <h2>Де буде банер</h2>
+            <div class="mock" style="margin-top:14px"><svg id="mock" viewBox="0 0 400 250" aria-label="Схема сторінки з місцем банера"></svg></div>
+            <p class="mock-cap" id="mockCap"></p>
+          </div>
+          <div class="card">
+            <h2>Банер</h2>
+            <div class="drop"><b>Завантажте зображення</b> <span id="size">300×250</span> px<br>Попередній перегляд з’явиться прямо на схемі</div>
+            <div class="field"><label for="ad-link">Куди веде</label><div class="inp"><select id="ad-link" style="flex:1;border:0;background:none"><option>Сторінка сервера на graj.club</option><option>Сайт сервера</option></select></div></div>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Місце й дати</h2>
+          <div class="places" id="places"></div>
+          <p class="hint" style="margin-top:14px">Листопад 2026 · заштриховані дні вже зайняті</p>
+          <div class="cal" id="cal"></div>
+          <div class="warnbox" id="clash">На ці дати у вас уже є банер у шапці — другий на тій самій сторінці не показався б. Оберіть інші дні.</div>
+          <div class="sum"><div><span class="muted">Період</span><b id="period">—</b></div><div><span class="muted">Днів</span><b class="num" id="nDays">0</b></div><div class="tot"><span>Разом</span><span class="num" id="total">0 ₴</span></div></div>
+          <button class="btn go" style="width:100%;margin-top:14px" id="book" disabled>Забронювати</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Баланс ── -->
+    <section class="view" id="view-wallet" aria-label="Баланс">
+      <div class="wallet">
+        <div class="stack">
+          <div class="card big-bal"><p class="muted">На балансі</p><div class="v num" id="balBig">5 000,00 ₴</div><p class="muted" style="font-size:13px">Вистачить на VIP до кінця листопада й «Підняття +150»</p></div>
+          <div class="card">
+            <h2>Операції</h2>
+            <table><thead><tr><th>Дата</th><th>Операція</th><th>Сума</th></tr></thead><tbody>
+              <tr><td>27.10</td><td>Поповнення · Stripe<small>10,00 $ · курс 45,60</small></td><td class="num up">+456,01 ₴</td></tr>
+              <tr><td>24.10</td><td>VIP-місце, 7 днів</td><td class="num">−300,00 ₴</td></tr>
+              <tr><td>19.10</td><td>Виділення, 30 днів</td><td class="num">−500,00 ₴</td></tr>
+              <tr><td>15.10</td><td>Поповнення · LiqPay</td><td class="num up">+5 000,00 ₴</td></tr>
+            </tbody></table>
+          </div>
+        </div>
+        <div class="card">
+          <h2>Поповнити</h2>
+          <div class="cur" role="group" aria-label="Валюта"><button aria-pressed="true" data-cur="UAH">₴ UAH</button><button aria-pressed="false" data-cur="USD">$ USD</button><button aria-pressed="false" data-cur="EUR">€ EUR</button></div>
+          <div class="field"><label for="amt">Сума</label><div class="inp"><input id="amt" type="number" inputmode="decimal" value="500" min="1"><b id="sym">₴</b></div></div>
+          <div class="quick" id="quick"></div>
+          <div class="conv" id="conv"></div>
+          <div class="pay"><label><input type="radio" name="gw" checked>LiqPay</label><label><input type="radio" name="gw">Stripe</label></div>
+          <button class="btn go" style="width:100%;margin-top:14px" id="payBtn">Перейти до оплати</button>
+          <p class="hint" style="margin-top:10px">Баланс ведеться в гривнях. Іноземна валюта перераховується за курсом НБУ на момент оплати.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ── Повідомлення ── -->
+    <section class="view" id="view-inbox" aria-label="Повідомлення">
+      <div class="card inbox">
+        <div class="threads">
+          <div class="thread" aria-current="true"><span class="ava" style="background:linear-gradient(135deg,#60a5fa,#2563eb)">S</span><div><b>Підтримка graj.club</b><p>Банер схвалено, показ з 01.11</p></div><span class="t">12:40</span></div>
+          <div class="thread"><span class="ava" style="background:linear-gradient(135deg,#34d399,#047857)">K</span><div><b>kamael_x</b><p>Голос є, а бонус не прийшов…</p></div><span class="t">11:02</span></div>
+          <div class="thread"><span class="ava" style="background:linear-gradient(135deg,#a78bfa,#6d28d9)">R</span><div><b>Rune Interlude</b><p>Пропоную обмін банерами</p></div><span class="t">вчора</span></div>
+        </div>
+        <div class="chat">
+          <div class="chat-head">Підтримка graj.club<small>звернення №184 · відкрито</small></div>
+          <div class="msgs">
+            <div class="msg mine">Добрий день! Забронював бічну колонку L2 на 01–07.11, коли буде перевірка банера?<time>12:31</time></div>
+            <div class="msg">Вітаю! Банер переглянули — усе гаразд, показ почнеться 01.11 о 00:00. Статистика показів і кліків з’явиться в розділі «Реклама».<time>12:40</time></div>
+          </div>
+          <div class="compose"><div class="inp"><input placeholder="Напишіть повідомлення…" aria-label="Повідомлення"></div><button class="btn go" data-toast="Повідомлення надіслано">Надіслати</button></div>
+        </div>
+      </div>
+    </section>
+  </main>
+</div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(() => {
+  const $ = (s, el = document) => el.querySelector(s);
+  const $$ = (s, el = document) => [...el.querySelectorAll(s)];
+  const fmt = (n, d = 2) => n.toLocaleString('uk-UA', { minimumFractionDigits: d, maximumFractionDigits: d });
+  const toast = (text) => { const t = $('#toast'); t.textContent = text; t.classList.add('on'); clearTimeout(toast.h); toast.h = setTimeout(() => t.classList.remove('on'), 2600); };
+  // Детерміновані «випадкові» дані, щоб демо виглядало однаково при кожному відкритті
+  let seed = 7; const rnd = () => (seed = (seed * 9301 + 49297) % 233280) / 233280;
+
+  /* Вкладки */
+  const titles = {
+    overview: ['Добрий вечір, Олеже', 'До кінця сезону 3 дні 11 год — ще можна піднятися на 2-ге місце'],
+    server: ['Сервер', 'Налаштування, інтеграція й стан Aden Legacy'],
+    promo: ['Просування', 'Платні послуги для Aden Legacy · оплата з балансу'],
+    ads: ['Реклама', 'Оберіть місце й дати — схема покаже, де стоятиме банер'],
+    wallet: ['Баланс', 'Поповнення в гривнях, доларах або євро'],
+    inbox: ['Повідомлення', 'Гравці, інші власники й підтримка'],
+  };
+  const show = (id) => {
+    if (!titles[id]) return;
+    $$('.view').forEach(v => v.classList.toggle('on', v.id === 'view-' + id));
+    $$('.side a[data-view]').forEach(a => a.toggleAttribute('aria-current', a.dataset.view === id));
+    $('#title').textContent = titles[id][0]; $('#subtitle').textContent = titles[id][1];
+    $('#side').classList.remove('open'); $('#menuBtn').setAttribute('aria-expanded', 'false');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+  document.addEventListener('click', (e) => {
+    const link = e.target.closest('[data-view]');
+    if (link) { e.preventDefault(); history.replaceState(null, '', '#' + link.dataset.view); show(link.dataset.view); }
+    const t = e.target.closest('[data-toast]');
+    if (t) toast(t.dataset.toast);
+  });
+  show(location.hash.slice(1) || 'overview');
+  $('#menuBtn').addEventListener('click', () => { const o = $('#side').classList.toggle('open'); $('#menuBtn').setAttribute('aria-expanded', String(o)); });
+  $$('.stab[aria-pressed]').forEach(b => b.addEventListener('click', () => { $$('.stab[aria-pressed]').forEach(x => x.setAttribute('aria-pressed', String(x === b))); toast('У демо показано Aden Legacy'); }));
+  $$('.switch').forEach(s => s.addEventListener('click', () => { const on = s.getAttribute('aria-checked') !== 'true'; s.setAttribute('aria-checked', String(on)); toast(on ? 'Автопродовження увімкнено — спишемо з балансу в день закінчення' : 'Автопродовження вимкнено'); }));
+  $('#showKey').addEventListener('click', (e) => { const k = $('#key'); const hidden = k.textContent.includes('•'); k.textContent = hidden ? 'gk_live_5c1e9a04b8d27e6f30a17f3a' : 'gk_live_••••••••••••••••7f3a'; e.target.textContent = hidden ? 'Сховати' : 'Показати'; });
+
+  /* Спарклайни KPI */
+  const sparkData = { votes: [40, 52, 48, 61, 70, 66, 82, 79, 91, 88, 97, 104], online: [210, 260, 240, 300, 280, 350, 330, 410, 380, 486, 400, 312], uptime: [100, 100, 100, 98, 100, 100, 100, 100, 100, 100, 99, 100], views: [820, 900, 880, 940, 910, 870, 860, 850, 830, 800, 790, 780] };
+  const colors = { votes: '#fbbf24', online: '#60a5fa', uptime: '#34d399', views: '#fb7185' };
+  $$('svg[data-spark]').forEach(svg => {
+    const d = sparkData[svg.dataset.spark], c = colors[svg.dataset.spark], w = 200, h = 34, min = Math.min(...d), max = Math.max(...d);
+    const pts = d.map((v, i) => [i * w / (d.length - 1), h - 3 - (v - min) / (max - min || 1) * (h - 8)]);
+    const line = pts.map((p, i) => (i ? 'L' : 'M') + p[0].toFixed(1) + ' ' + p[1].toFixed(1)).join(' ');
+    svg.setAttribute('viewBox', `0 0 ${w} ${h}`); svg.setAttribute('preserveAspectRatio', 'none');
+    svg.innerHTML = `<defs><linearGradient id="g-${svg.dataset.spark}" x1="0" x2="0" y1="0" y2="1"><stop offset="0" stop-color="${c}" stop-opacity=".35"/><stop offset="1" stop-color="${c}" stop-opacity="0"/></linearGradient></defs>
+      <path d="${line} L${w} ${h} L0 ${h} Z" fill="url(#g-${svg.dataset.spark})"/><path d="${line}" fill="none" stroke="${c}" stroke-width="2" vector-effect="non-scaling-stroke"/>`;
+  });
+
+  /* Графік голосів і онлайну */
+  const days = Array.from({ length: 30 }, (_, i) => {
+    const boost = i === 21 || i === 22;
+    return { d: new Date(2026, 8, 29 + i), votes: Math.round(55 + i * 1.6 + rnd() * 30 + (boost ? 45 : 0) - (i % 7 === 2 ? 15 : 0)), online: Math.round(180 + i * 4 + rnd() * 70), boost };
+  });
+  const drawChart = (n) => {
+    const data = days.slice(-n), svg = $('#chart svg'), W = 600, H = 200, pad = 18;
+    const maxV = Math.max(...data.map(x => x.votes)) * 1.15, maxO = Math.max(...data.map(x => x.online)) * 1.15, bw = W / data.length;
+    let out = [0.25, 0.5, 0.75].map(f => `<line x1="0" x2="${W}" y1="${H * f}" y2="${H * f}" stroke="#27272a" stroke-dasharray="3 5"/>`).join('');
+    data.forEach((x, i) => {
+      const h = (x.votes / maxV) * (H - pad);
+      out += `<rect x="${i * bw + bw * 0.18}" y="${H - h}" width="${bw * 0.64}" height="${h}" rx="${Math.min(4, bw * 0.2)}" fill="${x.boost ? '#34d399' : '#fbbf24'}" opacity=".9" data-i="${i}"/>`;
+    });
+    const line = data.map((x, i) => (i ? 'L' : 'M') + (i * bw + bw / 2).toFixed(1) + ' ' + (H - (x.online / maxO) * (H - pad)).toFixed(1)).join(' ');
+    out += `<path d="${line}" fill="none" stroke="#60a5fa" stroke-width="2.2" vector-effect="non-scaling-stroke" stroke-linejoin="round"/>`;
+    svg.innerHTML = out;
+    const tip = $('#tip');
+    $$('rect[data-i]', svg).forEach(r => {
+      r.addEventListener('mouseenter', () => {
+        const x = data[r.dataset.i], box = $('#chart').getBoundingClientRect(), rb = r.getBoundingClientRect();
+        tip.innerHTML = `<b>${x.d.toLocaleDateString('uk-UA', { day: 'numeric', month: 'short' })}</b> · ${x.votes} голосів · онлайн ${x.online}${x.boost ? ' · Підняття' : ''}`;
+        tip.style.left = (rb.left - box.left + rb.width / 2) + 'px'; tip.style.top = (rb.top - box.top) + 'px'; tip.style.opacity = 1;
+      });
+      r.addEventListener('mouseleave', () => tip.style.opacity = 0);
+    });
+  };
+  $$('.seg button').forEach(b => b.addEventListener('click', () => { $$('.seg button').forEach(x => x.setAttribute('aria-pressed', String(x === b))); drawChart(+b.dataset.range); }));
+  drawChart(30);
+
+  /* Живі голоси: новий голос кожні кілька секунд, відрив до 2-го місця зменшується */
+  const nicks = ['Elven_Ruby', 'Gludio_Guard', 'SpoilerBoss', 'Valakas_Hunter', 'Freya_Ice', 'Dwarf_Crafter'];
+  const cities = ['з Одеси', 'з Дніпра', 'з Кракова', 'з Вінниці', 'з Праги', 'з Тернополя'];
+  let votes = 2295, gap = 176, k = 0;
+  setInterval(() => {
+    if (document.hidden || !$('#view-overview').classList.contains('on')) return;
+    const li = document.createElement('li'); li.className = 'new';
+    li.innerHTML = `<span class="nick">${nicks[k % nicks.length]}</span><span class="faint">${cities[k % cities.length]}</span><span class="cb ok">бонус видано</span><time>щойно</time>`;
+    k++; const feed = $('#feed'); feed.querySelectorAll('time')[0].textContent = '1 хв'; feed.prepend(li); feed.lastElementChild.remove();
+    votes++; gap = Math.max(0, gap - 1);
+    $('#myVotes').textContent = votes.toLocaleString('uk-UA'); $('#gapVotes').textContent = gap;
+    $('#online').firstChild.textContent = (300 + Math.round(rnd() * 30)) + ' ';
+  }, 4500);
+
+  /* Просування: вибір терміну міняє ціну */
+  $$('.offer').forEach(card => {
+    $$('.days button', card).forEach(b => b.addEventListener('click', () => {
+      $$('.days button', card).forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+      $('.price', card).textContent = (+b.dataset.price).toLocaleString('uk-UA') + ' ₴';
+    }));
+  });
+  let balance = 5000;
+  const setBal = () => { $('#balChip').textContent = fmt(balance) + ' ₴'; $('#balBig').textContent = fmt(balance) + ' ₴'; };
+  $$('[data-buy]').forEach(b => b.addEventListener('click', () => {
+    const card = b.closest('.offer'), price = +($('.days button[aria-pressed="true"]', card)?.dataset.price || 0);
+    if (price > balance) return toast('Недостатньо коштів — поповніть баланс');
+    balance -= price; setBal(); toast(`${b.dataset.buy}: оплачено ${price.toLocaleString('uk-UA')} ₴ з балансу`);
+  }));
+
+  /* Реклама: схема місця, календар, перевірка перетину з власною шапкою */
+  const places = {
+    header: { name: 'Шапка всіх сторінок', size: '1200×150', price: 150, cap: 'Угорі кожної сторінки сайту, одразу під меню', busy: [3, 4, 5, 12, 13, 14, 15, 16, 22, 23] },
+    game: { name: 'Сторінка гри · Lineage 2', size: '1200×150', price: 100, cap: 'На сторінці вашої гри, під блоком гри, над списком серверів', busy: [8, 9, 10, 11] },
+    game_side: { name: 'Бічна колонка гри · Lineage 2', size: '300×250', price: 70, cap: 'На сторінці гри, у бічній колонці праворуч від списку серверів', busy: [1, 2, 3, 4, 5, 6, 7] },
+    sidebar: { name: 'Сайдбар сторінок серверів', size: '300×250', price: 80, cap: 'На сторінках серверів, у бічній колонці праворуч', busy: [18, 19, 20] },
+    vote: { name: 'Сторінка голосування', size: '300×250', price: 90, cap: 'На сторінці голосування, під кнопкою «Голосувати»', busy: [26, 27] },
+  };
+  // Власна шапка в демо: 20–21 листопада — інші місця на ці дні не продаються (крім голосування, де шапки немає)
+  const ownHeader = [20, 21];
+  let place = 'game_side', from = null, to = null;
+  const mock = (p) => {
+    const S = (x, y, w, h, cls) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" class="${cls}"/>`;
+    let s = S(0, 0, 400, 18, 'soft') + S(14, 5, 50, 8, 'dim') + S(250, 5, 136, 8, 'dim');
+    if (p !== 'vote') s += S(14, 28, 372, 24, p === 'header' ? 'spot' : 'dim');
+    if (p === 'vote') {
+      s += S(130, 34, 140, 12, 'dim') + S(130, 52, 100, 7, 'soft') + S(130, 70, 140, 18, 'soft') + S(130, 94, 140, 16, 'dim') + S(145, 122, 110, 100, 'spot');
+    } else if (p === 'sidebar') {
+      s += S(14, 62, 40, 40, 'dim') + S(62, 66, 120, 12, 'dim') + S(62, 84, 80, 8, 'soft');
+      for (let i = 0; i < 6; i++) s += S(14, 116 + i * 20, i % 2 ? 230 : 250, 10, 'soft');
+      s += S(284, 62, 102, 86, 'spot') + S(284, 156, 102, 80, 'soft');
+    } else {
+      s += S(14, 62, 372, 48, 'soft') + S(26, 74, 120, 14, 'dim') + S(26, 94, 80, 6, 'dim');
+      const w = p === 'game_side' ? 258 : 372;
+      s += S(14, 120, w, 20, p === 'game' ? 'spot' : 'dim');
+      for (let i = 0; i < 4; i++) s += S(14, 148 + i * 24, w, 16, 'soft');
+      if (p === 'game_side') s += S(284, 120, 102, 84, 'spot') + S(284, 212, 102, 30, 'soft');
+    }
+    $('#mock').innerHTML = s; $('#mockCap').textContent = places[p].cap; $('#size').textContent = places[p].size;
+  };
+  const renderPlaces = () => {
+    $('#places').innerHTML = Object.entries(places).map(([k, v]) => `<button class="place-opt" aria-pressed="${k === place}" data-place="${k}"><b>${v.name}</b><small>${v.size} px</small><span class="pr num">${v.price} ₴/день</span></button>`).join('');
+    $$('[data-place]').forEach(b => b.addEventListener('click', () => { place = b.dataset.place; from = to = null; renderPlaces(); mock(place); renderCal(); }));
+  };
+  const renderCal = () => {
+    const busy = places[place].busy, cal = $('#cal');
+    // Відступ до першого дня місяця: понеділок — перший день тижня
+    const lead = (new Date(2026, 10, 1).getDay() + 6) % 7;
+    let html = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'].map(d => `<span class="dw">${d}</span>`).join('') + '<span class="pad"></span>'.repeat(lead);
+    for (let d = 1; d <= 30; d++) {
+      const cls = d === from || d === to ? 'sel' : (from && to && d > from && d < to ? 'in' : '');
+      html += `<button class="${cls}" data-d="${d}" ${busy.includes(d) ? 'disabled aria-label="' + d + ' — зайнято"' : ''}>${d}</button>`;
+    }
+    cal.innerHTML = html;
+    $$('button[data-d]', cal).forEach(b => b.addEventListener('click', () => {
+      const d = +b.dataset.d;
+      if (!from || to || d < from) { from = d; to = null; } else { to = d; }
+      // Діапазон не може перескакувати зайняті дні
+      if (from && to && busy.some(x => x > from && x < to)) { from = d; to = null; toast('У проміжку є зайняті дні — оберіть інший період'); }
+      renderCal();
+    }));
+    const end = to || from, n = from ? end - from + 1 : 0;
+    // Шапка є на всіх сторінках, крім голосування; для самої шапки ці дні просто зайняті
+    const clash = Boolean(from) && !['header', 'vote'].includes(place) && ownHeader.some(x => x >= from && x <= end);
+    $('#clash').style.display = clash ? 'block' : 'none';
+    $('#period').textContent = from ? `${from}.11 – ${end}.11` : '—';
+    $('#nDays').textContent = n;
+    $('#total').textContent = (n * places[place].price).toLocaleString('uk-UA') + ' ₴';
+    $('#book').disabled = !n || clash;
+  };
+  places.header.busy = places.header.busy.concat(ownHeader);
+  $('#book').addEventListener('click', () => toast(`Заброньовано: ${places[place].name}, ${$('#period').textContent}. Банер перевіримо до початку показу`));
+  renderPlaces(); mock(place); renderCal();
+
+  /* Баланс: валюта, курс НБУ, перерахунок */
+  const rates = { UAH: 1, USD: 45.6008, EUR: 50.8522 }, syms = { UAH: '₴', USD: '$', EUR: '€' }, presets = { UAH: [200, 500, 1000, 2000], USD: [5, 10, 25, 50], EUR: [5, 10, 25, 50] };
+  let cur = 'UAH';
+  const conv = () => {
+    const a = parseFloat($('#amt').value) || 0, uah = a * rates[cur];
+    $('#conv').innerHTML = cur === 'UAH'
+      ? `На баланс надійде <b>${fmt(uah)} ₴</b>. Від 50 до 50 000 ₴.`
+      : `Курс НБУ: <b>1 ${syms[cur]} = ${fmt(rates[cur], 4)} ₴</b><br>На баланс надійде <b>${fmt(uah)} ₴</b>${uah < 50 ? ' · <span class="down">мінімум 50 ₴</span>' : ''}`;
+    $('#payBtn').textContent = `Сплатити ${fmt(a)} ${syms[cur]}`;
+    $('#payBtn').disabled = uah < 50 || uah > 50000;
+  };
+  const setCur = (c) => {
+    cur = c; $('#sym').textContent = syms[c];
+    $$('.cur button').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.cur === c)));
+    $('#quick').innerHTML = presets[c].map(v => `<button data-q="${v}">${v} ${syms[c]}</button>`).join('');
+    $$('[data-q]').forEach(b => b.addEventListener('click', () => { $('#amt').value = b.dataset.q; conv(); }));
+    $('#amt').value = presets[c][1]; conv();
+  };
+  $$('.cur button').forEach(b => b.addEventListener('click', () => setCur(b.dataset.cur)));
+  $('#amt').addEventListener('input', conv);
+  $('#payBtn').addEventListener('click', () => { const a = (parseFloat($('#amt').value) || 0) * rates[cur]; balance += a; setBal(); toast(`Оплата пройшла: +${fmt(a)} ₴ на баланс (демо)`); });
+  setCur('UAH');
+
+  $$('.thread').forEach(t => t.addEventListener('click', () => { $$('.thread').forEach(x => x.toggleAttribute('aria-current', x === t)); }));
+})();
+</script>
+</body>
+</html>

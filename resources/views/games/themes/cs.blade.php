@@ -98,7 +98,7 @@
     <aside class="pool" aria-label="{{ $game->pageText('cs.buy') }}" data-reveal>
       <h2>{{ $game->pageText('cs.buy') }} <small>{{ __('ui.cs.buy_keys') }}</small></h2>
       <div class="buy" data-swap="buy">
-        @foreach (\App\Http\Controllers\GameController::PERKS as $i => $perk)
+        @foreach (\App\Http\Controllers\GameController::CS_PERKS as $i => $perk)
           @php $on = isset($active[$perk]); $n = $perks[$perk] ?? 0; @endphp
           @if ($n || $on)
             <a class="buy-item" href="{{ $url([$perk => $on ? null : '1']) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-key="{{ $i + 1 }}" data-filter-link><kbd>{{ $i + 1 }}</kbd><span>{{ $perkLabels[$perk] }}</span><span class="n num">{{ $n }}</span></a>

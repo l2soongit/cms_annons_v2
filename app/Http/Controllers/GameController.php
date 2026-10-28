@@ -7,6 +7,7 @@ use App\Models\MonthlyWinner;
 use App\Models\Server;
 use App\Models\Vote;
 use App\Support\GameUrl;
+use App\Support\RustWipes;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
@@ -18,10 +19,16 @@ use InvalidArgumentException;
 
 class GameController extends Controller
 {
-    public const SORTS = ['votes', 'online', 'new', 'opening', 'ping', 'uptime'];
+    public const SORTS = ['votes', 'online', 'new', 'opening', 'ping', 'uptime', 'wipe'];
 
     /** Швидкі фільтри (меню закупівлі на сторінці CS): ?vac=1&lowping=1 */
-    public const PERKS = ['notempty', 'free', 'tick128', 'vac', 'lowping', 'big'];
+    public const CS_PERKS = ['notempty', 'free', 'tick128', 'vac', 'lowping', 'big'];
+
+    /** Усі швидкі фільтри: меню закупівлі CS і «свіжий вайп» / «ванілла» на сторінці Rust */
+    public const PERKS = [...self::CS_PERKS, 'fresh', 'vanilla'];
+
+    /** Поле блоку популярності за замовчуванням для стилю (Rust — група: «де зараз грають» Solo / Duo / …) */
+    private const POPULAR_DEFAULT = ['rust' => 'group'];
 
     private const LOW_PING_MS = 50;
 
@@ -63,6 +70,8 @@ class GameController extends Controller
             'opening' => $query->whereNotNull('opens_at')->orderByDesc('opens_at'),
             // Стан сервера (DayZ): найстабільніші — вище
             'uptime' => $query->orderByDesc('uptime')->orderByDesc('score'),
+            // Вайп (Rust): найсвіжіші вайпи — вище, невідомі — в кінці
+            'wipe' => $query->orderByRaw('last_wiped_at is null')->orderByDesc('last_wiped_at'),
             default => $query->orderByDesc('score')->orderByDesc('votes_month'),
         };
 
@@ -115,7 +124,7 @@ class GameController extends Controller
         }
 
         // Поле блоку популярності обирає адмін (L2 — хроніки, Minecraft — версії); за замовчуванням перший фільтр
-        $popularField = $filters->firstWhere('key', $game->popularFieldKey()) ?? $filters->first();
+        $popularField = $filters->firstWhere('key', $game->popularFieldKey() ?? self::POPULAR_DEFAULT[$game->themeKey()] ?? null) ?? $filters->first();
 
         return view($theme, [
             'game' => $game,
@@ -134,6 +143,8 @@ class GameController extends Controller
             'shares' => $this->shares($game, $popularField),
             'perks' => $game->themeKey() === 'cs' ? $this->perkCounts($game) : [],
             'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
+            'wipes' => $game->themeKey() === 'rust' ? RustWipes::week($game) : collect(),
+            'forcedWipe' => $game->themeKey() === 'rust' ? RustWipes::forced() : null,
         ]);
     }
 
@@ -158,6 +169,9 @@ class GameController extends Controller
             'vac' => $query->where('vac', true),
             'lowping' => $query->where('is_online', true)->where('ping_ms', '<=', self::LOW_PING_MS),
             'big' => $query->where('max_players', '>=', self::BIG_SLOTS),
+            // Rust: вайп за останню добу; без плагінів (моди невідомі — теж вважаємо ваніллою)
+            'fresh' => $query->where('last_wiped_at', '>=', now()->subDay()),
+            'vanilla' => $query->where(fn ($q) => $q->whereNull('modded')->orWhere('modded', false)),
             // Сюди потрапляють лише значення з self::PERKS
             default => throw new InvalidArgumentException("Unknown quick filter: {$perk}"),
         };
@@ -166,7 +180,7 @@ class GameController extends Controller
     /** Скільки серверів підходить під кожен швидкий фільтр окремо */
     private function perkCounts(Game $game): array
     {
-        return collect(self::PERKS)->mapWithKeys(function (string $perk) use ($game) {
+        return collect(self::CS_PERKS)->mapWithKeys(function (string $perk) use ($game) {
             $query = $game->servers()->published();
             $this->applyPerk($query, $perk, $game);
 

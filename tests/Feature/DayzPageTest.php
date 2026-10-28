@@ -94,8 +94,9 @@ class DayzPageTest extends TestCase
 
     public function test_steam_keywords_give_queue_time_and_acceleration(): void
     {
-        $this->assertSame(['queue' => 3, 'time' => '14:20', 'accel' => 4.0], SteamKeywords::parse('battleye,no3rd,external,privHive,shard,lqs3,etm4.000000,entm8.000000,mod,14:20'));
-        $this->assertSame(['queue' => null, 'time' => null, 'accel' => null], SteamKeywords::parse('secure,cs2'));
+        $dayz = SteamKeywords::parse('battleye,no3rd,external,privHive,shard,lqs3,etm4.000000,entm8.000000,mod,14:20');
+        $this->assertSame([3, '14:20', 4.0, null, null], [$dayz['queue'], $dayz['time'], $dayz['accel'], $dayz['wiped'], $dayz['modded']]);
+        $this->assertSame(['queue' => null, 'time' => null, 'accel' => null, 'wiped' => null, 'modded' => null], SteamKeywords::parse('secure,cs2'));
 
         // A2S_INFO з розширеним блоком: версія, прапорці 0x80 (порт) і 0x20 (ключові слова)
         $parse = new ReflectionMethod(SourceDriver::class, 'parseSource');

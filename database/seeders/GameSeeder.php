@@ -14,7 +14,7 @@ class GameSeeder extends Seeder
         'Гайдард' => 'Hardcore', 'Мультипрофа' => 'Multiclass',
         'Виживання' => 'Survival', 'Анархія' => 'Anarchy', 'Міні-ігри' => 'Minigames', 'Творчий' => 'Creative',
         'Ліцензія' => 'Licensed', 'Піратка' => 'Cracked',
-        'Щотижня' => 'Weekly', 'Раз на 2 тижні' => 'Every 2 weeks', 'Щомісяця' => 'Monthly', 'Без ліміту' => 'No limit',
+        'Щотижня' => 'Weekly', 'Раз на 2 тижні' => 'Every 2 weeks', 'Щомісяця' => 'Monthly', 'Без ліміту' => 'No limit', 'Ванілла' => 'Vanilla',
     ];
 
     public function run(): void
@@ -110,8 +110,12 @@ class GameSeeder extends Seeder
                 'query_driver' => 'source',
                 'default_port' => 28015,
                 'fields' => [
-                    $this->select('wipe', ['uk' => 'Вайп', 'en' => 'Wipe'], ['Щотижня', 'Раз на 2 тижні', 'Щомісяця']),
+                    // days — скільки днів між вайпами (сторінка Rust рахує наступний вайп)
+                    $this->select('wipe', ['uk' => 'Вайп', 'en' => 'Wipe'], ['Щотижня', 'Раз на 2 тижні', 'Щомісяця'],
+                        extras: ['Щотижня' => ['days' => 7], 'Раз на 2 тижні' => ['days' => 14], 'Щомісяця' => ['days' => 30]]),
                     $this->select('group', ['uk' => 'Група', 'en' => 'Group'], ['Solo', 'Duo', 'Trio', 'Max 5', 'Без ліміту']),
+                    ['is_required' => false] + $this->select('rate', ['uk' => 'Рейти', 'en' => 'Rates'], ['Ванілла', 'x2', 'x3', 'x5', 'x10']),
+                    ['is_required' => false] + $this->select('map_size', ['uk' => 'Розмір мапи', 'en' => 'Map size'], ['3000', '3500', '4000', '4500', '5000+']),
                 ],
             ],
             [

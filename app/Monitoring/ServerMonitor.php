@@ -48,6 +48,9 @@ class ServerMonitor
             'queue' => $world['queue'],
             'game_time' => $world['time'],
             'time_accel' => $world['accel'],
+            // Дата вайпу й моди (Rust) лишаються останніми відомими, поки сервер офлайн
+            'last_wiped_at' => $world['wiped'] ?? $server->last_wiped_at,
+            'modded' => $world['modded'] ?? $server->modded,
             'is_online' => $result->online,
             'players' => $result->online ? $result->players : 0,
             'max_players' => $result->maxPlayers ?: ($server->max_players ?? 0),

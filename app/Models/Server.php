@@ -40,6 +40,8 @@ class Server extends Model
             'verified_at' => 'datetime',
             'checked_at' => 'datetime',
             'time_accel' => 'float',
+            'last_wiped_at' => 'datetime',
+            'modded' => 'boolean',
             'opens_at' => 'date',
         ];
     }

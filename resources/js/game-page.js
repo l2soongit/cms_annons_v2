@@ -132,7 +132,7 @@ tick(); setInterval(tick, 1000);
   const el = $('#season');
   if (!el) return;
   const end = new Date(DATA.seasonEnd).getTime();
-  const d = DATA.locale === 'en' ? 'd' : 'д';
+  const d = { uk: 'д', ru: 'д' }[DATA.locale] ?? 'd';
   const p = n => String(n).padStart(2, '0');
   const tickSeason = () => { const s = Math.max(0, Math.floor((end - Date.now()) / 1000)); el.textContent = `${Math.floor(s / 86400)}${d} ${p(Math.floor(s % 86400 / 3600))}:${p(Math.floor(s % 3600 / 60))}:${p(s % 60)}`; };
   tickSeason(); setInterval(tickSeason, 1000);

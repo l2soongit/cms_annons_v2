@@ -32,9 +32,12 @@ class LocalizeFromUrl
             $request->attributes->set(Locales::PATH_ATTRIBUTE, $path);
 
             URL::forceRootUrl($request->getSchemeAndHttpHost().$request->getBaseUrl().'/'.$locale);
+            // Статичні файли (asset()) — з кореня сайту: /images/…, а не /en/images/…, якого немає
+            URL::useAssetOrigin(config('app.asset_url') ?: $request->getSchemeAndHttpHost().$request->getBaseUrl());
         } else {
             // Між запитами в одному процесі (тести, черги) корінь адрес скидається
             URL::forceRootUrl(null);
+            URL::useAssetOrigin(config('app.asset_url'));
         }
 
         app()->setLocale($locale);
@@ -47,6 +50,7 @@ class LocalizeFromUrl
     public function terminate(Request $request, Response $response): void
     {
         URL::forceRootUrl(null);
+        URL::useAssetOrigin(config('app.asset_url'));
         app()->setLocale(Locales::default());
         Carbon::setLocale(Locales::default());
     }

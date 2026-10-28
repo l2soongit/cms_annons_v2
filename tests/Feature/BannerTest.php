@@ -57,6 +57,24 @@ class BannerTest extends TestCase
             ->where('game_id', $game ? Game::where('slug', $game)->value('id') : null)->firstOrFail();
     }
 
+    public function test_placement_screenshots_follow_page_language_and_assets_skip_locale_prefix(): void
+    {
+        $server = $this->server();
+        $server->owner->forceFill(['email_verified_at' => now()])->save();
+
+        foreach (['en', 'ru', 'pl'] as $locale) {
+            $html = $this->actingAs($server->owner)->get("/{$locale}/cabinet/ads")->assertOk()->getContent();
+            // Знімок мовою сторінки, а адреса файлу — з кореня сайту (не /en/images/…)
+            $this->assertStringContainsString("images/ad-places/{$locale}/", $html);
+            $this->assertStringNotContainsString("/{$locale}/images/", $html);
+            $this->assertFileExists(public_path("images/ad-places/{$locale}/header.webp"));
+        }
+
+        $html = $this->actingAs($server->owner)->get('/cabinet/ads')->assertOk()->getContent();
+        $this->assertMatchesRegularExpression('#images/ad-places/(game|header|sidebar|vote|game_side)#', $html);
+        $this->assertDoesNotMatchRegularExpression('#images/ad-places/(en|ru|pl)/#', $html);
+    }
+
     public function test_owner_books_header_banner_from_cabinet(): void
     {
         $server = $this->server();

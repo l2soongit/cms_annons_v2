@@ -7,7 +7,6 @@
         ->map(function ($group, $key) use ($busy) {
             $first = $group->first();
             [, $w, $h] = Banner::PLACEMENTS[$first->placement];
-            $shot = $first->placement === 'game' && $first->game && is_file(public_path("images/ad-places/game-{$first->game->slug}.webp")) ? "game-{$first->game->slug}" : $first->placement;
 
             return [
                 'key' => $key,
@@ -15,11 +14,12 @@
                 'game' => Banner::isPerGame($first->placement) ? $first->game_id : null,
                 'name' => __("billing.ads.placements.{$first->placement}").(Banner::isPerGame($first->placement) && $first->game ? ' · '.$first->game->shortName() : ''),
                 'size' => "{$w}×{$h}",
-                'shot' => asset("images/ad-places/{$shot}.webp"),
+                // Знімок мовою кабінету; для банера гри — сторінка саме цієї гри
+                'shot' => Banner::shot($first->placement, Banner::isPerGame($first->placement) ? $first->game : null)['url'],
                 'where' => __("billing.ads.where.{$first->placement}"),
                 'perDay' => Money::format($group->min(fn ($t) => $t->price / max(1, $t->days))),
                 'busy' => $busy[$key] ?? [],
-                'tariffs' => $group->map(fn ($t) => ['id' => $t->id, 'days' => (int) $t->days, 'price' => (float) $t->price, 'label' => Money::format($t->price)])->values(),
+                'tariffs' => $group->map(fn ($t) => ['id' => $t->id, 'days' => (int) $t->days, 'term' => __('billing.promo.days', ['n' => $t->days]), 'price' => (float) $t->price, 'label' => Money::format($t->price)])->values(),
             ];
         })->values();
     $clashes = collect(array_keys(Banner::PLACEMENTS))->mapWithKeys(fn ($p) => [$p => Banner::clashesWith($p)]);
@@ -200,7 +200,7 @@
                         group.tariffs.forEach(t => {
                             const b = document.createElement('button');
                             b.type = 'button'; b.setAttribute('role', 'radio'); b.setAttribute('aria-checked', String(t === tariff)); b.setAttribute('aria-pressed', String(t === tariff));
-                            b.innerHTML = `${t.days} ${data.t.days}<small>${t.label}</small>`;
+                            b.innerHTML = `${t.term}<small>${t.label}</small>`;
                             b.addEventListener('click', () => { tariff = t; renderDays(); render(); });
                             box.append(b);
                         });

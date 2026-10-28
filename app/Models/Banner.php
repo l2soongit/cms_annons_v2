@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locales;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -56,6 +57,32 @@ class Banner extends Model
             'ends_at' => 'datetime',
             'is_active' => 'boolean',
         ];
+    }
+
+    /**
+     * Знімок сторінки з позначеним місцем («Де буде банер»): мовою сторінки (images/ad-places/<мова>/), інакше основною;
+     * для банера гри — знімок сторінки саме цієї гри, якщо він є.
+     *
+     * @return array{url: string, width: int, height: int}
+     */
+    public static function shot(string $placement, ?Game $game = null): array
+    {
+        $names = $placement === 'game' && $game ? ["game-{$game->slug}", 'game'] : [$placement];
+        $locale = app()->getLocale();
+        $dirs = $locale === Locales::default() ? [''] : ["{$locale}/", ''];
+
+        foreach ($dirs as $dir) {
+            foreach ($names as $name) {
+                $path = "images/ad-places/{$dir}{$name}.webp";
+                if (is_file(public_path($path))) {
+                    [$w, $h] = @getimagesize(public_path($path)) ?: [1000, 540];
+
+                    return ['url' => asset($path), 'width' => (int) $w, 'height' => (int) $h];
+                }
+            }
+        }
+
+        return ['url' => asset("images/ad-places/{$placement}.webp"), 'width' => 1000, 'height' => 540];
     }
 
     /** @return BelongsTo<Order, $this> */

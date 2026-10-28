@@ -4,19 +4,28 @@ namespace App\Notifications;
 
 use App\Models\Server;
 use App\Notifications\Concerns\UsesUserChannels;
+use DateTimeInterface;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Notifications\Messages\MailMessage;
 use Illuminate\Notifications\Notification;
+use Illuminate\Support\Carbon;
 
 class ServerModerated extends Notification implements ShouldQueue
 {
     use Queueable, UsesUserChannels;
 
     /**
-     * @param  string  $decision  approved | rejected | changes_approved | changes_rejected | blocked
+     * @param  string  $decision  approved | rejected | changes_approved | changes_rejected | blocked | blocked_temp | unblocked | warned
+     * @param  DateTimeInterface|null  $until  кінець тимчасового блокування
      */
-    public function __construct(public Server $server, public string $decision, public ?string $reason = null) {}
+    public function __construct(public Server $server, public string $decision, public ?string $reason = null, public ?DateTimeInterface $until = null) {}
+
+    /** Підстановки для тексту: назва сервера й дата кінця блокування */
+    private function params(string $locale): array
+    {
+        return ['server' => $this->server->name, 'until' => $this->until ? Carbon::instance($this->until)->locale($locale)->translatedFormat('j F Y, H:i') : ''];
+    }
 
     protected function event(): string
     {
@@ -28,8 +37,8 @@ class ServerModerated extends Notification implements ShouldQueue
         $locale = $notifiable->locale ?? 'uk';
 
         $mail = (new MailMessage)
-            ->subject(__("moderation.mail.{$this->decision}.subject", ['server' => $this->server->name], $locale))
-            ->line(__("moderation.mail.{$this->decision}.line", ['server' => $this->server->name], $locale));
+            ->subject(__("moderation.mail.{$this->decision}.subject", $this->params($locale), $locale))
+            ->line(__("moderation.mail.{$this->decision}.line", $this->params($locale), $locale));
 
         if ($this->reason) {
             $mail->line(__('moderation.mail.reason', ['reason' => $this->reason], $locale));
@@ -43,7 +52,7 @@ class ServerModerated extends Notification implements ShouldQueue
         $locale = $notifiable->locale ?? 'uk';
 
         return collect([
-            __("moderation.mail.{$this->decision}.line", ['server' => $this->server->name], $locale),
+            __("moderation.mail.{$this->decision}.line", $this->params($locale), $locale),
             $this->reason ? __('moderation.mail.reason', ['reason' => $this->reason], $locale) : null,
             route('cabinet.servers.show', $this->server),
         ])->filter()->implode("\n\n");
@@ -52,7 +61,7 @@ class ServerModerated extends Notification implements ShouldQueue
     public function toArray(object $notifiable): array
     {
         return [
-            'text' => __("moderation.mail.{$this->decision}.subject", ['server' => $this->server->name], $notifiable->locale ?? 'uk'),
+            'text' => __("moderation.mail.{$this->decision}.subject", $this->params($notifiable->locale ?? 'uk'), $notifiable->locale ?? 'uk'),
             'url' => route('cabinet.servers.show', $this->server),
             'reason' => $this->reason,
         ];

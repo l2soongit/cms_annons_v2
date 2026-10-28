@@ -64,7 +64,7 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
 
     public function canAccessPanel(Panel $panel): bool
     {
-        return $this->hasAnyRole(['admin', 'moderator']);
+        return $this->can('admin.access');
     }
 
     /** @return HasMany<Server, $this> */
@@ -90,9 +90,10 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->banned_until?->isFuture() ?? false;
     }
 
+    /** Персонал — усі, кому відкрита адмінка (для них обов’язкова 2FA) */
     public function isStaff(): bool
     {
-        return $this->hasAnyRole(['admin', 'moderator']);
+        return $this->can('admin.access');
     }
 
     /**

@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\UserResource\Pages;
 use App\Models\ModerationLog;
 use App\Models\User;
+use App\Notifications\UserWarned;
 use BackedEnum;
 use Filament\Actions\Action;
 use Filament\Actions\EditAction;
@@ -18,6 +19,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Database\Eloquent\Model;
 use UnitEnum;
 
 class UserResource extends Resource
@@ -32,6 +34,16 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Користувачі';
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('users.ban') ?? false;
+    }
+
+    public static function canEdit(Model $record): bool
+    {
+        return auth()->user()?->can('users.manage') ?? false;
+    }
+
     public static function form(Schema $schema): Schema
     {
         return $schema->components([
@@ -39,7 +51,7 @@ class UserResource extends Resource
                 TextInput::make('name')->label('Нік')->required(),
                 TextInput::make('email')->email()->required()->unique(ignoreRecord: true),
                 Select::make('roles')->label('Ролі')->multiple()->relationship('roles', 'name')->preload()
-                    ->visible(fn () => auth()->user()->hasRole('admin')),
+                    ->visible(fn () => auth()->user()->can('roles.manage')),
                 DateTimePicker::make('banned_until')->label('Заблокований до'),
             ]),
         ]);
@@ -61,6 +73,13 @@ class UserResource extends Resource
                 SelectFilter::make('roles')->relationship('roles', 'name')->label('Роль'),
             ])
             ->recordActions([
+                Action::make('warn')->label('Попередити')->color('warning')->icon(Heroicon::OutlinedExclamationTriangle)
+                    ->visible(fn (User $u) => ! $u->isBanned() && ! $u->is(auth()->user()))
+                    ->schema([TextInput::make('reason')->label('Причина')->required()])
+                    ->action(function (User $u, array $data) {
+                        ModerationLog::record($u, 'warn', $data['reason']);
+                        $u->notify(new UserWarned($data['reason']));
+                    }),
                 Action::make('ban')->label('Заблокувати')->color('danger')->icon(Heroicon::OutlinedNoSymbol)
                     ->visible(fn (User $u) => ! $u->isBanned() && ! $u->is(auth()->user()))
                     ->schema([

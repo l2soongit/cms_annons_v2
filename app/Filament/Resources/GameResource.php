@@ -5,6 +5,7 @@ namespace App\Filament\Resources;
 use App\Filament\Resources\GameResource\Pages;
 use App\Filament\Support\ImageField;
 use App\Models\Game;
+use App\Models\GameField;
 use App\Monitoring\DriverRegistry;
 use BackedEnum;
 use Filament\Actions\EditAction;
@@ -42,7 +43,7 @@ class GameResource extends Resource
 
     public static function canViewAny(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->can('games.manage') ?? false;
     }
 
     public static function form(Schema $schema): Schema
@@ -111,9 +112,8 @@ class GameResource extends Resource
                             TextInput::make('key')->label('Ключ')->required()->alphaDash(),
                             TextInput::make('label.uk')->label('Назва (uk)')->required(),
                             TextInput::make('label.en')->label('Назва (en)'),
-                            Select::make('type')->label('Тип')->required()->options([
-                                'select' => 'Список', 'multiselect' => 'Мультивибір', 'text' => 'Текст', 'number' => 'Число',
-                            ]),
+                            Select::make('type')->label('Тип')->required()->options(GameField::TYPES)->live()
+                                ->helperText(fn (Get $get) => $get('type') === 'boolean' ? 'Галочка у формі сервера; у фільтрі — «Так» / «Ні».' : null),
                         ]),
                         Grid::make(3)->schema([
                             Toggle::make('is_required')->label('Обов’язкове'),
@@ -121,6 +121,7 @@ class GameResource extends Resource
                             Toggle::make('in_url')->label('У URL'),
                         ]),
                         Repeater::make('options')->label('Варіанти')->columns(4)->defaultItems(0)
+                            ->visible(fn (Get $get) => in_array($get('type'), ['select', 'multiselect'], true))
                             ->itemLabel(fn (array $state) => $state['label'] ?? null)->collapsible()
                             ->schema([
                                 TextInput::make('value')->label('Значення')->required()->helperText('У посиланні фільтра: ?поле=значення'),

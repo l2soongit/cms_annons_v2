@@ -32,6 +32,11 @@ class VoteResource extends Resource
 
     protected static ?int $navigationSort = 4;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('votes.moderate') ?? false;
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return (string) (Vote::where('status', 'suspicious')->count()) ?: null;

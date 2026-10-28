@@ -46,11 +46,39 @@ class ServerModeration
         $server->owner->notify(new ServerModerated($server, 'rejected', $reason));
     }
 
-    public function block(Server $server, string $reason): void
+    /**
+     * Блокування сервера: на $days днів (потім повертається в рейтинг автоматично) або назавжди (null).
+     */
+    public function block(Server $server, string $reason, ?int $days = null): void
     {
-        $server->update(['status' => ServerStatus::Blocked, 'rank' => null]);
-        ModerationLog::record($server, 'block', $reason);
-        $server->owner->notify(new ServerModerated($server, 'blocked', $reason));
+        $until = $days ? now()->addDays($days) : null;
+        $server->update(['status' => ServerStatus::Blocked, 'blocked_until' => $until, 'rank' => null]);
+        ModerationLog::record($server, 'block', $reason, $days ? ['days' => $days] : null);
+        $server->owner->notify(new ServerModerated($server, $until ? 'blocked_temp' : 'blocked', $reason, $until));
+    }
+
+    /** Зняти блокування: вручну модератором або коли минув термін */
+    public function unblock(Server $server): void
+    {
+        $server->update(['status' => ServerStatus::Published, 'blocked_until' => null]);
+        ModerationLog::record($server, 'unblock');
+        $server->owner->notify(new ServerModerated($server, 'unblocked'));
+    }
+
+    /** Попередження власнику: сервер лишається в рейтингу, запис у журналі й сповіщення */
+    public function warn(Server $server, string $reason): void
+    {
+        ModerationLog::record($server, 'warn', $reason);
+        $server->owner->notify(new ServerModerated($server, 'warned', $reason));
+    }
+
+    /** Повернути в рейтинг сервери, чий термін блокування минув */
+    public function releaseExpiredBlocks(): int
+    {
+        $servers = Server::where('status', ServerStatus::Blocked)->whereNotNull('blocked_until')->where('blocked_until', '<=', now())->get();
+        $servers->each(fn (Server $server) => $this->unblock($server));
+
+        return $servers->count();
     }
 
     public function setStatus(Server $server, ServerStatus $status, ?string $reason = null): void

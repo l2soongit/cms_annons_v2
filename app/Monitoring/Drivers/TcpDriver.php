@@ -6,7 +6,7 @@ use App\Monitoring\Contracts\ServerQueryDriver;
 use App\Monitoring\QueryResult;
 
 /**
- * Перевірка відкритого TCP-порту. Для ігор без query-протоколу (Lineage 2, alt:V, RAGE:MP):
+ * Перевірка відкритого TCP-порту. Для ігор без query-протоколу (Lineage 2):
  * знає лише онлайн/офлайн, кількість гравців надсилає власник через API.
  */
 class TcpDriver implements ServerQueryDriver

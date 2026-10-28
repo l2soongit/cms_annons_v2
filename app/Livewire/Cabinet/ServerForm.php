@@ -81,9 +81,11 @@ class ServerForm extends Component
             $this->country = $server->country;
             $this->fields = $server->fieldValues()->with('field')->get()
                 ->groupBy(fn ($v) => $v->field->key)
-                ->map(fn ($values, $key) => $values->first()->field->type === 'multiselect'
-                    ? $values->pluck('value')->all()
-                    : $values->first()->value)
+                ->map(fn ($values, $key) => match ($values->first()->field->type) {
+                    'multiselect' => $values->pluck('value')->all(),
+                    'boolean' => $values->first()->value === '1',
+                    default => $values->first()->value,
+                })
                 ->all();
         } else {
             $this->game_id = Game::where('slug', request('game'))->value('id');
@@ -132,9 +134,13 @@ class ServerForm extends Component
 
         foreach ($this->game->fields ?? [] as $field) {
             $values = collect($field->options)->pluck('value')->all();
+            if ($field->type === 'multiselect') {
+                $rules["fields.{$field->key}.*"] = [Rule::in($values)];
+            }
             $rules["fields.{$field->key}"] = match ($field->type) {
                 'select' => [$field->is_required ? 'required' : 'nullable', Rule::in($values)],
                 'multiselect' => [$field->is_required ? 'required' : 'nullable', 'array'],
+                'boolean' => ['nullable', 'boolean'],
                 'number' => [$field->is_required ? 'required' : 'nullable', 'integer'],
                 default => [$field->is_required ? 'required' : 'nullable', 'string', 'max:255'],
             };

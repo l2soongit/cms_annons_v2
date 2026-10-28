@@ -134,7 +134,7 @@
       <div class="mp-head">
         <span data-swap="count">{{ __('ui.mc.servers') }} <span class="num" id="count">{{ $servers->total() }}</span></span>
         <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
-          @foreach (['votes', 'online', 'ping'] as $s)
+          @foreach (['votes', 'online', 'ping', 'new', 'opening'] as $s)
             <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.mc.sort_{$s}") }}</a>
           @endforeach
         </div>

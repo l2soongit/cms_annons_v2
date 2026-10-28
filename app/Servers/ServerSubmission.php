@@ -115,6 +115,10 @@ class ServerSubmission
 
         foreach ($game->fields as $field) {
             $value = $fields[$field->key] ?? null;
+            // «Так / ні» зберігається завжди: зняту галочку теж можна відфільтрувати
+            if ($field->type === 'boolean') {
+                $value = filter_var($value, FILTER_VALIDATE_BOOLEAN) ? '1' : '0';
+            }
             if (blank($value)) {
                 continue;
             }

@@ -85,7 +85,7 @@
         <button>{{ __('ui.search.submit') }}</button>
       </form>
       <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
-        @foreach (['votes', 'online', 'ping'] as $s)
+        @foreach (['votes', 'online', 'ping', 'new', 'opening'] as $s)
           <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-pressed="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.cs.sort_{$s}") }}</a>
         @endforeach
       </div>

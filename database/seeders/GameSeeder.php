@@ -54,10 +54,11 @@ class GameSeeder extends Seeder
                 'query_driver' => 'samp',
                 'default_port' => 7777,
                 'fields' => [
-                    $this->select('platform', ['uk' => 'Платформа', 'en' => 'Platform'], ['SA-MP', 'FiveM', 'RAGE:MP', 'alt:V'], inUrl: true,
-                        drivers: ['SA-MP' => 'samp', 'FiveM' => 'fivem', 'RAGE:MP' => 'tcp', 'alt:V' => 'tcp'],
+                    // alt:V і RAGE:MP закрилися у 2026 на вимогу Take-Two; FiveM — єдина дозволена платформа для GTA V
+                    $this->select('platform', ['uk' => 'Платформа', 'en' => 'Platform'], ['SA-MP', 'FiveM'], inUrl: true,
+                        drivers: ['SA-MP' => 'samp', 'FiveM' => 'fivem'],
                         // FiveM приймає команду в консолі F8, інші клієнти — адресу
-                        extras: ['SA-MP' => ['color' => '#eab308'], 'FiveM' => ['color' => '#f97316', 'connect' => 'connect {address}'], 'RAGE:MP' => ['color' => '#38bdf8'], 'alt:V' => ['color' => '#22c55e']]),
+                        extras: ['SA-MP' => ['color' => '#eab308'], 'FiveM' => ['color' => '#f97316', 'connect' => 'connect {address}']]),
                     $this->select('roleplay', ['uk' => 'Режим', 'en' => 'Mode'], ['RP', 'Freeroam', 'DM']),
                 ],
             ],
@@ -79,6 +80,7 @@ class GameSeeder extends Seeder
                         extras: ['Java' => ['color' => '#ffaa00'], 'Bedrock' => ['color' => '#55ffff'], 'Java+Bedrock' => ['short' => 'Java+Bed', 'color' => '#55ff55']]),
                     $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['1.8', '1.12', '1.16', '1.20', '1.21']),
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Виживання', 'SkyBlock', 'Анархія', 'Міні-ігри', 'Творчий']),
+                    ['is_required' => false] + $this->select('license', ['uk' => 'Ліцензія', 'en' => 'License'], ['Ліцензія', 'Піратка']),
                 ],
             ],
             [
@@ -89,6 +91,7 @@ class GameSeeder extends Seeder
                 'fields' => [
                     $this->select('map', ['uk' => 'Мапа', 'en' => 'Map'], ['Chernarus', 'Livonia', 'Sakhal', 'Deer Isle']),
                     $this->select('style', ['uk' => 'Стиль', 'en' => 'Style'], ['PvE', 'PvP', 'RP', 'Vanilla', 'Modded']),
+                    $this->boolean('mods', ['uk' => 'Моди', 'en' => 'Mods']),
                 ],
             ],
             [
@@ -120,6 +123,12 @@ class GameSeeder extends Seeder
                 ],
             ],
         ];
+    }
+
+    /** Поле «так / ні»: галочка у формі сервера, у фільтрі — «Так» / «Ні» */
+    private function boolean(string $key, array $label): array
+    {
+        return ['key' => $key, 'label' => $label, 'type' => 'boolean', 'options' => null, 'is_required' => false, 'is_filterable' => true, 'in_url' => false];
     }
 
     /**

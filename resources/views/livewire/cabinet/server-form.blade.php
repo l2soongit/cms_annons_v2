@@ -42,6 +42,18 @@
                                         <option value="{{ $option['value'] }}">{{ $option['label'] }}</option>
                                     @endforeach
                                 </select>
+                            @elseif ($field->type === 'multiselect')
+                                <div id="field-{{ $field->key }}" class="flex flex-wrap gap-2">
+                                    @foreach ($field->options as $option)
+                                        <label class="inline-flex items-center gap-2 rounded-md border border-seam bg-slab px-3 py-2 text-sm">
+                                            <input type="checkbox" wire:model="fields.{{ $field->key }}" value="{{ $option['value'] }}" class="accent-amber">{{ $option['label'] }}
+                                        </label>
+                                    @endforeach
+                                </div>
+                            @elseif ($field->type === 'boolean')
+                                <label class="inline-flex items-center gap-2 py-2.5 text-sm">
+                                    <input id="field-{{ $field->key }}" type="checkbox" wire:model="fields.{{ $field->key }}" class="accent-amber">{{ __('ui.yes') }}
+                                </label>
                             @else
                                 <input id="field-{{ $field->key }}" wire:model="fields.{{ $field->key }}" type="{{ $field->type === 'number' ? 'number' : 'text' }}"
                                        class="w-full rounded-md border border-seam bg-slab px-3 py-2.5 text-bone focus:border-amber focus:outline-none">

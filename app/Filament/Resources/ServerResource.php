@@ -44,6 +44,11 @@ class ServerResource extends Resource
 
     protected static ?int $navigationSort = 1;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('servers.moderate') ?? false;
+    }
+
     public static function getNavigationBadge(): ?string
     {
         $count = Server::where('status', ServerStatus::Pending)->orWhereNotNull('pending_changes')->count();
@@ -123,10 +128,26 @@ class ServerResource extends Resource
                         app(ServerModeration::class)->reject($s, self::reasonText($data));
                         Notification::make()->title('Відхилено, власника сповіщено')->send();
                     }),
-                Action::make('block')->label('Заблокувати')->icon(Heroicon::OutlinedNoSymbol)->color('danger')
+                Action::make('warn')->label('Попередити')->icon(Heroicon::OutlinedExclamationTriangle)->color('warning')
                     ->visible(fn (Server $s) => $s->status === ServerStatus::Published)
                     ->schema(self::reasonFields())
-                    ->action(fn (Server $s, array $data) => app(ServerModeration::class)->block($s, self::reasonText($data))),
+                    ->action(function (Server $s, array $data) {
+                        app(ServerModeration::class)->warn($s, self::reasonText($data));
+                        Notification::make()->title('Попередження надіслано власнику')->send();
+                    }),
+                Action::make('block')->label('Заблокувати')->icon(Heroicon::OutlinedNoSymbol)->color('danger')
+                    ->visible(fn (Server $s) => $s->status === ServerStatus::Published)
+                    ->schema([
+                        Select::make('days')->label('Термін')->required()->default(0)
+                            ->options([1 => '1 день', 7 => '7 днів', 30 => '30 днів', 0 => 'Назавжди']),
+                        ...self::reasonFields(),
+                    ])
+                    ->action(fn (Server $s, array $data) => app(ServerModeration::class)->block($s, self::reasonText($data), (int) $data['days'] ?: null)),
+                Action::make('unblock')->label('Розблокувати')->icon(Heroicon::OutlinedLockOpen)->color('success')
+                    ->visible(fn (Server $s) => $s->status === ServerStatus::Blocked)
+                    ->requiresConfirmation()
+                    ->modalDescription(fn (Server $s) => $s->blocked_until ? 'Заблоковано до '.$s->blocked_until->format('d.m.Y H:i') : 'Заблоковано назавжди')
+                    ->action(fn (Server $s) => app(ServerModeration::class)->unblock($s)),
                 Action::make('recheck')->label('Перевірити онлайн')->icon(Heroicon::OutlinedArrowPath)
                     ->action(function (Server $s) {
                         $r = app(ServerMonitor::class)->check($s->load('game'));

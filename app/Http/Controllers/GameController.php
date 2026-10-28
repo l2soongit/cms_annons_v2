@@ -50,7 +50,8 @@ class GameController extends Controller
 
         $active = [];
         foreach ($filters as $field) {
-            if ($value = $request->string($field->key)->value()) {
+            // «0» — повноцінне значення (поле «так / ні»: «Ні»), тому порівнюємо з порожнім рядком
+            if (($value = $request->string($field->key)->value()) !== '') {
                 $active[$field->key] = $value;
                 $query->whereHas('fieldValues', fn (Builder $q) => $q
                     ->where('game_field_id', $field->id)

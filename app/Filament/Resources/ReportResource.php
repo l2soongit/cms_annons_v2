@@ -30,6 +30,11 @@ class ReportResource extends Resource
 
     protected static ?int $navigationSort = 3;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('reports.moderate') ?? false;
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return (string) (Report::where('status', 'open')->count()) ?: null;

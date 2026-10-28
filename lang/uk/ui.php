@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'yes' => 'Так',
+    'no' => 'Ні',
     'meta' => [
         'title' => 'graj.club — рейтинг ігрових серверів',
         'description' => 'Рейтинг серверів Lineage 2, GTA, Minecraft, DayZ, Rust і Counter-Strike: онлайн, голоси, нові сервери.',
@@ -139,6 +141,7 @@ return [
         'sort_short_votes' => 'Голоси',
         'sort_short_online' => 'Онлайн',
         'sort_short_new' => 'Нові',
+        'sort_short_opening' => 'Відкриття',
         'vip_head' => 'VIP-сервери',
         'found' => 'Знайдено :n сервер|Знайдено :n сервери|Знайдено :n серверів',
         'more' => 'Показати ще',
@@ -174,6 +177,8 @@ return [
         'sort_votes' => 'Голоси',
         'sort_online' => 'Онлайн',
         'sort_ping' => 'Пінг',
+        'sort_new' => 'Нові',
+        'sort_opening' => 'Відкриття',
         'buy' => 'Меню закупівлі',
         'buy_keys' => 'клавіші 1–6',
         'buy_hint' => 'Фільтри поєднуються. Натисни цифру на клавіатурі, як у грі.',
@@ -205,6 +210,8 @@ return [
         'sort_votes' => 'Голоси',
         'sort_online' => 'Онлайн',
         'sort_ping' => 'Пінг',
+        'sort_new' => 'Нові',
+        'sort_opening' => 'Відкриття',
         'empty' => 'Серверів не знайдено.',
         'empty_hint' => 'Спробуй іншу версію чи режим.',
         'offline' => 'Офлайн',

@@ -26,6 +26,11 @@ class ModerationLogResource extends Resource
 
     protected static ?int $navigationSort = 9;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('logs.view') ?? false;
+    }
+
     public static function canCreate(): bool
     {
         return false;

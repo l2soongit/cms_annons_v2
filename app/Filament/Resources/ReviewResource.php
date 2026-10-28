@@ -30,6 +30,11 @@ class ReviewResource extends Resource
 
     protected static ?int $navigationSort = 2;
 
+    public static function canViewAny(): bool
+    {
+        return auth()->user()?->can('reviews.moderate') ?? false;
+    }
+
     public static function getNavigationBadge(): ?string
     {
         return (string) (Review::where('status', 'pending')->count()) ?: null;

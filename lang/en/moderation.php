@@ -24,5 +24,21 @@ return [
             'subject' => 'Server :server is blocked',
             'line' => 'Server :server has been blocked and removed from the ranking.',
         ],
+        'blocked_temp' => [
+            'subject' => 'Server :server is temporarily blocked',
+            'line' => 'Server :server is removed from the ranking until :until. It will return automatically after that.',
+        ],
+        'unblocked' => [
+            'subject' => 'Server :server is unblocked',
+            'line' => 'The block is lifted: server :server is back in the ranking.',
+        ],
+        'warned' => [
+            'subject' => 'Warning about server :server',
+            'line' => 'A moderator issued a warning to server :server. Another violation may lead to a block.',
+        ],
+        'user_warned' => [
+            'subject' => 'Warning from a graj.club moderator',
+            'line' => 'A moderator issued you a warning. Another rule violation may lead to your account being blocked.',
+        ],
     ],
 ];

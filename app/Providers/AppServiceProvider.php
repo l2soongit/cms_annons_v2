@@ -6,6 +6,7 @@ use App\Models\Game;
 use App\Support\Settings;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
 use Illuminate\Support\ServiceProvider;
@@ -37,6 +38,9 @@ class AppServiceProvider extends ServiceProvider
         } catch (\Throwable) {
             // БД ще недоступна (встановлення, збірка) — працюємо зі значеннями config/graj.php
         }
+
+        // Адміністратор має всі дозволи: керування ролями не можна втратити, змінивши їх
+        Gate::before(fn ($user) => $user->hasRole('admin') ? true : null);
 
         Event::listen(function (SocialiteWasCalled $event) {
             $event->extendSocialite('discord', DiscordProvider::class);

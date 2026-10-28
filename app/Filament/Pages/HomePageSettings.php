@@ -50,7 +50,7 @@ class HomePageSettings extends Page
 
     public static function canAccess(): bool
     {
-        return auth()->user()?->hasRole('admin') ?? false;
+        return auth()->user()?->can('settings.manage') ?? false;
     }
 
     public function mount(): void

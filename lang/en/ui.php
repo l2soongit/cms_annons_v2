@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'yes' => 'Yes',
+    'no' => 'No',
     'meta' => [
         'title' => 'graj.club — game server rankings',
         'description' => 'Top Lineage 2, GTA, Minecraft, DayZ, Rust and Counter-Strike servers: online players, votes, new launches.',
@@ -139,6 +141,7 @@ return [
         'sort_short_votes' => 'Votes',
         'sort_short_online' => 'Online',
         'sort_short_new' => 'New',
+        'sort_short_opening' => 'Opening',
         'vip_head' => 'VIP servers',
         'found' => 'Found :n server|Found :n servers',
         'more' => 'Show more',
@@ -173,6 +176,8 @@ return [
         'sort_votes' => 'Votes',
         'sort_online' => 'Online',
         'sort_ping' => 'Ping',
+        'sort_new' => 'New',
+        'sort_opening' => 'Opening',
         'buy' => 'Buy menu',
         'buy_keys' => 'keys 1–6',
         'buy_hint' => 'Filters combine. Press a number key, just like in the game.',
@@ -204,6 +209,8 @@ return [
         'sort_votes' => 'Votes',
         'sort_online' => 'Online',
         'sort_ping' => 'Ping',
+        'sort_new' => 'New',
+        'sort_opening' => 'Opening',
         'empty' => 'No servers found.',
         'empty_hint' => 'Try another version or mode.',
         'offline' => 'Offline',

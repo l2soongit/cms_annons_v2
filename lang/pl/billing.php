@@ -96,7 +96,7 @@ return [
     'ads' => [
         'nav' => 'Reklama',
         'title' => 'Banery reklamowe',
-        'lead' => 'Zarezerwuj miejsce na baner swojego serwera: nagłówek wszystkich stron, strona gry lub pasek boczny karty serwera. Jedno miejsce — jeden reklamodawca dziennie.',
+        'lead' => 'Zarezerwuj miejsce na baner swojego serwera: nagłówek wszystkich stron, strona gry, kolumna boczna gry lub pasek boczny stron serwerów. Schemat przy każdym miejscu pokazuje, gdzie dokładnie pojawi się baner. Jedno miejsce — jeden reklamodawca dziennie.',
         'placements' => [
             'header' => 'Nagłówek wszystkich stron',
             'game' => 'Strona gry',
@@ -116,6 +116,12 @@ return [
         'busy' => 'Zajęte dni',
         'busy_none' => 'wszystkie dni wolne',
         'clash_hint' => 'Nagłówek jest widoczny na wszystkich stronach, dlatego razem z nim nie można kupić innych miejsc dla tego samego serwera w tych samych terminach. Baner gry i kolumna boczna gry są na tej samej stronie, więc jednocześnie tylko jedno z nich.',
+        'where' => [
+            'header' => 'Na górze każdej strony, tuż pod menu',
+            'game' => 'Na stronie Twojej gry, pod blokiem gry, nad listą serwerów',
+            'game_side' => 'Na stronie gry, w kolumnie bocznej po prawej od listy serwerów',
+            'sidebar' => 'Na stronach serwerów, w kolumnie bocznej po prawej',
+        ],
         'free_title' => 'Tu może być Twoja reklama',
         'free_text' => 'Baner :w×:h na stronie gry — zarezerwuj w panelu',
         'submit' => 'Zapłać i zarezerwuj',

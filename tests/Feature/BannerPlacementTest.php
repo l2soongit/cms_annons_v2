@@ -112,7 +112,9 @@ class BannerPlacementTest extends TestCase
         $this->assertFalse(Tariff::where('placement', 'game_side')->where('game_id', Game::where('slug', 'minecraft')->value('id'))->exists());
         $owner = $server->owner;
         $owner->forceFill(['email_verified_at' => now()])->save();
-        $this->actingAs($owner)->get('/cabinet/ads')->assertOk()->assertSee(__('billing.ads.placements.game_side'));
+        // Біля кожного місця — схема сторінки з підписом, де стоятиме банер
+        $this->actingAs($owner)->get('/cabinet/ads')->assertOk()->assertSee(__('billing.ads.placements.game_side'))
+            ->assertSee(__('billing.ads.where.game_side'))->assertSee(__('billing.ads.where.header'))->assertSee('<svg viewBox="0 0 200 130"', false);
     }
 
     public function test_every_themed_game_page_has_its_game_slot(): void

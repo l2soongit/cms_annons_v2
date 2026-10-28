@@ -40,7 +40,8 @@
                                     [, $w, $h] = Banner::PLACEMENTS[$first->placement];
                                     $busyDays = $busy[$first->placement.'-'.(Banner::isPerGame($first->placement) ? $first->game_id : '')] ?? [];
                                 @endphp
-                                <div class="rounded-md border border-seam p-4">
+                                <div class="flex flex-col-reverse gap-4 rounded-md border border-seam p-4 sm:flex-row sm:items-start">
+                                <div class="min-w-0 flex-1">
                                     <p class="font-medium">{{ __("billing.ads.placements.{$first->placement}") }}@if (Banner::isPerGame($first->placement) && $first->game) · {{ $first->game->name }}@endif</p>
                                     <p class="mt-1 text-xs text-moss">{{ __('billing.ads.size', ['w' => $w, 'h' => $h]) }}</p>
                                     <div class="mt-3 flex flex-wrap gap-2">
@@ -58,6 +59,8 @@
                                             {{ __('billing.ads.busy_none') }}
                                         @endif
                                     </p>
+                                </div>
+                                <x-ad-placement-preview :placement="$first->placement" class="w-full max-w-[200px] sm:w-[200px]" />
                                 </div>
                             @endforeach
                         </div>

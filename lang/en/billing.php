@@ -96,7 +96,7 @@ return [
     'ads' => [
         'nav' => 'Advertising',
         'title' => 'Banner ads',
-        'lead' => 'Book a spot for your server banner: the header of every page, a game page or the server card sidebar. One spot — one advertiser per day.',
+        'lead' => 'Book a spot for your server banner: the header of every page, the game page, the game side column or the server pages sidebar. The diagram next to each spot shows exactly where the banner will appear. One spot — one advertiser per day.',
         'placements' => [
             'header' => 'Header of every page',
             'game' => 'Game page',
@@ -116,6 +116,12 @@ return [
         'busy' => 'Booked days',
         'busy_none' => 'all days are free',
         'clash_hint' => 'The header appears on every page, so other placements for the same server on the same dates cannot be bought together with it. The game banner and the game side column are on the same page too, so only one of them at a time.',
+        'where' => [
+            'header' => 'At the top of every page, right below the menu',
+            'game' => 'On your game page, below the game block, above the server list',
+            'game_side' => 'On the game page, in the side column to the right of the server list',
+            'sidebar' => 'On server pages, in the side column on the right',
+        ],
         'free_title' => 'Your ad could be here',
         'free_text' => 'A :w×:h banner on the game page — book it in your dashboard',
         'submit' => 'Pay and book',

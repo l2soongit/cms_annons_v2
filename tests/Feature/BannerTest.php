@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Billing\Billing;
 use App\Billing\BillingException;
 use App\Enums\ServerStatus;
+use App\Filament\Resources\BannerResource\Pages\CreateBanner;
 use App\Filament\Resources\BannerResource\Pages\ListBanners;
 use App\Models\Banner;
 use App\Models\Game;
@@ -240,7 +241,40 @@ class BannerTest extends TestCase
         $this->assertModelMissing($old);
         Storage::disk('public')->assertMissing('banners/old.webp');
 
-        // Модератор без права на платні послуги банерів не бачить
+        // Модератор без права на платні послуги банерів не бачить і не додає
+        $this->actingAs(User::factory()->create()->assignRole('moderator'))->get('/admin/banners/create')->assertForbidden();
         $this->actingAs(User::factory()->create()->assignRole('moderator'))->get('/admin/banners')->assertForbidden();
+    }
+
+    public function test_admin_adds_free_banner_without_overlapping_sold_dates(): void
+    {
+        $billing = app(Billing::class);
+        $buyer = $this->server('lineage2');
+        $billing->bookBanner($buyer->owner, $buyer, $this->tariff('game', 7, 'lineage2'), today()->addDays(10), 'banners/paid.webp', 'https://paid.example.net');
+        $l2 = Game::where('slug', 'lineage2')->value('id');
+        $this->actingAs(User::factory()->create()->assignRole('admin'));
+        $this->get('/admin/banners')->assertOk()->assertSee('Додати банер');
+
+        $form = fn (array $data) => Livewire::test(CreateBanner::class)->fillForm($data + [
+            'placement' => 'game', 'game_id' => $l2, 'url' => 'https://partner.example.net', 'alt' => 'Партнер',
+            'image' => UploadedFile::fake()->image('p.png', 1200, 150), 'starts_at' => today()->toDateString(), 'ends_at' => today()->addDays(2)->toDateString(),
+        ])->call('create');
+
+        // Перетин із проданими датами — відмова
+        $form(['ends_at' => today()->addDays(12)->toDateString()])->assertHasFormErrors(['starts_at']);
+        $this->assertSame(1, Banner::count());
+
+        // Сервер із власною шапкою на ці дати не отримує банер гри, який шапка б приховала
+        $billing->bookBanner($buyer->owner, $buyer, $this->tariff('header', 1), today()->addDay(), 'banners/h.webp', 'https://h.example.net');
+        $form(['server_id' => $buyer->id])->assertHasFormErrors(['server_id']);
+
+        // Вільні дати, без сервера — банер додано й одразу показується
+        $form([])->assertHasNoFormErrors()->assertRedirect('/admin/banners');
+        $banner = Banner::where('alt', 'Партнер')->firstOrFail();
+        $this->assertSame([null, $l2, today()->addDays(3)->toDateString()], [$banner->order_id, $banner->game_id, $banner->ends_at->toDateString()]);
+        Storage::disk('public')->assertExists($banner->image);
+        $this->assertDatabaseHas('moderation_logs', ['action' => 'banner_create', 'subject_id' => $banner->id]);
+        $this->get('/lineage2')->assertSee('Партнер');
+        $this->get('/admin/banners')->assertSee('Додано адміністратором');
     }
 }

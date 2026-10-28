@@ -5,12 +5,20 @@ namespace App\Filament\Resources;
 use App\Billing\Billing;
 use App\Billing\Money;
 use App\Filament\Resources\BannerResource\Pages;
+use App\Filament\Support\ImageField;
 use App\Models\Banner;
+use App\Models\Game;
 use App\Models\ModerationLog;
 use App\Support\HomePageData;
 use BackedEnum;
 use Filament\Actions\Action;
+use Filament\Forms\Components\DatePicker;
+use Filament\Forms\Components\Select;
+use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
+use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
+use Filament\Schemas\Schema;
 use Filament\Notifications\Notification;
 use Filament\Resources\Resource;
 use Filament\Support\Icons\Heroicon;
@@ -49,7 +57,34 @@ class BannerResource extends Resource
 
     public static function canCreate(): bool
     {
-        return false;
+        return auth()->user()?->can('billing.manage') ?? false;
+    }
+
+    /** Банер без оплати: власна реклама порталу, партнер, домовленість поза сайтом */
+    public static function form(Schema $schema): Schema
+    {
+        return $schema->components([
+            Section::make()->columns(2)->schema([
+                Select::make('placement')->label('Місце')->required()->live()
+                    ->options(collect(Banner::PLACEMENTS)->map(fn ($p) => "{$p[0]} ({$p[1]}×{$p[2]})")),
+                Select::make('game_id')->label('Гра')
+                    ->options(fn (Get $get) => Game::query()
+                        ->when($get('placement') === 'game_side', fn ($q) => $q->whereIn('theme', Banner::SIDE_COLUMN_THEMES))
+                        ->orderBy('sort')->pluck('name', 'id'))
+                    ->visible(fn (Get $get) => Banner::isPerGame((string) $get('placement')))
+                    ->required(fn (Get $get) => Banner::isPerGame((string) $get('placement'))),
+                Select::make('server_id')->label('Сервер')->relationship('server', 'name')->searchable()->preload()
+                    ->placeholder('Без сервера — реклама порталу чи партнера')
+                    ->helperText('Якщо вказати, діє правило «один сервер — один банер на сторінці».'),
+                TextInput::make('url')->label('Посилання')->url()->required()->maxLength(255),
+                ImageField::make('image', 'banners', 'banner')->label('Зображення')->required()
+                    ->helperText(fn (Get $get) => ($p = Banner::PLACEMENTS[$get('placement')] ?? null) ? "Розмір {$p[1]}×{$p[2]} px" : null),
+                TextInput::make('alt')->label('Опис зображення (alt)')->maxLength(120),
+                DatePicker::make('starts_at')->label('Перший день показу')->required()->default(today())->native(false)->displayFormat('d.m.Y'),
+                DatePicker::make('ends_at')->label('Останній день показу')->required()->afterOrEqual('starts_at')->native(false)->displayFormat('d.m.Y'),
+                Toggle::make('is_active')->label('Показувати')->default(true),
+            ]),
+        ]);
     }
 
     public static function table(Table $table): Table
@@ -61,7 +96,9 @@ class BannerResource extends Resource
                 ImageColumn::make('image')->label('Банер')->getStateUsing(fn (Banner $record) => HomePageData::url($record->image))->imageHeight(40),
                 TextColumn::make('placement')->label('Місце')->formatStateUsing(fn (string $state) => Banner::PLACEMENTS[$state][0] ?? $state)
                     ->description(fn (Banner $record) => $record->game?->name),
-                TextColumn::make('server.name')->label('Сервер')->description(fn (Banner $record) => $record->order?->user?->email)->searchable(),
+                // Без сервера опис не виводиться, тож позначка ручного банера — у заглушці
+                TextColumn::make('server.name')->label('Сервер')->placeholder('Додано адміністратором, без сервера')->searchable()
+                    ->description(fn (Banner $record) => $record->order_id ? $record->order?->user?->email : 'Додано адміністратором, без оплати'),
                 TextColumn::make('starts_at')->label('Показ')->formatStateUsing(fn (Banner $record) => $record->starts_at->format('d.m.Y').' – '.$record->ends_at->copy()->subSecond()->format('d.m.Y')),
                 TextColumn::make('impressions')->label('Покази')->numeric()->sortable(),
                 TextColumn::make('clicks')->label('Кліки')->numeric()->sortable()->description(fn (Banner $record) => 'CTR '.$record->ctr().'%'),
@@ -123,6 +160,7 @@ class BannerResource extends Resource
     {
         return [
             'index' => Pages\ListBanners::route('/'),
+            'create' => Pages\CreateBanner::route('/create'),
         ];
     }
 }

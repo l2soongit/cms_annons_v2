@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Support\Locales;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -38,9 +39,23 @@ class GameField extends Model
         return Attribute::make(
             get: fn ($value) => $this->type === 'boolean'
                 ? [['value' => '1', 'label' => __('ui.yes')], ['value' => '0', 'label' => __('ui.no')]]
-                : (is_array($value) ? $value : (json_decode($value ?? '', true) ?: [])),
+                : self::localize(is_array($value) ? $value : (json_decode($value ?? '', true) ?: [])),
             set: fn ($value) => $value === null ? null : json_encode(array_values((array) $value), JSON_UNESCAPED_UNICODE),
         );
+    }
+
+    /**
+     * Підпис варіанта мовою сторінки: labels[<мова>] з адмінки, інакше основний підпис.
+     * Основною мовою (і в адмінці) варіанти не змінюються, тож форма зберігає основний підпис.
+     */
+    private static function localize(array $options): array
+    {
+        $locale = app()->getLocale();
+        if ($locale === Locales::default()) {
+            return $options;
+        }
+
+        return array_map(fn ($o) => is_array($o) && filled($o['labels'][$locale] ?? null) ? ['label' => $o['labels'][$locale]] + $o : $o, $options);
     }
 
     /**

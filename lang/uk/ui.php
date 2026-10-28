@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'page_updated' => 'Оновлено :date',
+    'language' => 'Мова',
     'yes' => 'Так',
     'no' => 'Ні',
     'meta' => [

@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use Illuminate\Support\Str;
+
 /**
  * Піксельна графіка 8×8 для сторінки Minecraft: іконка сервера без логотипа, значки режимів і кубок залу слави.
  */
@@ -53,9 +55,12 @@ final class McPixels
         return '<svg class="icon" viewBox="0 0 8 8" shape-rendering="crispEdges" aria-hidden="true"><rect width="8" height="8" fill="#1b1b1b"/>'.$rects.'</svg>';
     }
 
-    public static function mode(string $label, int $size = 20): string
+    /** @param  string  $mode  значення варіанта (vizivannia, skyblock…) або основний підпис */
+    public static function mode(string $mode, int $size = 20): string
     {
-        return self::svg(self::MODES[$label] ?? self::GRASS, $size);
+        $rects = self::MODES[$mode] ?? collect(self::MODES)->first(fn ($svg, $label) => Str::slug($label) === $mode) ?? self::GRASS;
+
+        return self::svg($rects, $size);
     }
 
     public static function trophy(string $color): string

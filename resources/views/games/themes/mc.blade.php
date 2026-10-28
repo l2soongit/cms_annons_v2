@@ -70,7 +70,7 @@
         @foreach ($comingSoon as $s)
           @php
               $opens = $s->opens_at->copy()->startOfDay();
-              $mode = optional($s->fieldValues->first(fn ($v) => $v->field?->key === 'mode'), fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value);
+              $mode = $s->fieldValues->first(fn ($v) => $v->field?->key === 'mode')?->value;
           @endphp
           <article class="ach">
             <span class="aico">{!! McPixels::soon($mode) !!}</span>
@@ -114,7 +114,7 @@
         <div class="slot-row" data-swap="field-{{ $field->key }}">
           @foreach ($field->options as $option)
             @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
-            <a class="mode-slot" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link><span class="ic">{!! McPixels::mode($option['label']) !!}</span>{{ $option['label'] }}<span class="cnt">{{ $n }}</span></a>
+            <a class="mode-slot" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-filter-link><span class="ic">{!! McPixels::mode($option['value']) !!}</span>{{ $option['label'] }}<span class="cnt">{{ $n }}</span></a>
           @endforeach
         </div>
       @endforeach

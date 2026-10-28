@@ -7,6 +7,7 @@ use App\Models\Server;
 use App\Rules\PublicAddress;
 use App\Servers\ServerSubmission;
 use App\Support\HtmlSanitizer;
+use App\Support\Locales;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
@@ -40,9 +41,8 @@ class ServerForm extends Component
 
     public string $youtube = '';
 
-    public string $description_uk = '';
-
-    public string $description_en = '';
+    /** Опис мовами сайту: код мови => HTML */
+    public array $descriptions = [];
 
     public ?string $opens_at = null;
 
@@ -74,8 +74,9 @@ class ServerForm extends Component
             $this->website = (string) $server->website;
             $this->discord = (string) $server->discord;
             $this->youtube = (string) $server->youtube;
-            $this->description_uk = (string) $server->getTranslation('description', 'uk', false);
-            $this->description_en = (string) $server->getTranslation('description', 'en', false);
+            foreach (array_keys(Locales::all()) as $locale) {
+                $this->descriptions[$locale] = (string) $server->getTranslation('description', $locale, false);
+            }
             $this->opens_at = $server->opens_at?->toDateString();
             $this->languages = $server->languages ?? [];
             $this->country = $server->country;
@@ -120,8 +121,9 @@ class ServerForm extends Component
             'website' => ['nullable', 'url:http,https', 'max:255', new PublicAddress(url: true)],
             'discord' => ['nullable', 'url:https', 'max:255', 'regex:#^https://(discord\.gg|discord\.com/invite)/#'],
             'youtube' => ['nullable', 'url:https', 'max:255', 'regex:#^https://(www\.)?(youtube\.com|youtu\.be)/#'],
-            'description_uk' => ['required', 'string', 'max:20000', $this->visibleLength(50, 5000)],
-            'description_en' => ['nullable', 'string', 'max:20000', $this->visibleLength(0, 5000)],
+            // Опис основною мовою обов’язковий, іншими — за бажанням
+            'descriptions.'.Locales::default() => ['required', 'string', 'max:20000', $this->visibleLength(50, 5000)],
+            'descriptions.*' => ['nullable', 'string', 'max:20000', $this->visibleLength(0, 5000)],
             'opens_at' => ['nullable', 'date'],
             'languages' => ['array', 'max:6'],
             'languages.*' => [Rule::in(array_keys(self::LANGUAGES))],
@@ -153,6 +155,7 @@ class ServerForm extends Component
     {
         return collect($this->game->fields ?? [])
             ->mapWithKeys(fn ($f) => ["fields.{$f->key}" => $f->label])
+            ->merge(collect(Locales::all())->mapWithKeys(fn ($language, $code) => ["descriptions.{$code}" => __('cabinet.form.description_in', ['language' => $language])]))
             ->all();
     }
 
@@ -168,10 +171,9 @@ class ServerForm extends Component
             'website' => $this->website ?: null,
             'discord' => $this->discord ?: null,
             'youtube' => $this->youtube ?: null,
-            'description' => array_filter([
-                'uk' => HtmlSanitizer::clean($this->description_uk),
-                'en' => HtmlSanitizer::clean($this->description_en),
-            ]),
+            'description' => array_filter(collect(Locales::all())
+                ->mapWithKeys(fn ($name, $locale) => [$locale => HtmlSanitizer::clean((string) ($this->descriptions[$locale] ?? ''))])
+                ->all()),
             'opens_at' => $this->opens_at,
             'languages' => array_values($this->languages) ?: null,
             'country' => $this->country ?: null,

@@ -79,7 +79,7 @@ class Stage2GapsTest extends TestCase
             ->set('game_id', $game->id)
             ->set('name', 'Livonia Mods')
             ->set('host', '8.8.8.8')
-            ->set('description_uk', str_repeat('Опис сервера з модами. ', 4))
+            ->set('descriptions.uk', str_repeat('Опис сервера з модами. ', 4))
             ->set('fields.map', 'livonia')
             ->set('fields.style', 'pve')
             ->set('fields.mods', true)

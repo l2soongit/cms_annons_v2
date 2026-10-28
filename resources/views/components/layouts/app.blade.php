@@ -6,6 +6,7 @@
     <title>{{ $title ?? __('ui.meta.title') }}</title>
     <meta name="description" content="{{ $description ?? __('ui.meta.description') }}">
     <link rel="canonical" href="{{ url()->current() }}">
+    <x-locale-alternates />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -46,6 +47,7 @@
                 <button type="button" data-theme-toggle class="rounded-md px-3 py-2 text-moss hover:text-bone" aria-label="{{ __('ui.theme') }}">
                     <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
                 </button>
+                <x-locale-switcher />
                 @auth
                     <x-notification-bell class="text-moss hover:text-bone" />
                     <a href="{{ route('cabinet') }}" class="rounded-md px-3 py-2 text-moss hover:text-bone" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
@@ -71,9 +73,10 @@
     <footer class="border-t border-seam">
         <div class="mx-auto flex max-w-6xl flex-wrap gap-x-6 gap-y-2 px-4 py-6 text-sm text-moss sm:px-6">
             <span>© {{ date('Y') }} graj.club</span>
-            <a href="#" class="hover:text-bone">{{ __('ui.footer.rules') }}</a>
+            <a href="{{ route('pages.show', 'rules') }}" class="hover:text-bone">{{ __('ui.footer.rules') }}</a>
+            <a href="{{ route('pages.show', 'faq') }}" class="hover:text-bone">FAQ</a>
             <a href="{{ route('developers') }}" class="hover:text-bone">{{ __('ui.footer.api') }}</a>
-            <a href="#" class="hover:text-bone">{{ __('ui.footer.contacts') }}</a>
+            <a href="{{ route('pages.show', 'contacts') }}" class="hover:text-bone">{{ __('ui.footer.contacts') }}</a>
         </div>
     </footer>
 </body>

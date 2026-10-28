@@ -3,8 +3,11 @@
 namespace App\Filament\Pages;
 
 use App\Models\ModerationLog;
+use App\Support\Locales;
 use App\Support\Settings as SettingsStore;
 use BackedEnum;
+use Closure;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
@@ -71,6 +74,22 @@ class Settings extends Page
                 TextInput::make('monitoring.interval_minutes')->label('Інтервал опитування, хв')->numeric()->minValue(1)->maxValue(60)->required(),
                 TextInput::make('monitoring.archive_after_offline_days')->label('Архівувати після офлайну, днів')->numeric()->minValue(1)->required(),
             ]),
+            Section::make('Мови сайту')
+                ->description('Основна мова — без префікса в адресі; решта відкриваються за /<код>/… (напр. /en/lineage2). Тексти нової мови перекладаються в розділі «Переклади»; поки перекладу немає, показується англійський.')
+                ->schema([
+                    KeyValue::make('locales')->label('Мови')->keyLabel('Код (2 літери)')->valueLabel('Назва в перемикачі')
+                        ->addActionLabel('Додати мову')
+                        ->rules([fn () => function (string $attribute, $value, Closure $fail) {
+                            foreach (array_keys((array) $value) as $code) {
+                                if (! preg_match('/^[a-z]{2}$/', (string) $code)) {
+                                    $fail("Код мови «{$code}» має складатися з двох латинських літер (uk, en, pl).");
+                                }
+                            }
+                            if (! array_key_exists(Locales::default(), (array) $value)) {
+                                $fail('Основну мову ('.Locales::default().') прибрати не можна.');
+                            }
+                        }]),
+                ]),
             Section::make('Відгуки')->schema([
                 TagsInput::make('reviews.stop_words')->label('Стоп-слова')
                     ->helperText('Відгуки з цими словами йдуть на премодерацію. Регістр не важливий.'),
@@ -87,6 +106,7 @@ class Settings extends Page
             $value = Arr::get($state, $key);
             $values[$key] = match (true) {
                 $key === 'reviews.stop_words' => array_values(array_filter(array_map(fn ($w) => mb_strtolower(trim($w)), (array) $value))),
+                $key === 'locales' => collect((array) $value)->mapWithKeys(fn ($name, $code) => [strtolower(trim((string) $code)) => trim((string) $name)])->all(),
                 (float) $value == (int) $value => (int) $value,
                 default => (float) $value,
             };

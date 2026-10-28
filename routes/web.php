@@ -9,6 +9,7 @@ use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InboxController;
 use App\Http\Controllers\MessagesController;
+use App\Http\Controllers\PageController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReviewController;
@@ -81,6 +82,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// Статичні сторінки: правила, FAQ, контакти
+Route::get('/page/{page}', [PageController::class, 'show'])->name('pages.show');
+
 // Документація API і віджети для сайтів серверів (ТЗ 7.2–7.3)
 Route::get('/developers', [DevelopersController::class, 'index'])->name('developers');
 Route::get('/developers/openapi.json', [DevelopersController::class, 'openapi'])->name('developers.openapi');
@@ -98,5 +102,5 @@ Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware(
 
 // Останнім, бо slug гри перехоплює будь-який сегмент першого рівня
 Route::get('/{game}', [GameController::class, 'show'])
-    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
+    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|page|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
     ->name('games.show');

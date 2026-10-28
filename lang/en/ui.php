@@ -1,6 +1,8 @@
 <?php
 
 return [
+    'page_updated' => 'Updated :date',
+    'language' => 'Language',
     'yes' => 'Yes',
     'no' => 'No',
     'meta' => [

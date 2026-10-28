@@ -4,12 +4,15 @@ namespace App\Filament\Resources;
 
 use App\Filament\Resources\GameResource\Pages;
 use App\Filament\Support\ImageField;
+use App\Filament\Support\Localized;
 use App\Models\Game;
 use App\Models\GameField;
 use App\Monitoring\DriverRegistry;
+use App\Support\Locales;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\ColorPicker;
+use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Repeater;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
@@ -50,8 +53,7 @@ class GameResource extends Resource
     {
         return $schema->components([
             Section::make('Гра')->columns(2)->schema([
-                TextInput::make('name.uk')->label('Назва (uk)')->required(),
-                TextInput::make('name.en')->label('Назва (en)'),
+                ...Localized::fields('name', 'Назва', fn (string $path) => TextInput::make($path), required: true),
                 TextInput::make('slug')->required()->unique(ignoreRecord: true)->alphaDash()
                     ->helperText('Частина URL: graj.club/<slug>'),
                 Select::make('query_driver')->label('Протокол моніторингу')->options(DriverRegistry::options())->required(),
@@ -70,19 +72,16 @@ class GameResource extends Resource
             ]),
             Section::make('Сторінка гри')->description('Банер угорі сторінки гри. Обкладинка гри стає його фоном.')
                 ->columns(2)->schema([
-                    TextInput::make('hero_title.uk')->label('Заголовок банера (uk)')->maxLength(60)
-                        ->helperText(fn (Get $get) => match ($get('theme')) {
+                    ...Localized::fields('hero_title', 'Заголовок банера', fn (string $path, string $locale) => TextInput::make($path)->maxLength(60)
+                        ->helperText($locale !== Locales::default() ? null : fn (Get $get) => match ($get('theme')) {
                             'l2', 'gta' => 'Напр. «Lineage II». Останнє слово виділяється кольором стилю. Порожньо — назва гри.',
                             'cs' => 'Напр. «Counter-Strike». Частина після дефіса або останнє слово виділяється. Порожньо — назва гри.',
                             'mc' => 'Пишеться великими піксельними літерами; одне довге слово ділиться навпіл («MINE» «CRAFT»). Порожньо — назва гри.',
                             default => 'Порожньо — назва гри.',
-                        }),
-                    TextInput::make('hero_title.en')->label('Заголовок банера (en)')->maxLength(60),
-                    TextInput::make('eyebrow.uk')->label('Підпис над заголовком (uk)')->maxLength(80)
-                        ->helperText('Напр. «Фентезі MMORPG · з 2003 року».'),
-                    TextInput::make('eyebrow.en')->label('Підпис над заголовком (en)')->maxLength(80),
-                    Textarea::make('description.uk')->label('Опис під заголовком (uk)')->rows(2)->maxLength(240),
-                    Textarea::make('description.en')->label('Опис під заголовком (en)')->rows(2)->maxLength(240),
+                        })),
+                    ...Localized::fields('eyebrow', 'Підпис над заголовком', fn (string $path, string $locale) => TextInput::make($path)->maxLength(80)
+                        ->helperText($locale === Locales::default() ? 'Напр. «Фентезі MMORPG · з 2003 року».' : null)),
+                    ...Localized::fields('description', 'Опис під заголовком', fn (string $path) => Textarea::make($path)->rows(2)->maxLength(240)),
                 ]),
             Section::make('Блоки сторінки гри')->description('Що показувати на сторінці гри з власним дизайном (Lineage 2, GTA, CS, Minecraft).')
                 ->columns(2)->collapsible()->schema([
@@ -98,10 +97,8 @@ class GameResource extends Resource
                 ->visible(fn (Get $get) => isset(Game::THEME_TEXTS[$get('theme')]))
                 ->schema(fn (Get $get) => self::themeTextFields((string) $get('theme'))),
             Section::make('SEO')->columns(2)->collapsed()->schema([
-                TextInput::make('seo_title.uk')->label('Title (uk)'),
-                TextInput::make('seo_title.en')->label('Title (en)'),
-                Textarea::make('seo_description.uk')->label('Description (uk)'),
-                Textarea::make('seo_description.en')->label('Description (en)'),
+                ...Localized::fields('seo_title', 'Title', fn (string $path) => TextInput::make($path)),
+                ...Localized::fields('seo_description', 'Description', fn (string $path) => Textarea::make($path)),
             ]),
             Section::make('Поля сервера')->description('Що власник заповнює для цієї гри і за чим гравці фільтрують рейтинг.')->schema([
                 Repeater::make('fields')->relationship()->hiddenLabel()
@@ -110,8 +107,7 @@ class GameResource extends Resource
                     ->schema([
                         Grid::make(4)->schema([
                             TextInput::make('key')->label('Ключ')->required()->alphaDash(),
-                            TextInput::make('label.uk')->label('Назва (uk)')->required(),
-                            TextInput::make('label.en')->label('Назва (en)'),
+                            ...Localized::fields('label', 'Назва', fn (string $path) => TextInput::make($path), required: true),
                             Select::make('type')->label('Тип')->required()->options(GameField::TYPES)->live()
                                 ->helperText(fn (Get $get) => $get('type') === 'boolean' ? 'Галочка у формі сервера; у фільтрі — «Так» / «Ні».' : null),
                         ]),
@@ -135,19 +131,22 @@ class GameResource extends Resource
                                 TextInput::make('connect')->label('Команда підключення')->maxLength(80)->placeholder('connect {address}')
                                     ->helperText('Що копіює кнопка «Підключитися»; {address} — адреса сервера. Порожньо — лише адреса.'),
                                 Select::make('driver')->label('Протокол (необов’язково)')->options(DriverRegistry::options()),
+                                KeyValue::make('labels')->label('Переклади підпису')->keyLabel('Мова')->valueLabel('Підпис')->columnSpanFull()
+                                    ->addActionLabel('Додати переклад')
+                                    ->helperText(fn () => 'Напр. en → Hardcore. Мови сайту: '.implode(', ', array_keys(Locales::all())).'. Без перекладу показується основний підпис.'),
                             ]),
                     ]),
             ]),
         ]);
     }
 
-    /** Поля текстів стилю (uk і en); сірим — текст за замовчуванням */
+    /** Поля текстів стилю для кожної мови сайту; сірим — текст за замовчуванням */
     private static function themeTextFields(string $theme): array
     {
         return collect(Game::THEME_TEXTS[$theme] ?? [])->flatMap(function (string $label, string $key) {
             $path = Game::textKey($key);
 
-            return collect(['uk', 'en'])->map(function (string $locale) use ($key, $path, $label) {
+            return collect(array_keys(Locales::all()))->map(function (string $locale) use ($key, $path, $label) {
                 $default = trans("ui.{$key}", [], $locale);
 
                 return (is_array($default) ? Textarea::make("page.texts.{$locale}.{$path}")->rows(4) : TextInput::make("page.texts.{$locale}.{$path}")->maxLength(160))

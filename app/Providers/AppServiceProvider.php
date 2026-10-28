@@ -4,11 +4,13 @@ namespace App\Providers;
 
 use App\Models\Game;
 use App\Support\Settings;
+use App\Support\Translations;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\View;
+use Illuminate\Support\Facades\Vite;
 use Illuminate\Support\ServiceProvider;
 use SocialiteProviders\Discord\Provider as DiscordProvider;
 use SocialiteProviders\Manager\SocialiteWasCalled;
@@ -20,7 +22,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        //
+        // Переклади з адмінки поверх файлів lang/
+        $this->app->extend('translation.loader', fn ($loader) => new Translations($loader));
     }
 
     /**
@@ -29,6 +32,12 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Model::preventLazyLoading(! $this->app->isProduction());
+
+        // Основна мова сайту (без префікса в адресі); app.locale далі змінюється під мову запиту
+        config(['app.locale_default' => config('app.locale_default', config('app.locale'))]);
+
+        // Збірка Vite — від кореня сайту, а не від /en, який додається до посилань англійських сторінок
+        Vite::createAssetPathsUsing(fn (string $path) => '/'.ltrim($path, '/'));
 
         // Старі версії MySQL на віртуальних хостингах обмежують довжину індексу
         Schema::defaultStringLength(191);

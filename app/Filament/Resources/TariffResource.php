@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Billing\Money;
 use App\Filament\Resources\TariffResource\Pages;
+use App\Filament\Support\Localized;
 use App\Models\Banner;
 use App\Models\Tariff;
 use BackedEnum;
@@ -50,8 +51,7 @@ class TariffResource extends Resource
             Section::make()->columns(2)->schema([
                 Select::make('game_id')->label('Гра')->relationship('game', 'slug')->placeholder('Усі ігри'),
                 Select::make('service')->label('Послуга')->options(Tariff::SERVICES)->required()->live(),
-                TextInput::make('name.uk')->label('Назва (uk)')->required()->maxLength(80),
-                TextInput::make('name.en')->label('Назва (en)')->maxLength(80),
+                ...Localized::fields('name', 'Назва', fn (string $path) => TextInput::make($path)->maxLength(80), required: true),
                 TextInput::make('days')->label('Днів')->numeric()->minValue(1)->maxValue(365)
                     ->visible(fn (Get $get) => in_array($get('service'), ['vip', 'highlight', 'banner'], true))
                     ->required(fn (Get $get) => in_array($get('service'), ['vip', 'highlight', 'banner'], true)),

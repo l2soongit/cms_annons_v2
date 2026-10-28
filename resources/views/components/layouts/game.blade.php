@@ -16,6 +16,7 @@
 <title>{{ $game->seo_title ?: $title }}</title>
 <meta name="description" content="{{ $description }}">
 <link rel="canonical" href="{{ url()->current() }}">
+<x-locale-alternates />
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $game->seo_title ?: $title }}">
 <meta property="og:description" content="{{ $description }}">
@@ -43,6 +44,7 @@
         @endforeach
       </nav>
       <div class="actions">
+        <x-locale-switcher />
         @auth
           <x-notification-bell />
           <a class="btn btn-ghost btn-sm" href="{{ route('cabinet') }}" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>

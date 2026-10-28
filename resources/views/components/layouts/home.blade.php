@@ -16,6 +16,7 @@
 <title>{{ $title ?? __('ui.meta.title') }}</title>
 <meta name="description" content="{{ $description ?? __('ui.meta.description') }}">
 <link rel="canonical" href="{{ url()->current() }}">
+<x-locale-alternates />
 <meta property="og:type" content="website">
 <meta property="og:title" content="{{ $title ?? __('ui.meta.title') }}">
 <meta property="og:description" content="{{ $description ?? __('ui.meta.description') }}">
@@ -45,6 +46,7 @@
         @endforeach
       </nav>
       <div class="actions">
+        <x-locale-switcher />
         @auth
           <x-notification-bell />
           <a class="btn btn-ghost btn-sm login" href="{{ route('cabinet') }}" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
@@ -77,9 +79,10 @@
         <li><a href="{{ route('developers') }}">{{ __('ui.footer.api') }}</a></li>
       </ul></div>
       <div><h4>{{ __('ui.footer.portal') }}</h4><ul>
-        <li><a href="#">{{ __('ui.footer.rules') }}</a></li>
+        <li><a href="{{ route('pages.show', 'rules') }}">{{ __('ui.footer.rules') }}</a></li>
+        <li><a href="{{ route('pages.show', 'faq') }}">FAQ</a></li>
         <li><a href="{{ route('search') }}">{{ __('ui.search.title') }}</a></li>
-        <li><a href="#">{{ __('ui.footer.contacts') }}</a></li>
+        <li><a href="{{ route('pages.show', 'contacts') }}">{{ __('ui.footer.contacts') }}</a></li>
       </ul></div>
     </div>
     <div class="fbottom"><span>© {{ date('Y') }} graj.club</span><span>{{ __('ui.footer.monitoring') }}</span></div>

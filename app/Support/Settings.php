@@ -23,6 +23,7 @@ final class Settings
         'monitoring.interval_minutes',
         'monitoring.archive_after_offline_days',
         'reviews.stop_words',
+        'locales',
     ];
 
     /** Сторінка «Головна сторінка» */

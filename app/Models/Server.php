@@ -155,7 +155,10 @@ class Server extends Model
     public function fieldLabels(): string
     {
         return $this->fieldValues
-            ->map(fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value)
+            // «Так / ні»: показуємо назву поля («Моди»), якщо так, і нічого, якщо ні
+            ->map(fn ($v) => $v->field?->type === 'boolean'
+                ? ($v->value === '1' ? $v->field->label : null)
+                : (collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value))
             ->filter()
             ->implode(' ');
     }

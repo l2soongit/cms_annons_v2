@@ -9,6 +9,14 @@ class GameSeeder extends Seeder
 {
     private const THEMES = ['lineage2' => 'l2', 'gta' => 'gta', 'minecraft' => 'mc', 'dayz' => 'dayz', 'rust' => 'rust', 'counter-strike' => 'cs'];
 
+    /** Англійські підписи українських варіантів (та сама мапа — у міграції add_english_option_labels) */
+    private const EN_LABELS = [
+        'Гайдард' => 'Hardcore', 'Мультипрофа' => 'Multiclass',
+        'Виживання' => 'Survival', 'Анархія' => 'Anarchy', 'Міні-ігри' => 'Minigames', 'Творчий' => 'Creative',
+        'Ліцензія' => 'Licensed', 'Піратка' => 'Cracked',
+        'Щотижня' => 'Weekly', 'Раз на 2 тижні' => 'Every 2 weeks', 'Щомісяця' => 'Monthly', 'Без ліміту' => 'No limit',
+    ];
+
     public function run(): void
     {
         foreach ($this->games() as $sort => $data) {
@@ -145,6 +153,7 @@ class GameSeeder extends Seeder
                 'value' => str($v)->slug()->value() ?: $v,
                 'label' => $v,
                 'driver' => $drivers[$v] ?? null,
+                'labels' => isset(self::EN_LABELS[$v]) ? ['en' => self::EN_LABELS[$v]] : null,
                 ...$extras[$v] ?? [],
             ]), $values),
             'is_required' => true,

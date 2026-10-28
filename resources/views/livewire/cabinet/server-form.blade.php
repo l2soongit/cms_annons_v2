@@ -78,8 +78,10 @@
 
         <section class="space-y-5" aria-labelledby="s-desc">
             <h2 id="s-desc" class="font-display text-lg font-medium">{{ __('cabinet.form.section_description') }}</h2>
-            <x-rich-editor name="description_uk" :value="$description_uk" :label="__('cabinet.form.description_uk')" :hint="__('cabinet.form.description_hint')" />
-            <x-rich-editor name="description_en" :value="$description_en" :label="__('cabinet.form.description_en')" />
+            @foreach (\App\Support\Locales::all() as $code => $language)
+                <x-rich-editor :name="'descriptions.'.$code" :value="$descriptions[$code] ?? ''" :label="__('cabinet.form.description_in', ['language' => $language])"
+                               :hint="$code === \App\Support\Locales::default() ? __('cabinet.form.description_hint') : null" />
+            @endforeach
 
             <div class="grid gap-5 sm:grid-cols-[1fr_14rem]">
                 <fieldset>

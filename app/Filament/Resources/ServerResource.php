@@ -4,6 +4,7 @@ namespace App\Filament\Resources;
 
 use App\Enums\ServerStatus;
 use App\Filament\Resources\ServerResource\Pages;
+use App\Filament\Support\Localized;
 use App\Models\Server;
 use App\Monitoring\ServerMonitor;
 use App\Servers\ServerModeration;
@@ -71,8 +72,7 @@ class ServerResource extends Resource
                 TextInput::make('discord')->url(),
                 DatePicker::make('opens_at')->label('Дата відкриття'),
                 TextInput::make('bonus_points')->label('Бонусні бали')->numeric()->helperText('Ручне коригування; платні підняття рахуються окремо.'),
-                Textarea::make('description.uk')->label('Опис (uk)')->rows(6)->columnSpanFull(),
-                Textarea::make('description.en')->label('Опис (en)')->rows(4)->columnSpanFull(),
+                ...Localized::fields('description', 'Опис', fn (string $path) => Textarea::make($path)->rows(5)->columnSpanFull()),
             ]),
         ]);
     }

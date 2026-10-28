@@ -2,6 +2,7 @@
 
 return [
     'page_updated' => 'Updated :date',
+    'cookies' => ['text' => 'We only use essential cookies: for signing in, form protection and remembering your language. No ads or tracking.', 'more' => 'Privacy policy', 'ok' => 'Got it'],
     'language' => 'Language',
     'yes' => 'Yes',
     'no' => 'No',

@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\LocalizeFromUrl;
 use App\Http\Middleware\RememberUserLocale;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -19,6 +20,7 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->validateCsrfTokens(except: ['billing/return']);
         // Мова з адреси (/en/…) — до маршрутизації; мова користувача для листів — після сесії
         $middleware->prepend(LocalizeFromUrl::class);
+        $middleware->append(SecurityHeaders::class);
         $middleware->web(append: [RememberUserLocale::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {

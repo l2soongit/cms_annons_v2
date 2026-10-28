@@ -91,7 +91,9 @@
             <a href="{{ route('pages.show', 'faq') }}" class="hover:text-bone">FAQ</a>
             <a href="{{ route('developers') }}" class="hover:text-bone">{{ __('ui.footer.api') }}</a>
             <a href="{{ route('pages.show', 'contacts') }}" class="hover:text-bone">{{ __('ui.footer.contacts') }}</a>
+            <a href="{{ route('pages.show', 'privacy') }}" class="hover:text-bone">{{ __('ui.cookies.more') }}</a>
         </div>
     </footer>
+<x-cookie-notice />
 </body>
 </html>

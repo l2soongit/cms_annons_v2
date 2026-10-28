@@ -84,10 +84,12 @@
         <li><a href="{{ route('pages.show', 'faq') }}">FAQ</a></li>
         <li><a href="{{ route('search') }}">{{ __('ui.search.title') }}</a></li>
         <li><a href="{{ route('pages.show', 'contacts') }}">{{ __('ui.footer.contacts') }}</a></li>
+        <li><a href="{{ route('pages.show', 'privacy') }}">{{ __('ui.cookies.more') }}</a></li>
       </ul></div>
     </div>
     <div class="fbottom"><span>© {{ date('Y') }} graj.club</span><span>{{ __('ui.footer.monitoring') }}</span></div>
   </div>
 </footer>
+<x-cookie-notice />
 </body>
 </html>

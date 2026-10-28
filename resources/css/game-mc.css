@@ -287,3 +287,11 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 
 /* Платне виділення (ТЗ 3.7): смарагдова рамка, як у вибраного предмета */
 .entry.hl { border-color: #55ff55aa; background: linear-gradient(90deg, #55ff5512, transparent 50%); }
+
+/* ═══ Легкий режим для телефонів і планшетів ═══
+ * Без великих розмитих шарів, розмиття під шапкою, canvas і анімацій, що перемальовують багато пікселів;
+ * лишаються дешеві: поява блоків, таймери, сповіщення, фірмові дрібниці теми. */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  /* Небо без зміни часу доби на весь банер, руда без блиску з тінню */
+  .mhero .sky::after, .blk.o::after, .cube-shadow { animation: none; }
+}

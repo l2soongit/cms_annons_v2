@@ -314,3 +314,11 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
   *, *::before, *::after { animation: none !important; transition: none !important; }
   [data-reveal] { opacity: 1; transform: none; }
 }
+
+/* ═══ Легкий режим для телефонів і планшетів ═══
+ * Без великих розмитих шарів, розмиття під шапкою, canvas і анімацій, що перемальовують багато пікселів;
+ * лишаються дешеві: поява блоків, таймери, сповіщення, фірмові дрібниці теми. */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  .rhero .sun { filter: none; }
+  .skyline .lamp { animation: none; }
+}

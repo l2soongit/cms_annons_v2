@@ -276,3 +276,18 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   .srv .votes b { font-size: 18px; }
   .srv .btn-sm { grid-column: 4; grid-row: 2; }
 }
+
+/* ═══ Легкий режим для телефонів і планшетів ═══
+ * Без великих розмитих шарів, розмиття під шапкою, canvas і анімацій, що перемальовують багато пікселів;
+ * лишаються дешеві: поява блоків, таймери, сповіщення, фірмові дрібниці теми. */
+@media (max-width: 768px), (hover: none) and (pointer: coarse) {
+  .bar, .toast, .cd .tile { -webkit-backdrop-filter: none; backdrop-filter: none; }
+  .bar, header.scrolled .bar { background: #18181bf5; }
+  .ghero h1 .w { filter: none; animation: word-in-lite .5s ease-out both; animation-delay: calc(var(--i) * 80ms); }
+  @keyframes word-in-lite { from { opacity: 0; transform: translateY(.25em); } to { opacity: 1; transform: none; } }
+  @keyframes roll-in { from { transform: translateY(70%); opacity: 0; } }
+  @keyframes roll-out { to { transform: translateY(-70%); opacity: 0; } }  .aurora i { display: none; }
+  .aurora { background: radial-gradient(120% 55% at 100% 0%, #b9761f33, transparent 60%), radial-gradient(90% 45% at 0% 50%, #7a3e0b2a, transparent 60%); }
+  .mote { display: none; }
+  .rune, .soon-item::before, .srv.vip::before { animation: none; }
+}

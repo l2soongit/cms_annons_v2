@@ -3,7 +3,7 @@
  * процедурна мапа з сіткою, відлік до форс-вайпу, перехід із вайп-календаря до сервера, копіювання client.connect
  * і голоси в ігровому чаті. Усе, що рухається в банері, зупиняється, коли банер поза екраном або вкладка прихована.
  */
-import { $, $$, calm, esc, setToastRenderer } from './game-page';
+import { $, $$, calm, lite, esc, setToastRenderer } from './game-page';
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 const dataEl = document.getElementById('game-data');
@@ -40,7 +40,8 @@ if (hero) {
     ctx.globalCompositeOperation = 'source-over';
     requestAnimationFrame(frame);
   };
-  const wake = () => { if (!calm && !running && active()) { running = true; requestAnimationFrame(frame); } };
+  // На телефоні іскор немає: canvas щокадру — найдорожче на сторінці
+  const wake = () => { if (!calm && !lite && !running && active()) { running = true; requestAnimationFrame(frame); } };
   const sync = () => hero.classList.toggle('is-paused', !active());
   if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { heroVisible = e.isIntersecting; sync(); wake(); }).observe(hero);
   document.addEventListener('visibilitychange', () => { sync(); wake(); });

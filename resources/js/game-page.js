@@ -9,6 +9,8 @@ const T = DATA.t;
 const LOCALE = DATA.locale === 'en' ? 'en-US' : 'uk-UA';
 
 const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+// Телефони й планшети: теми не запускають canvas і постійні цикли (легкий режим у game-*.css)
+const lite = matchMedia('(max-width: 768px), (hover: none) and (pointer: coarse)').matches;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const fmt = n => Math.round(n).toLocaleString(LOCALE);
@@ -195,4 +197,4 @@ let customToast = null;
 /** Свій вигляд сповіщення про голос: fn({ nick, server, url, theme }) */
 const setToastRenderer = fn => { customToast = fn; };
 
-export { $, $$, calm, esc, setToastRenderer, load };
+export { $, $$, calm, lite, esc, setToastRenderer, load };

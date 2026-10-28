@@ -3,7 +3,7 @@
  * дощ, сигнальна ракета й погода; ігровий час серверів іде з прискоренням; IP копіюється; голоси приходять «по рації».
  * Усе, що рухається в банері, зупиняється, коли банер поза екраном або вкладка прихована.
  */
-import { $, $$, calm, esc, setToastRenderer } from './game-page';
+import { $, $$, calm, lite, esc, setToastRenderer } from './game-page';
 
 const rnd = (a, b) => a + Math.random() * (b - a);
 const dataEl = document.getElementById('game-data');
@@ -86,6 +86,8 @@ if (hero) {
   // Запуск циклів, коли банер знову видно
   function wake() {
     if (calm) return;
+    // На телефоні ліхтарик стоїть на місці, дощу немає — цикли щокадру перемальовували б увесь банер
+    if (lite) { aim(.68, .58); return; }
     if (!wandering) { wandering = true; requestAnimationFrame(wander); }
     if (ctx && !raining) { raining = true; requestAnimationFrame(rain); }
   }

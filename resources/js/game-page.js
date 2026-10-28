@@ -20,7 +20,7 @@ const countUp = (el, to, ms) => {
   if (!el) return;
   if (calm) { el.textContent = fmt(to); el.dataset.now = to; return; }
   const from = Number(el.dataset.now || 0), t0 = performance.now();
-  const step = t => { const p = Math.min(1, (t - t0) / ms); el.textContent = fmt(from + (to - from) * (1 - Math.pow(1 - p, 4))); if (p < 1) requestAnimationFrame(step); };
+  const step = t => { const p = Math.max(0, Math.min(1, (t - t0) / ms)); el.textContent = fmt(from + (to - from) * (1 - Math.pow(1 - p, 4))); if (p < 1) requestAnimationFrame(step); };
   requestAnimationFrame(step); el.dataset.now = to;
 };
 const bump = el => { if (!el || calm) return; el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); };

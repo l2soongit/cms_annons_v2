@@ -3,10 +3,18 @@
     $screens = $server->media->where('type', 'screenshot');
     $tags = $server->fieldValues->map(fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value);
     $canManage = auth()->user()?->canManage($server);
+    // Картинка для соцмереж і schema.org: банер сервера, інакше логотип
+    $shareImage = \App\Support\HomePageData::url(($server->media->firstWhere('type', 'banner') ?? $logo)?->path);
 @endphp
 
 <x-layouts.app :title="__('ui.server_page.meta_title', ['server' => $server->name, 'game' => $server->game->name])"
-               :description="\Illuminate\Support\Str::limit(\App\Support\HtmlSanitizer::text($server->description), 155)">
+               :description="\Illuminate\Support\Str::limit(\App\Support\HtmlSanitizer::text($server->description), 155)"
+               :image="$shareImage">
+    <x-slot:head>
+        @foreach (\App\Support\StructuredData::server($server, $rating?->avg, (int) ($rating?->total ?? 0), $shareImage) as $ld)
+            <x-json-ld :data="$ld" />
+        @endforeach
+    </x-slot:head>
     <nav class="text-sm text-moss" aria-label="{{ __('ui.breadcrumbs') }}">
         <a href="{{ route('games.show', $server->game) }}" class="hover:text-bone">{{ $server->game->name }}</a>
         <span aria-hidden="true">/</span>

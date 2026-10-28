@@ -59,7 +59,7 @@ class GameThemePageTest extends TestCase
             ->assertSee('Фентезі MMORPG')
             ->assertSee('<span class="w gold" style="--i:1">II</span>', false)
             ->assertSee('Aden Test')
-            ->assertSee('?chronicle=interlude', false);
+            ->assertSee('/lineage2/interlude"', false);
     }
 
     public function test_filters_counts_and_partial_list(): void
@@ -67,7 +67,7 @@ class GameThemePageTest extends TestCase
         $this->makeServer('Interlude One', [], 'interlude');
         $this->makeServer('Classic One', [], 'classic');
 
-        $this->get('/lineage2?chronicle=interlude')
+        $this->get('/lineage2/interlude')
             ->assertOk()
             ->assertSee('Interlude One')
             ->assertDontSee('Classic One')

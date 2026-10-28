@@ -1,5 +1,6 @@
 @php
     use App\Support\CsMaps;
+    use App\Support\GameUrl;
     use App\Support\HomePageData;
 
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
@@ -7,9 +8,8 @@
     $words = preg_split('/(?<=-)|\s+/u', trim($game->hero_title ?: $game->name), -1, PREG_SPLIT_NO_EMPTY);
     $cover = HomePageData::url($game->cover);
     // Посилання з усіма поточними фільтрами, де змінено лише передане
-    $url = fn (array $changes) => route('games.show', array_filter([
-        'game' => $game->slug, ...$active, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null, ...$changes,
-    ], fn ($v) => $v !== null && $v !== ''));
+    // ЧПУ: фільтри з позначкою «У URL» — у шляху, решта — параметри
+    $url = fn (array $changes) => GameUrl::to($game, [...$active, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null, ...$changes]);
     $switch = $filters->first();
     $chipFields = $filters->slice(1);
     $perkLabels = __('ui.cs.perks');
@@ -77,11 +77,11 @@
       @endforeach
     </div>
     <div class="tools">
-      <form class="search" method="get" action="{{ route('games.show', $game) }}" role="search" id="search-form">
+      <form class="search" method="get" action="{{ GameUrl::to($game, array_intersect_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all())) }}" role="search" id="search-form">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
         <label class="sr" for="q">{{ __('ui.cs.search') }}</label>
         <input id="q" name="q" type="search" maxlength="64" value="{{ $search }}" placeholder="{{ __('ui.cs.search') }}">
-        @foreach ($active as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+        @foreach (array_diff_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all()) as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
         @if ($sort !== 'votes')<input type="hidden" name="sort" value="{{ $sort }}">@endif
         <button>{{ __('ui.search.submit') }}</button>
       </form>

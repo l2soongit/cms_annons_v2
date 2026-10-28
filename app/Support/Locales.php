@@ -46,6 +46,20 @@ final class Locales
         return (string) ($request->attributes->get(self::PATH_ATTRIBUTE) ?? $request->getPathInfo());
     }
 
+    /** Абсолютна адреса основною мовою → та сама адреса іншою мовою (для sitemap) */
+    public static function localize(string $url, string $locale): string
+    {
+        if ($locale === self::default()) {
+            return $url;
+        }
+
+        $parts = parse_url($url);
+        $origin = ($parts['scheme'] ?? 'https').'://'.($parts['host'] ?? '').(isset($parts['port']) ? ':'.$parts['port'] : '');
+        $path = rtrim($parts['path'] ?? '', '/');
+
+        return $origin.'/'.$locale.$path.(isset($parts['query']) ? '?'.$parts['query'] : '');
+    }
+
     /** Адреса поточної сторінки іншою мовою (для hreflang і перемикача), без параметрів запиту, крім page */
     public static function urlFor(string $locale, ?Request $request = null): string
     {

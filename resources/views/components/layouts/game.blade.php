@@ -5,20 +5,25 @@
     $logo = HomePageData::url(config('graj.home.logo_image'));
     $og = HomePageData::url($game->cover) ?? HomePageData::url(config('graj.home.og_image'));
     $cup = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#1c1003" aria-hidden="true"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg>';
-    $title ??= __('ui.game.meta_title', ['game' => $game->name]);
-    $description ??= $game->seo_description ?: $game->description ?: __('ui.meta.description');
+    // Сторінка з фільтрами з ЧПУ (/lineage2/interlude/x100) — свій заголовок і опис, без дублів між сторінками
+    $seoFilters = $seoFilters ?? '';
+    $title ??= $seoFilters !== ''
+        ? ($game->seo_title ? $game->seo_title.' — '.$seoFilters : __('ui.game.meta_title', ['game' => $game->name.' '.$seoFilters]))
+        : ($game->seo_title ?: __('ui.game.meta_title', ['game' => $game->name]));
+    $description ??= ($seoFilters !== '' ? $game->name.' '.$seoFilters.'. ' : '').($game->seo_description ?: $game->description ?: __('ui.meta.description'));
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>{{ $game->seo_title ?: $title }}</title>
+<title>{{ $title }}</title>
 <meta name="description" content="{{ $description }}">
 <link rel="canonical" href="{{ url()->current() }}">
 <x-locale-alternates />
+<x-json-ld :data="\App\Support\StructuredData::game($game, $seoFilters)" />
 <meta property="og:type" content="website">
-<meta property="og:title" content="{{ $game->seo_title ?: $title }}">
+<meta property="og:title" content="{{ $title }}">
 <meta property="og:description" content="{{ $description }}">
 <meta property="og:url" content="{{ url()->current() }}">
 @if ($og)

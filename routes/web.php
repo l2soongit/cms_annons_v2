@@ -14,6 +14,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SupportController;
@@ -82,6 +83,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     });
 });
 
+// SEO: карта сайту з мовними версіями й robots.txt (на тестових копіях — заборона індексації)
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
+
 // Статичні сторінки: правила, FAQ, контакти
 Route::get('/page/{page}', [PageController::class, 'show'])->name('pages.show');
 
@@ -101,6 +106,9 @@ Route::get('/billing/test/{transaction}', [BillingController::class, 'testPage']
 Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware('auth')->name('billing.test.pay');
 
 // Останнім, бо slug гри перехоплює будь-який сегмент першого рівня
-Route::get('/{game}', [GameController::class, 'show'])
-    ->where('game', '(?!admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|page|search|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor)[a-z0-9-]+')
+// ЧПУ фільтрів: /lineage2/interlude/x100 — сегменти після slug гри (поля з позначкою «У URL»)
+Route::get('/{game}/{filters?}', [GameController::class, 'show'])
+    // Зарезервовані перші сегменти інших розділів — цілим словом, щоб не відрізати ігри зі схожим початком (ad → adventure)
+    ->where('game', '(?!(?:admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|page|search|server|ad|sitemap|robots|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor|en)$)[a-z0-9-]+')
+    ->where('filters', '[a-z0-9-]+(?:/[a-z0-9-]+){0,3}')
     ->name('games.show');

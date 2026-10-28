@@ -1,4 +1,5 @@
 @php
+    use App\Support\GameUrl;
     use App\Support\HomePageData;
     use App\Support\McPixels;
 
@@ -12,9 +13,8 @@
     }
     $cover = HomePageData::url($game->cover);
     // Посилання з усіма поточними фільтрами, де змінено лише передане
-    $url = fn (array $changes) => route('games.show', array_filter([
-        'game' => $game->slug, ...$active, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null, ...$changes,
-    ], fn ($v) => $v !== null && $v !== ''));
+    // ЧПУ: фільтри з позначкою «У URL» — у шляху, решта — параметри
+    $url = fn (array $changes) => GameUrl::to($game, [...$active, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null, ...$changes]);
     $edition = $filters->firstWhere('key', 'edition') ?? $filters->first();
     $versions = $filters->firstWhere('key', 'version');
     $rowFields = $filters->reject(fn ($f) => $f->is($edition) || ($versions && $f->is($versions)));
@@ -119,10 +119,10 @@
         </div>
       @endforeach
       <h3>{{ __('ui.search.submit') }}</h3>
-      <form method="get" action="{{ route('games.show', $game) }}" role="search" id="search-form">
+      <form method="get" action="{{ GameUrl::to($game, array_intersect_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all())) }}" role="search" id="search-form">
         <label class="sr" for="q">{{ __('ui.mc.search_label') }}</label>
         <input id="q" name="q" type="search" maxlength="64" value="{{ $search }}" placeholder="{{ __('ui.mc.search') }}">
-        @foreach ($active as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+        @foreach (array_diff_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all()) as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
         @if ($sort !== 'votes')<input type="hidden" name="sort" value="{{ $sort }}">@endif
       </form>
       <div data-swap="reset">

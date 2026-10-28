@@ -73,7 +73,7 @@ class MinecraftPageTest extends TestCase
         $this->makeServer('Java Old', [], ['edition' => 'java', 'version' => '18']);
         $this->makeServer('Phone Land', [], ['edition' => 'bedrock', 'version' => '121']);
 
-        $this->get('/minecraft?edition=java&version=121')
+        $this->get('/minecraft/java?version=121')
             ->assertOk()
             ->assertSee('Java New')
             ->assertDontSee('Java Old')

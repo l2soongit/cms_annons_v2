@@ -57,8 +57,11 @@ const load = async (url, { push = true } = {}) => {
     $$('[data-swap]').forEach(el => { const next = $(`[data-swap="${el.dataset.swap}"]`, doc); if (next) el.replaceWith(next); });
     $$('#search-form input[type=hidden]').forEach(i => i.remove());
     $$('#search-form input[type=hidden]', doc).forEach(i => $('#search-form').append(i));
+    // Фільтри з ЧПУ — у шляху форми, тож адреса пошуку змінюється разом із фільтрами
+    const nextForm = $('#search-form', doc);
+    if (nextForm && $('#search-form')) $('#search-form').setAttribute('action', nextForm.getAttribute('action'));
     results.innerHTML = $('#results', doc)?.innerHTML ?? '';
-    if (push) history.pushState({}, '', url);
+    if (push) history.pushState({}, '', res.redirected ? res.url : url);
     flip(before);
   } catch (e) {
     if (e.name !== 'AbortError') location.href = url;

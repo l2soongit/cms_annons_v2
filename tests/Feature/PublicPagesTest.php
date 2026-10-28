@@ -65,7 +65,7 @@ class PublicPagesTest extends TestCase
         $this->makeServer(['name' => 'Classic One', 'slug' => 'classic-one'])
             ->fieldValues()->create(['game_field_id' => $chronicle->id, 'value' => 'classic']);
 
-        $this->get('/lineage2?chronicle=interlude')
+        $this->get('/lineage2/interlude')
             ->assertOk()
             ->assertSee('Interlude One')
             ->assertDontSee('Classic One');

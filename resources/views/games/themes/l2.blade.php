@@ -1,4 +1,5 @@
 @php
+    use App\Support\GameUrl;
     use App\Support\HomePageData;
 
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
@@ -6,10 +7,9 @@
     $cover = HomePageData::url($game->cover);
     $addUrl = route('cabinet.servers.create', ['game' => $game->slug]);
     // Посилання фільтра: значення ставиться або знімається, сторінка скидається
-    $filterUrl = fn (string $key, ?string $value) => route('games.show', array_filter([
-        'game' => $game->slug, ...$active, $key => $value, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null,
-    ]));
-    $sortUrl = fn (string $s) => route('games.show', array_filter(['game' => $game->slug, ...$active, 'sort' => $s !== 'votes' ? $s : null, 'q' => $search ?: null]));
+    // ЧПУ: фільтри з позначкою «У URL» — у шляху (/lineage2/interlude/x100), решта — параметри
+    $filterUrl = fn (string $key, ?string $value) => GameUrl::to($game, [...$active, $key => $value, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null]);
+    $sortUrl = fn (string $s) => GameUrl::to($game, [...$active, 'sort' => $s !== 'votes' ? $s : null, 'q' => $search ?: null]);
     $units = __('ui.game.units');
     $client = [
         'game' => $game->slug,
@@ -67,11 +67,11 @@
           </div></div>
         @endforeach
         <div class="ftools">
-          <form class="fsearch" method="get" action="{{ route('games.show', $game) }}" role="search" id="search-form">
+          <form class="fsearch" method="get" action="{{ GameUrl::to($game, array_intersect_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all())) }}" role="search" id="search-form">
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
             <label class="sr" for="q">{{ __('ui.game.search_label') }}</label>
             <input id="q" name="q" type="search" maxlength="64" value="{{ $search }}" placeholder="{{ __('ui.game.search_placeholder') }}">
-            @foreach ($active as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+            @foreach (array_diff_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all()) as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
             @if ($sort !== 'votes')<input type="hidden" name="sort" value="{{ $sort }}">@endif
             <button>{{ __('ui.search.submit') }}</button>
           </form>

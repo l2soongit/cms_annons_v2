@@ -6,6 +6,17 @@
     <title>{{ $title ?? __('ui.meta.title') }}</title>
     <meta name="description" content="{{ $description ?? __('ui.meta.description') }}">
     <link rel="canonical" href="{{ url()->current() }}">
+    @php($ogImage = $image ?? \App\Support\HomePageData::url(config('graj.home.og_image')))
+    <meta property="og:type" content="website">
+    <meta property="og:site_name" content="graj.club">
+    <meta property="og:title" content="{{ $title ?? __('ui.meta.title') }}">
+    <meta property="og:description" content="{{ $description ?? __('ui.meta.description') }}">
+    <meta property="og:url" content="{{ url()->current() }}">
+    @if ($ogImage)
+    <meta property="og:image" content="{{ $ogImage }}">
+    <meta name="twitter:card" content="summary_large_image">
+    @endif
+    {{ $head ?? '' }}
     <x-locale-alternates />
 
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -6,8 +6,10 @@ use App\Models\Game;
 use App\Models\MonthlyWinner;
 use App\Models\Server;
 use App\Models\Vote;
+use App\Support\GameUrl;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
@@ -27,11 +29,25 @@ class GameController extends Controller
 
     public const PER_PAGE = 25;
 
-    public function show(Request $request, Game $game): View
+    public function show(Request $request, Game $game, ?string $filters = null): View|RedirectResponse
     {
         abort_unless($game->is_active, 404);
 
         $game->load('fields');
+
+        // ЧПУ: /lineage2/interlude/x100 — фільтри з позначкою «У URL» у шляху; невідомий сегмент — 404
+        $pathActive = GameUrl::parse($game, $filters);
+        abort_if($pathActive === null, 404);
+
+        // Стара адреса з ?chronicle=… для такого поля — постійний редирект на ЧПУ (одна адреса на сторінку для пошуковиків)
+        $fromQuery = GameUrl::pathFields($game)->filter(fn ($f) => $request->filled($f->key))->mapWithKeys(fn ($f) => [$f->key => $request->string($f->key)->value()])->all();
+        // …і так само для неканонічного порядку сегментів (/lineage2/x100/interlude → /lineage2/interlude/x100)
+        $canonicalPath = GameUrl::pathFields($game)->filter(fn ($f) => isset($pathActive[$f->key]))->map(fn ($f) => $pathActive[$f->key])->implode('/');
+        if (($fromQuery || $canonicalPath !== trim((string) $filters, '/')) && $request->isMethod('GET') && ! $request->header('X-Partial')) {
+            return redirect()->to(GameUrl::to($game, [...$request->query(), ...$pathActive, ...$fromQuery]), 301);
+        }
+        view()->share('seoFilters', $this->filterLabels($game, $pathActive));
+
         $sort = in_array($request->query('sort'), self::SORTS, true) ? $request->query('sort') : 'votes';
         $search = trim($request->string('q')->limit(64, '')->value());
         $filters = $game->fields->where('is_filterable', true);
@@ -51,7 +67,7 @@ class GameController extends Controller
         $active = [];
         foreach ($filters as $field) {
             // «0» — повноцінне значення (поле «так / ні»: «Ні»), тому порівнюємо з порожнім рядком
-            if (($value = $request->string($field->key)->value()) !== '') {
+            if (($value = $pathActive[$field->key] ?? $request->string($field->key)->value()) !== '') {
                 $active[$field->key] = $value;
                 $query->whereHas('fieldValues', fn (Builder $q) => $q
                     ->where('game_field_id', $field->id)
@@ -117,6 +133,15 @@ class GameController extends Controller
             'perks' => $game->themeKey() === 'cs' ? $this->perkCounts($game) : [],
             'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
         ]);
+    }
+
+    /** Підписи фільтрів із шляху для заголовка й опису сторінки: «Interlude x100» */
+    private function filterLabels(Game $game, array $active): string
+    {
+        return GameUrl::pathFields($game)
+            ->filter(fn ($f) => isset($active[$f->key]))
+            ->map(fn ($f) => $f->option($active[$f->key])['label'] ?? $active[$f->key])
+            ->implode(' ');
     }
 
     private function applyPerk(Builder|HasMany $query, string $perk, Game $game): void

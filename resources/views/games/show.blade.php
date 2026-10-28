@@ -1,4 +1,5 @@
-<x-layouts.app :title="__('ui.game.meta_title', ['game' => $game->name])">
+<x-layouts.app :title="__('ui.game.meta_title', ['game' => trim($game->name.' '.($seoFilters ?? ''))])">
+    <x-slot:head><x-json-ld :data="\App\Support\StructuredData::game($game, $seoFilters ?? '')" /></x-slot:head>
     <x-ad-banner placement="game" :game="$game" gap="0 auto 32px" />
     <div class="flex flex-wrap items-end justify-between gap-6">
         <div>

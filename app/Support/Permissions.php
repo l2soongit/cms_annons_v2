@@ -25,6 +25,7 @@ final class Permissions
         'games.manage' => 'Ігри, поля й оформлення сторінок',
         'settings.manage' => 'Налаштування порталу й головної',
         'billing.manage' => 'Тарифи, промокоди, платежі й фінансовий звіт',
+        'tickets.manage' => 'Тікети підтримки: відповіді й закриття',
         'roles.manage' => 'Ролі та дозволи',
     ];
 
@@ -33,7 +34,7 @@ final class Permissions
 
     /** Дозволи ролей за замовчуванням (admin має всі через Gate::before) */
     private const DEFAULTS = [
-        'moderator' => ['admin.access', 'servers.moderate', 'reviews.moderate', 'reports.moderate', 'votes.moderate', 'users.ban', 'logs.view'],
+        'moderator' => ['admin.access', 'servers.moderate', 'reviews.moderate', 'reports.moderate', 'votes.moderate', 'users.ban', 'logs.view', 'tickets.manage'],
     ];
 
     /** Створити дозволи й ролі; наявним ролям дозволи за замовчуванням додаються лише при першому створенні */

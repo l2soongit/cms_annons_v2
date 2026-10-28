@@ -3,6 +3,7 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReportResource\Pages;
+use App\Models\Message;
 use App\Models\ModerationLog;
 use App\Models\Report;
 use App\Models\Review;
@@ -14,6 +15,7 @@ use Filament\Support\Icons\Heroicon;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Filters\SelectFilter;
 use Filament\Tables\Table;
+use Illuminate\Support\Str;
 use UnitEnum;
 
 class ReportResource extends Resource
@@ -50,6 +52,7 @@ class ReportResource extends Resource
                     ->formatStateUsing(fn (string $state, Report $r) => match (true) {
                         $r->reportable instanceof Server => 'Сервер: '.$r->reportable->name,
                         $r->reportable instanceof Review => 'Відгук на '.$r->reportable->server?->name,
+                        $r->reportable instanceof Message => 'Повідомлення від '.$r->reportable->user->name.': «'.Str::limit($r->reportable->body, 80).'»',
                         default => $state.' (видалено)',
                     })
                     ->url(fn (Report $r) => match (true) {
@@ -65,7 +68,7 @@ class ReportResource extends Resource
                 TextColumn::make('created_at')->label('Дата')->since(),
             ])
             ->filters([
-                SelectFilter::make('status')->options(['open' => 'Відкриті', 'resolved' => 'Вирішені', 'dismissed' => 'Відхилені'])->default('open'),
+                SelectFilter::make('status')->options(['open' => 'Відкриті', 'resolved' => 'Вирішені', 'dismissed' => 'Відхилені']),
             ])
             ->recordActions([
                 Action::make('resolve')->label('Вирішено')->color('success')->icon(Heroicon::OutlinedCheck)

@@ -56,6 +56,13 @@ return [
         'gateways' => ['liqpay', 'stripe'],
     ],
 
+    'messages' => [
+        // Антиспам: скільки нових діалогів користувач може почати за добу
+        'daily_new_conversations' => 10,
+        // Як часто сторінка діалогу перевіряє нові повідомлення, с (на хостингу немає WebSocket)
+        'poll_seconds' => 10,
+    ],
+
     'notifications' => [
         // Подія => канали за замовчуванням; користувач змінює їх у кабінеті
         'events' => [
@@ -63,6 +70,7 @@ return [
             'server_offline' => ['mail'],
             'new_review' => ['mail'],
             'billing' => ['mail'],
+            'messages' => ['mail'],
         ],
         // Скільки хвилин сервер має бути офлайн, щоб власник отримав сповіщення
         'offline_after_minutes' => 15,

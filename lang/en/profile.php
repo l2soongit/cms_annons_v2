@@ -60,6 +60,7 @@ return [
             'server_offline' => 'My server is offline',
             'new_review' => 'New review of my server',
             'billing' => 'Balance and paid services (expiry, renewal)',
+            'messages' => 'New messages and support replies',
         ],
         'site_always' => 'Notifications are always kept on the site.',
         'saved' => 'Notification settings saved.',

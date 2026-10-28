@@ -58,7 +58,7 @@ class VoteResource extends Resource
                 TextColumn::make('created_at')->label('Час')->dateTime('d.m H:i')->sortable(),
             ])
             ->filters([
-                SelectFilter::make('status')->options(['suspicious' => 'Підозрілі', 'counted' => 'Зараховані', 'annulled' => 'Анульовані'])->default('suspicious'),
+                SelectFilter::make('status')->options(['suspicious' => 'Підозрілі', 'counted' => 'Зараховані', 'annulled' => 'Анульовані']),
                 SelectFilter::make('server')->relationship('server', 'name')->searchable()->label('Сервер'),
             ])
             ->toolbarActions([

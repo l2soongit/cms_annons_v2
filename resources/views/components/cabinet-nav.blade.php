@@ -1,6 +1,8 @@
 @php
     $items = [
         'cabinet' => __('cabinet.my_servers'),
+        'cabinet.messages' => __('messages.nav').(($unread = app(\App\Messaging\Messenger::class)->unreadCount(auth()->user())) ? " ({$unread})" : ''),
+        'cabinet.support' => __('messages.support.nav'),
         'cabinet.ads' => __('billing.ads.nav'),
         'cabinet.balance' => __('billing.nav').' · '.\App\Billing\Money::format(auth()->user()->balance),
         'cabinet.profile' => __('profile.nav.profile'),

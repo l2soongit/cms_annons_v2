@@ -107,7 +107,7 @@ class ServerResource extends Resource
                 SelectFilter::make('status')->label('Статус')
                     ->options(collect(ServerStatus::cases())->mapWithKeys(fn ($s) => [$s->value => $s->label()])),
                 SelectFilter::make('game')->relationship('game', 'slug')->label('Гра'),
-                Filter::make('queue')->label('Черга модерації')->default()
+                Filter::make('queue')->label('Черга модерації')
                     ->query(fn (Builder $query) => $query->where(fn ($q) => $q->where('status', ServerStatus::Pending)->orWhereNotNull('pending_changes'))),
                 Filter::make('suspicious')->label('Підозрілий онлайн')->query(fn (Builder $query) => $query->where('suspicious_online', true)),
             ])

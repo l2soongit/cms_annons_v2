@@ -54,7 +54,7 @@ class ReviewResource extends Resource
                 TextColumn::make('created_at')->label('Дата')->since(),
             ])
             ->filters([
-                SelectFilter::make('status')->options(['pending' => 'На перевірці', 'published' => 'Опубліковано', 'hidden' => 'Приховано'])->default('pending'),
+                SelectFilter::make('status')->options(['pending' => 'На перевірці', 'published' => 'Опубліковано', 'hidden' => 'Приховано']),
             ])
             ->recordActions([
                 Action::make('publish')->label('Опублікувати')->color('success')->icon(Heroicon::OutlinedCheck)

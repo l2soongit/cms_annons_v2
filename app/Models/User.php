@@ -73,6 +73,17 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
         return $this->hasMany(Server::class);
     }
 
+    /** Чорний список: від цих користувачів повідомлення не приймаються @return BelongsToMany<User, $this> */
+    public function blockedUsers(): BelongsToMany
+    {
+        return $this->belongsToMany(User::class, 'user_blocks', 'user_id', 'blocked_id')->withPivot('created_at');
+    }
+
+    public function hasBlocked(User $user): bool
+    {
+        return $this->blockedUsers()->whereKey($user->id)->exists();
+    }
+
     /** @return HasMany<Order, $this> */
     public function orders(): HasMany
     {

@@ -190,6 +190,23 @@
                 </div>
             @endif
 
+            {{-- Приватне повідомлення власнику (ТЗ 3.8) --}}
+            @auth
+                @if ($server->user_id !== auth()->id())
+                    <details class="text-sm" @if ($errors->message->any()) open @endif>
+                        <summary class="cursor-pointer font-medium text-amber hover:underline">{{ __('messages.write_owner') }}</summary>
+                        <p class="mt-2 text-xs text-moss">{{ __('messages.write_lead') }}</p>
+                        <form method="POST" action="{{ route('servers.message', $server) }}" class="mt-3 space-y-3">
+                            @csrf
+                            <textarea name="body" rows="3" maxlength="2000" required aria-label="{{ __('messages.placeholder') }}" placeholder="{{ __('messages.placeholder') }}"
+                                      class="w-full rounded-md border border-seam bg-slab px-3 py-2 text-bone">{{ old('body') }}</textarea>
+                            @error('body', 'message') <p class="text-sm text-fade" role="alert">{{ $message }}</p> @enderror
+                            <x-button variant="secondary">{{ __('messages.send') }}</x-button>
+                        </form>
+                    </details>
+                @endif
+            @endauth
+
             @auth
                 <details class="text-sm">
                     <summary class="cursor-pointer text-moss hover:text-bone">{{ __('ui.server_page.report') }}</summary>

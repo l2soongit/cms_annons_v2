@@ -6,12 +6,14 @@ use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
+use App\Http\Controllers\MessagesController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\PromotionController;
 use App\Http\Controllers\ReviewController;
 use App\Http\Controllers\SearchController;
 use App\Http\Controllers\ServerController;
 use App\Http\Controllers\SocialAuthController;
+use App\Http\Controllers\SupportController;
 use App\Http\Controllers\VoteController;
 use App\Livewire\Cabinet\ServerForm;
 use Illuminate\Support\Facades\Route;
@@ -32,6 +34,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::post('/reviews/{review}/reply', [ReviewController::class, 'reply'])->name('reviews.reply');
     Route::post('/reviews/{review}/report', [ReviewController::class, 'report'])->middleware('throttle:10,1')->name('reviews.report');
     Route::post('/server/{server}/report', [ServerController::class, 'report'])->middleware('throttle:10,1')->name('servers.report');
+    Route::post('/server/{server}/message', [MessagesController::class, 'start'])->middleware('throttle:10,1')->name('servers.message');
 
     Route::prefix('cabinet')->name('cabinet')->group(function () {
         Route::get('/', [CabinetController::class, 'index']);
@@ -52,6 +55,12 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/auto-renew', [PromotionController::class, 'autoRenew'])->name('.orders.auto-renew');
         Route::get('/orders/{order}/receipt', [BillingController::class, 'receipt'])->name('.orders.receipt');
         Route::get('/balance', [BillingController::class, 'index'])->name('.balance');
+        Route::get('/messages', [MessagesController::class, 'index'])->name('.messages');
+        Route::get('/messages/{conversation}', [MessagesController::class, 'show'])->name('.messages.show');
+        Route::get('/messages/attachment/{message}', [MessagesController::class, 'attachment'])->name('.messages.attachment');
+        Route::get('/support', [SupportController::class, 'index'])->name('.support');
+        Route::post('/support', [SupportController::class, 'store'])->middleware('throttle:5,1')->name('.support.store');
+        Route::get('/support/{ticket}', [SupportController::class, 'show'])->name('.support.show');
         Route::get('/ads', [AdsController::class, 'index'])->name('.ads');
         Route::post('/ads', [AdsController::class, 'store'])->middleware('throttle:10,1')->name('.ads.store');
         Route::post('/balance', [BillingController::class, 'deposit'])->middleware('throttle:10,1')->name('.balance.deposit');

@@ -15,24 +15,26 @@ final class ImageOptimizer
     public const MAX_WIDTH = [
         'logo' => 512, 'banner' => 1200, 'screenshot' => 1920,
         // Зображення головної з адмінки
+        'message' => 1600,
         'hero' => 2400, 'cover' => 1600, 'icon' => 256, 'og' => 1200, 'site_logo' => 600,
     ];
 
     /** Більші фото GD розпаковує в сотні МБ пам’яті — такі зберігаємо без обробки */
     private const MAX_PIXELS = 40_000_000;
 
-    public static function store(UploadedFile $file, string $directory, string $type): string
+    /** @param  string  $disk  public — для сайту; local — приватні файли (вкладення повідомлень) */
+    public static function store(UploadedFile $file, string $directory, string $type, string $disk = 'public'): string
     {
         $maxWidth = self::MAX_WIDTH[$type] ?? 1920;
         [$w, $h] = @getimagesize($file->getRealPath()) ?: [0, 0];
 
         if (! function_exists('imagewebp') || self::isAnimatedGif($file) || $w * $h > self::MAX_PIXELS) {
-            return $file->store($directory, 'public');
+            return $file->store($directory, $disk);
         }
 
         $image = @imagecreatefromstring((string) file_get_contents($file->getRealPath()));
         if (! $image) {
-            return $file->store($directory, 'public');
+            return $file->store($directory, $disk);
         }
 
         $width = imagesx($image);
@@ -54,7 +56,7 @@ final class ImageOptimizer
         imagedestroy($image);
 
         $path = trim($directory, '/').'/'.Str::random(32).'.webp';
-        Storage::disk('public')->put($path, $data);
+        Storage::disk($disk)->put($path, $data);
 
         return $path;
     }

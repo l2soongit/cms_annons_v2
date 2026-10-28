@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Billing\Billing;
+use App\Cabinet\ServerOverview;
+use App\Enums\ServerStatus;
 use App\Jobs\DeliverVoteCallback;
 use App\Models\Server;
 use App\Models\ServerInvitation;
@@ -30,7 +32,16 @@ class CabinetController extends Controller
             ->latest()
             ->get();
 
-        return view('cabinet.index', compact('servers'));
+        // Огляд — для сервера з ?server= (лише зі своїх), інакше першого опублікованого
+        $current = $servers->firstWhere('id', (int) $request->query('server'))
+            ?? $servers->firstWhere('status', ServerStatus::Published)
+            ?? $servers->first();
+
+        return view('cabinet.index', [
+            'servers' => $servers,
+            'current' => $current,
+            'overview' => $current ? (new ServerOverview($current))->toArray() : null,
+        ]);
     }
 
     public function show(Request $request, Server $server, OwnershipVerifier $verifier, Billing $billing): View

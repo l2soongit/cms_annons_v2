@@ -16,7 +16,7 @@ jobs:
         with:
           php-version: '8.3'
           extensions: mbstring, intl, pdo_sqlite, gd, zip
-          coverage: none
+          coverage: pcov
 
       - uses: actions/setup-node@v4
         with:
@@ -42,5 +42,9 @@ jobs:
       - name: Static analysis
         run: vendor/bin/phpstan analyse --no-progress --memory-limit=1G
 
-      - name: Tests
-        run: php artisan test
+      - name: Tests with coverage
+        run: php artisan test --coverage-clover=clover.xml
+
+      # Голосування і білінг — гроші й рейтинг, тому покриття не нижче порогу
+      - name: Coverage gate (Voting, Billing)
+        run: php tests/coverage-gate.php clover.xml app/Voting=80 app/Billing=80

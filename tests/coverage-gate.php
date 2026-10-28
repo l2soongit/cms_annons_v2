@@ -33,7 +33,20 @@ foreach ($gates as $gate) {
     $percent = $statements ? round($covered / $statements * 100, 1) : 0.0;
     $ok = $statements > 0 && $percent >= (float) $min;
     $failed = $failed || ! $ok;
-    printf("%s %-12s %5.1f%% (%d/%d, min %s%%)\n", $ok ? 'OK  ' : 'FAIL', $dir, $percent, $covered, $statements, $min);
+    $line = sprintf('%s %.1f%% (%d/%d, min %s%%)', $dir, $percent, $covered, $statements, $min);
+    // У GitHub Actions — анотація на сторінці запуску, інакше звичайний рядок
+    echo getenv('GITHUB_ACTIONS') ? ($ok ? '::notice title=Coverage::' : '::error title=Coverage::').$line."\n" : ($ok ? 'OK   ' : 'FAIL ').$line."\n";
+
+    // Найменш покриті файли — підказка, що дописати
+    if (! $ok) {
+        foreach ($xml->xpath('//file') as $file) {
+            $path = str_replace($root, '', str_replace('\\', '/', (string) $file['name']));
+            $total = (int) $file->metrics['statements'];
+            if (str_starts_with($path, rtrim($dir, '/').'/') && $total > 0) {
+                printf("%s  %s %.0f%%\n", getenv('GITHUB_ACTIONS') ? '::warning title=Coverage::' : '', $path, $file->metrics['coveredstatements'] / $total * 100);
+            }
+        }
+    }
 }
 
 exit($failed ? 1 : 0);

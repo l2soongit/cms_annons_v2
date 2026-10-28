@@ -74,7 +74,9 @@ class BannerTest extends TestCase
         Storage::disk('public')->assertExists($banner->image);
 
         // Показ на публічних сторінках рахується, клік веде на сайт сервера
-        $this->get('/')->assertOk()->assertSee('Найкращий сервер')->assertSee('rel="sponsored noopener"', false);
+        $this->get('/')->assertOk()->assertSee('Найкращий сервер')->assertSee('rel="sponsored noopener"', false)
+            // Класи з EasyList (##.ad-slot, ##.ad-header) — блокувальник ховає банер одразу після завантаження
+            ->assertSee('gj-place-header', false)->assertDontSee('ad-slot', false)->assertDontSee('ad-header', false);
         $this->get('/lineage2')->assertOk()->assertSee(route('ads.click', $banner));
         $this->get(route('ads.click', $banner))->assertRedirect($server->website);
         $this->assertSame([2, 1], [$banner->fresh()->impressions, $banner->fresh()->clicks]);

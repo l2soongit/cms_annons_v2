@@ -8,7 +8,8 @@
     [, $w, $h] = Banner::PLACEMENTS[$placement] ?? [null, 1200, 150];
 @endphp
 @if ($banner)
-    <aside {{ $attributes->merge(['class' => 'ad-slot ad-'.$placement]) }} aria-label="{{ __('billing.ads.sponsored') }}"
+    {{-- Класи без «ad-»: блокувальники (EasyList: ##.ad-slot, ##.ad-header) ховали банер одразу після завантаження --}}
+    <aside {{ $attributes->merge(['class' => 'gj-place gj-place-'.$placement]) }} aria-label="{{ __('billing.ads.sponsored') }}"
            style="position:relative;max-width:{{ $max ?? $w }}px;width:calc(100% - {{ $inset * 2 }}px);margin:{{ $gap ?? '0 auto' }};line-height:0">
         <a href="{{ route('ads.click', $banner) }}" rel="sponsored noopener" target="_blank" style="display:block;border-radius:8px;overflow:hidden">
             <img src="{{ \App\Support\HomePageData::url($banner->image) }}" alt="{{ $banner->alt }}" width="{{ $w }}" height="{{ $h }}"

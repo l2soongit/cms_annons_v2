@@ -4,7 +4,20 @@
 
     // Один банер на місце: оплачений на сьогодні; показ рахується під час виводу
     $banner = Banner::live($placement, $game?->id)->latest('starts_at')->first();
-    $banner?->increment('impressions');
+
+    // Один сервер — один банер на сторінці. Шапка головніша (вона на кожній сторінці), далі — у порядку виводу:
+    // вміст сторінки рендериться раніше за макет, тому шапку перевіряємо запитом, а решту — за вже показаними
+    $shown = request()->attributes->get('banner_servers', []);
+    if ($banner && $placement !== 'header') {
+        $shown[] = Banner::live('header')->latest('starts_at')->value('server_id');
+    }
+    if ($banner?->server_id && in_array($banner->server_id, $shown, true)) {
+        $banner = null;
+    }
+    if ($banner) {
+        request()->attributes->set('banner_servers', [...request()->attributes->get('banner_servers', []), $banner->server_id]);
+        $banner->increment('impressions');
+    }
     [, $w, $h] = Banner::PLACEMENTS[$placement] ?? [null, 1200, 150];
 @endphp
 @if ($banner)

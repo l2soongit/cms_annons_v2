@@ -45,4 +45,4 @@ vendor/bin/pint
 
 ## Розгортання
 
-Див. [DEPLOY.md](DEPLOY.md). Продакшн — віртуальний хостинг: без Redis і постійних процесів, черги через cron.
+Див. [DEPLOY.md](DEPLOY.md). Продакшн — віртуальний хостинг: без Redis і постійних процесів, черги через cron. Перед запуском — [RELEASE.md](RELEASE.md) і `php artisan release:check`.

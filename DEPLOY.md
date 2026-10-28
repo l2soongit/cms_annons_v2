@@ -23,11 +23,13 @@
    php artisan db:seed --force
    php artisan storage:link
    php artisan optimize
+   php artisan user:make-admin you@graj.club
    ```
 6. Додайте cron-задачу:
    ```
    * * * * * cd /шлях/до/проєкту && php artisan schedule:run >> /dev/null 2>&1
    ```
+7. Перевірте готовність: `php artisan release:check` (деталі й чекліст запуску — у [RELEASE.md](RELEASE.md)).
 
 ## Зовнішні сервіси (необов'язкові)
 
@@ -59,6 +61,10 @@ GitHub → Actions → «Deploy to hosting» → Run workflow. Потім чер
 php artisan migrate --force
 php artisan optimize
 ```
+
+## Бекапи
+
+Щоночі о 03:30 `db:backup` робить дамп бази в `storage/app/private/backups` (14 днів) і копіює його по SFTP, якщо задано `BACKUP_SFTP_*`. Відновлення — у [RELEASE.md](RELEASE.md#відновлення-з-бекапу).
 
 ## Чому так
 

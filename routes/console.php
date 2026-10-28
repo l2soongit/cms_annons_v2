@@ -4,6 +4,7 @@ use App\Billing\Billing;
 use App\Rating\RatingCalculator;
 use App\Servers\ServerModeration;
 use Illuminate\Support\Facades\Artisan;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
 
 /*
@@ -28,6 +29,9 @@ Schedule::command('billing:expire')->everyFiveMinutes()->withoutOverlapping();
 Schedule::command('billing:remind')->dailyAt('10:00');
 Schedule::command('queue:prune-failed --hours=168')->daily();
 Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping(60);
+
+// «Пульс» планувальника: release:check перевіряє, що cron справді запускає schedule:run
+Schedule::call(fn () => Cache::forever('schedule:heartbeat', now()->getTimestamp()))->everyMinute()->name('schedule-heartbeat');
 
 Artisan::command('rating:recalculate', function (RatingCalculator $rating) {
     $rating->recalculate();

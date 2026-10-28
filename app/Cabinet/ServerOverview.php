@@ -103,7 +103,7 @@ final class ServerOverview
     }
 
     /**
-     * @param  Collection<int, array<string, mixed>>  $days
+     * @param  Collection<int, array{date: Carbon, votes: int, online: int, uptime: ?float}>  $days
      * @return array<string, mixed>
      */
     private function kpi(Collection $days): array

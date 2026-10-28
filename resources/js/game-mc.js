@@ -79,5 +79,5 @@ if (chat) setToastRenderer(v => {
   setTimeout(() => { p.classList.add('out'); setTimeout(() => p.remove(), 600); }, 7000);
 });
 
-// Рядки з'являються покроково при першому показі
-if (!calm) $$('#list .entry').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateX(-12px)' }, { opacity: 1, transform: 'none' }], { duration: 240, delay: 300 + i * 40, easing: 'steps(4)', fill: 'backwards' }));
+// Рядки з'являються каскадом при першому показі, як на сторінці Rust
+if (!calm) $$('#list .entry').forEach((el, i) => el.animate([{ opacity: 0, transform: 'translateX(-12px)' }, { opacity: 1, transform: 'none' }], { duration: 300, delay: 200 + Math.min(i, 12) * 35, easing: 'cubic-bezier(.2,.8,.2,1)', fill: 'backwards' }));

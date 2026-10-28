@@ -59,7 +59,9 @@ class MinecraftPageTest extends TestCase
             ->assertOk()
             ->assertSee('game-mc', false)
             ->assertSee('Press+Start+2P', false)
-            ->assertSee('<span class="w" style="--i:0">Mine</span><span class="w" style="--i:1">craft</span>', false)
+            // Назва — два блоки («Mine» / «craft»), літери падають по одній
+            ->assertSee('<span class="w" aria-hidden="true"><span class="l" style="--i:0">M</span><span class="l" style="--i:1">i</span><span class="l" style="--i:2">n</span><span class="l" style="--i:3">e</span></span><span class="w" aria-hidden="true"><span class="l" style="--i:4">c</span>', false)
+            ->assertSee('aria-label="Minecraft"', false)
             ->assertSee('<span style="color:#55ff55">Карпати </span><span style="color:#55ff55;font-weight:700">&lt;SMP&gt;</span><br><span style="color:#aaaaaa">Виживання</span>', false)
             ->assertSee('data-ip="karpaty-smp.example.net:25565"', false)
             ->assertSee('Java+Bedrock')

@@ -83,8 +83,10 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .mhero .content { position: absolute; left: 32px; top: 32px; max-width: 560px; }
 .mhero .tagpx { display: inline-block; padding: 6px 10px; font: 8px var(--pixel); color: #fff; background: #0008; border: 2px solid #000; }
 .mhero h1 { margin-top: 16px; font: 40px/1.15 var(--pixel); color: #e8e8e8; text-shadow: 4px 4px 0 #3f3f3f, 0 0 0 #000; -webkit-text-stroke: 1px #2b2b2b; }
-.mhero h1 .w { display: inline-block; animation: drop .6s cubic-bezier(.3,1.4,.5,1) both; animation-delay: calc(var(--i) * 70ms + 150ms); }
-@keyframes drop { from { transform: translateY(-60px); opacity: 0; } }
+/* Поява, як на сторінці Rust: літери падають по одній з легким поворотом */
+.mhero h1 .w { display: inline-block; white-space: nowrap; }
+.mhero h1 .l { display: inline-block; animation: drop .7s cubic-bezier(.3,1.4,.5,1) both; animation-delay: calc(var(--i) * 70ms + 100ms); }
+@keyframes drop { from { transform: translateY(-40px) rotate(-6deg); opacity: 0; } }
 .splash { position: absolute; left: 380px; top: 100px; font: 12px var(--pixel); color: #ffff55; text-shadow: 2px 2px 0 #3f3f00; transform: rotate(-16deg); animation: splash .5s ease-in-out infinite alternate; white-space: nowrap; }
 @keyframes splash { to { transform: rotate(-16deg) scale(1.08); } }
 .mhero .lead { margin-top: 18px; color: #fff; font-weight: 700; text-shadow: 0 2px 6px #0009; max-width: 44ch; }
@@ -192,7 +194,7 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 @keyframes chat-in { from { opacity: 0; } }
 @keyframes chat-out { to { opacity: 0; } }
 
-[data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity .5s steps(5), transform .5s steps(5); }
+[data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); }
 [data-reveal].in { opacity: 1; transform: none; }
 footer { margin-top: 80px; border-top: 2px solid #000; box-shadow: inset 0 2px 0 var(--line); padding: 28px 0; color: var(--faint); font-size: 13px; }
 footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
@@ -280,7 +282,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   .hotbar b { font-size: 12px; }
 }
 @media (prefers-reduced-motion: reduce) {
-  .mhero h1 .w { opacity: 1 !important; transform: none !important; }
+  .mhero h1 .l { opacity: 1 !important; transform: none !important; }
 }
 
 /* Платне виділення (ТЗ 3.7): смарагдова рамка, як у вибраного предмета */

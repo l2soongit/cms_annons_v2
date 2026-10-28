@@ -4,7 +4,7 @@
     use App\Support\McPixels;
 
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
-    // «Minecraft» → «MINE» і «CRAFT»: два блоки падають по черзі, як у демо; кілька слів — кожне окремо
+    // «Minecraft» → «MINE» і «CRAFT» (на телефоні — два рядки); літери падають по одній, як на сторінці Rust
     $title = trim($game->hero_title ?: $game->name);
     $words = preg_split('/\s+/u', $title, -1, PREG_SPLIT_NO_EMPTY);
     if (count($words) === 1 && mb_strlen($title) >= 6) {
@@ -49,7 +49,8 @@
     <div class="cube-wrap" aria-hidden="true"><div class="cube"><i></i><i></i><i></i><i></i><i></i><i></i></div></div>
     <div class="content">
       @if ($game->eyebrow)<span class="tagpx">{{ $game->eyebrow }}</span>@endif
-      <h1 id="game-h">@foreach ($words as $i => $word)<span class="w" style="--i:{{ $i }}">{{ $word }}</span>@endforeach</h1>
+      @php $n = 0; @endphp
+      <h1 id="game-h" aria-label="{{ $title }}">@foreach ($words as $word)<span class="w" aria-hidden="true">@foreach (mb_str_split($word) as $letter)<span class="l" style="--i:{{ $n++ }}">{{ $letter }}</span>@endforeach</span>@endforeach</h1>
       @if ($game->description)<p class="lead">{{ $game->description }}</p>@endif
     </div>
     @if ($splash)<span class="splash" id="splash" aria-hidden="true">{{ $splash[0] }}</span>@endif

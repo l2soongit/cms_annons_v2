@@ -39,6 +39,7 @@ class Server extends Model
             'uptime' => 'decimal:2',
             'verified_at' => 'datetime',
             'checked_at' => 'datetime',
+            'time_accel' => 'float',
             'opens_at' => 'date',
         ];
     }

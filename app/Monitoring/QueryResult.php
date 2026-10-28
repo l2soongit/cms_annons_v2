@@ -15,6 +15,8 @@ final class QueryResult
         public readonly ?bool $vac = null,
         // Minecraft: опис сервера з кодами кольорів §
         public readonly ?string $motd = null,
+        // Steam A2S: ключові слова сервера (DayZ передає в них чергу, ігровий час і його прискорення)
+        public readonly ?string $keywords = null,
     ) {}
 
     public static function offline(): self

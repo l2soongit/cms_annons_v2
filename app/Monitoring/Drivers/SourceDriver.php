@@ -54,7 +54,36 @@ class SourceDriver implements ServerQueryDriver
         // players, max players, bots, server type, environment, visibility, VAC
         $vac = isset($data[$offset + 6]) ? ord($data[$offset + 6]) === 1 : null;
 
-        return new QueryResult(true, ord($data[$offset] ?? "\0"), ord($data[$offset + 1] ?? "\0"), $name, $ping, $map ?: null, $vac);
+        return new QueryResult(true, ord($data[$offset] ?? "\0"), ord($data[$offset + 1] ?? "\0"), $name, $ping, $map ?: null, $vac,
+            keywords: self::keywords($data, $offset + 7));
+    }
+
+    /**
+     * Ключові слова з розширеного блоку відповіді (Extra Data Flag): після версії йде байт прапорців,
+     * далі — порт, SteamID, SourceTV, і лише тоді рядок ключових слів (прапорець 0x20).
+     */
+    private static function keywords(string $data, int $offset): ?string
+    {
+        self::readString($data, $offset); // version
+        if (! isset($data[$offset])) {
+            return null;
+        }
+        $edf = ord($data[$offset++]);
+        if ($edf & 0x80) {
+            $offset += 2; // game port
+        }
+        if ($edf & 0x10) {
+            $offset += 8; // SteamID
+        }
+        if ($edf & 0x40) {
+            $offset += 2; // SourceTV port
+            self::readString($data, $offset); // SourceTV name
+        }
+        if (! ($edf & 0x20) || ! isset($data[$offset])) {
+            return null;
+        }
+
+        return self::readString($data, $offset) ?: null;
     }
 
     private function parseGoldSource(string $data, int $ping): QueryResult

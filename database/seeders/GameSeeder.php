@@ -99,6 +99,8 @@ class GameSeeder extends Seeder
                 'fields' => [
                     $this->select('map', ['uk' => 'Мапа', 'en' => 'Map'], ['Chernarus', 'Livonia', 'Sakhal', 'Deer Isle']),
                     $this->select('style', ['uk' => 'Стиль', 'en' => 'Style'], ['PvE', 'PvP', 'RP', 'Vanilla', 'Modded']),
+                    // Необов’язкове: додане пізніше, власники вже доданих серверів не мусять його заповнювати
+                    ['is_required' => false] + $this->select('perspective', ['uk' => 'Перспектива', 'en' => 'Perspective'], ['1PP', '3PP']),
                     $this->boolean('mods', ['uk' => 'Моди', 'en' => 'Mods']),
                 ],
             ],

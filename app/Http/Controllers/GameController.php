@@ -18,7 +18,7 @@ use InvalidArgumentException;
 
 class GameController extends Controller
 {
-    public const SORTS = ['votes', 'online', 'new', 'opening', 'ping'];
+    public const SORTS = ['votes', 'online', 'new', 'opening', 'ping', 'uptime'];
 
     /** Швидкі фільтри (меню закупівлі на сторінці CS): ?vac=1&lowping=1 */
     public const PERKS = ['notempty', 'free', 'tick128', 'vac', 'lowping', 'big'];
@@ -61,6 +61,8 @@ class GameController extends Controller
             'ping' => $query->orderByDesc('is_online')->orderByRaw('ping_ms is null')->orderBy('ping_ms'),
             'new' => $query->latest(),
             'opening' => $query->whereNotNull('opens_at')->orderByDesc('opens_at'),
+            // Стан сервера (DayZ): найстабільніші — вище
+            'uptime' => $query->orderByDesc('uptime')->orderByDesc('score'),
             default => $query->orderByDesc('score')->orderByDesc('votes_month'),
         };
 
@@ -148,7 +150,8 @@ class GameController extends Controller
     {
         match ($perk) {
             'notempty' => $query->where('is_online', true)->where('players', '>', 0),
-            'free' => $query->where('is_online', true)->whereColumn('players', '<', 'max_players'),
+            // Є вільні місця й немає черги входу (DayZ повідомляє чергу через A2S)
+            'free' => $query->where('is_online', true)->whereColumn('players', '<', 'max_players')->where(fn ($q) => $q->whereNull('queue')->orWhere('queue', 0)),
             'tick128' => $query->whereHas('fieldValues', fn (Builder $q) => $q
                 ->where('game_field_id', $game->fields->firstWhere('key', 'tickrate')?->id)
                 ->where('value', '128')),

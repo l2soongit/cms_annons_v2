@@ -41,7 +41,13 @@ class ServerMonitor
             'checked_at' => $now,
         ]);
 
+        // Черга й ігровий час (DayZ) — лише поки сервер відповідає; офлайн їх немає
+        $world = SteamKeywords::parse($result->online ? $result->keywords : null);
+
         $server->forceFill([
+            'queue' => $world['queue'],
+            'game_time' => $world['time'],
+            'time_accel' => $world['accel'],
             'is_online' => $result->online,
             'players' => $result->online ? $result->players : 0,
             'max_players' => $result->maxPlayers ?: ($server->max_players ?? 0),

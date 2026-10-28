@@ -33,7 +33,13 @@ class MessagesController extends Controller
         $conversation->load(['participants', 'server', 'ticket']);
         abort_unless($conversation->participants->contains($request->user()) && ! $conversation->ticket, 404);
 
-        return view('cabinet.messages.show', ['conversation' => $conversation, 'other' => $conversation->other($request->user())]);
+        return view('cabinet.messages.show', [
+            'conversation' => $conversation,
+            'other' => $conversation->other($request->user()),
+            'user' => $request->user(),
+            // Список діалогів зліва від чату, як у демо кабінету
+            'conversations' => Conversation::directFor($request->user())->with(['participants', 'server', 'messages' => fn ($q) => $q->reorder('id', 'desc')->limit(1)])->limit(30)->get(),
+        ]);
     }
 
     public function start(Request $request, Server $server, Messenger $messenger): RedirectResponse

@@ -3,6 +3,10 @@
 return [
     'nav' => 'Messages',
     'title' => 'Messages',
+    'lead' => 'Conversations with players and other server owners',
+    'pick' => 'Pick a conversation on the left',
+    'unread' => 'Unread',
+    'attach_hint' => 'PNG, JPG or WebP up to 5 MB',
     'empty' => 'No messages yet. You can write to an owner from the server page.',
     'about' => 'about :server',
     'you' => 'You',
@@ -33,6 +37,7 @@ return [
         'open' => 'Open conversation',
     ],
     'support' => [
+        'new_short' => 'New',
         'nav' => 'Support',
         'title' => 'Support',
         'lead' => 'Questions about payment, moderation or technical issues — we reply during working hours.',

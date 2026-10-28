@@ -21,7 +21,8 @@ final class ServerOverview
     /** @return array<string, mixed> */
     public function toArray(): array
     {
-        $this->server->loadMissing(['game', 'media']);
+        // Медіа — повністю: у списку серверів кабінету завантажено лише логотипи
+        $this->server->loadMissing('game')->load('media');
         $days = $this->days();
 
         return [

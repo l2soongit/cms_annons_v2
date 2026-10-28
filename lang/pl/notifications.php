@@ -2,6 +2,8 @@
 
 return [
     'inbox' => [
+        'all' => 'Wszystkie powiadomienia',
+        'subtitle' => 'Decyzje moderatorów, usługi, wiadomości, opinie i stan serwerów',
         'nav' => 'Powiadomienia',
         'title' => 'Powiadomienia',
         'lead' => 'Decyzje moderatorów, usługi, wiadomości, opinie i stan serwerów. Kanały dostarczania —',

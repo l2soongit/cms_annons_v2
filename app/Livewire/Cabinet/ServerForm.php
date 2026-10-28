@@ -12,6 +12,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
 use Livewire\Attributes\Title;
 use Livewire\Component;
 use Livewire\WithFileUploads;
@@ -21,6 +22,7 @@ use Livewire\WithFileUploads;
  * @property-read Game|null $game
  */
 #[Title('Сервер | graj.club')]
+#[Layout('components.layouts.cabinet')]
 class ServerForm extends Component
 {
     use WithFileUploads;

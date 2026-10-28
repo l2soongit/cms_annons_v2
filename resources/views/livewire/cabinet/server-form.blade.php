@@ -7,8 +7,8 @@
         <p class="mt-3 rounded-md border border-amber/40 bg-amber/10 px-4 py-3 text-sm">{{ __('cabinet.form.pending_notice') }}</p>
     @endif
 
-    <form wire:submit="save" class="mt-10 space-y-12">
-        <section class="space-y-5" aria-labelledby="s-game">
+    <form wire:submit="save" class="mt-6 space-y-4">
+        <section class="c-card space-y-5" aria-labelledby="s-game">
             <h2 id="s-game" class="font-display text-lg font-medium">{{ __('cabinet.form.section_game') }}</h2>
 
             <fieldset>
@@ -65,7 +65,7 @@
             @endif
         </section>
 
-        <section class="space-y-5" aria-labelledby="s-main">
+        <section class="c-card space-y-5" aria-labelledby="s-main">
             <h2 id="s-main" class="font-display text-lg font-medium">{{ __('cabinet.form.section_main') }}</h2>
             <x-field name="name" wire:model="name" :label="__('cabinet.form.name')" maxlength="64" />
             <div class="grid gap-5 sm:grid-cols-[1fr_9rem]">
@@ -76,7 +76,7 @@
             <p class="text-xs text-moss">{{ __('cabinet.form.moderated_hint') }}</p>
         </section>
 
-        <section class="space-y-5" aria-labelledby="s-desc">
+        <section class="c-card space-y-5" aria-labelledby="s-desc">
             <h2 id="s-desc" class="font-display text-lg font-medium">{{ __('cabinet.form.section_description') }}</h2>
             @foreach (\App\Support\Locales::all() as $code => $language)
                 <x-rich-editor :name="'descriptions.'.$code" :value="$descriptions[$code] ?? ''" :label="__('cabinet.form.description_in', ['language' => $language])"
@@ -109,14 +109,14 @@
             </div>
         </section>
 
-        <section class="space-y-5" aria-labelledby="s-links">
+        <section class="c-card space-y-5" aria-labelledby="s-links">
             <h2 id="s-links" class="font-display text-lg font-medium">{{ __('cabinet.form.section_links') }}</h2>
             <x-field name="website" wire:model="website" type="url" :label="__('cabinet.form.website')" placeholder="https://" />
             <x-field name="discord" wire:model="discord" type="url" :label="__('cabinet.form.discord')" placeholder="https://discord.gg/…" />
             <x-field name="youtube" wire:model="youtube" type="url" :label="__('cabinet.form.youtube')" placeholder="https://youtube.com/…" />
         </section>
 
-        <section class="space-y-5" aria-labelledby="s-media">
+        <section class="c-card space-y-5" aria-labelledby="s-media">
             <h2 id="s-media" class="font-display text-lg font-medium">{{ __('cabinet.form.section_media') }}</h2>
 
             @if ($server && $server->media->isNotEmpty())
@@ -155,8 +155,8 @@
             <div wire:loading wire:target="logo,banner,screenshots" class="text-sm text-moss">{{ __('cabinet.form.uploading') }}</div>
         </section>
 
-        <div class="flex items-center gap-4 border-t border-seam pt-6">
-            <x-button wire:loading.attr="disabled">{{ $server ? __('cabinet.form.save') : __('cabinet.form.submit') }}</x-button>
+        <div class="c-card sticky bottom-4 z-10 flex items-center gap-4" style="padding:14px 20px;box-shadow:0 20px 50px -20px #000">
+            <button class="c-btn is-go" wire:loading.attr="disabled">{{ $server ? __('cabinet.form.save') : __('cabinet.form.submit') }}</button>
             <a href="{{ $server ? route('cabinet.servers.show', $server) : route('cabinet') }}" class="text-sm text-moss hover:text-bone">{{ __('cabinet.form.cancel') }}</a>
         </div>
     </form>

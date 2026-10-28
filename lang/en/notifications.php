@@ -2,6 +2,8 @@
 
 return [
     'inbox' => [
+        'all' => 'All notifications',
+        'subtitle' => 'Moderation decisions, services, messages, reviews and server status',
         'nav' => 'Notifications',
         'title' => 'Notifications',
         'lead' => 'Moderation decisions, services, messages, reviews and server status. Delivery channels are',

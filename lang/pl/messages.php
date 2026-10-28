@@ -3,6 +3,10 @@
 return [
     'nav' => 'Wiadomości',
     'title' => 'Wiadomości',
+    'lead' => 'Rozmowy z graczami i innymi właścicielami serwerów',
+    'pick' => 'Wybierz rozmowę po lewej',
+    'unread' => 'Nieprzeczytane',
+    'attach_hint' => 'PNG, JPG lub WebP do 5 MB',
     'empty' => 'Na razie brak wiadomości. Do właściciela możesz napisać ze strony serwera.',
     'about' => 'o :server',
     'you' => 'Ty',
@@ -33,6 +37,7 @@ return [
         'open' => 'Otwórz rozmowę',
     ],
     'support' => [
+        'new_short' => 'Nowe',
         'nav' => 'Pomoc',
         'title' => 'Pomoc',
         'lead' => 'Pytania o płatności, moderację lub problemy techniczne — odpowiadamy w godzinach pracy.',

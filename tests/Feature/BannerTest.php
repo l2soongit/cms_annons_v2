@@ -61,7 +61,7 @@ class BannerTest extends TestCase
     {
         $server = $this->server();
 
-        $this->actingAs($server->owner)->get(route('cabinet.ads'))->assertOk()->assertSee('Шапка всіх сторінок')->assertSee('усі дні вільні');
+        $this->actingAs($server->owner)->get(route('cabinet.ads'))->assertOk()->assertSee('Шапка всіх сторінок')->assertSee(__('billing.ads.cal_hint'));
 
         $this->actingAs($server->owner)->post(route('cabinet.ads.store'), [
             'server_id' => $server->id,

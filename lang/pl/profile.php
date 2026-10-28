@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'lead' => 'Imię, e-mail, język interfejsu, hasło i logowanie przez media społecznościowe.',
     'nav' => [
         'profile' => 'Profil',
         'security' => 'Bezpieczeństwo',
@@ -52,6 +53,9 @@ return [
     ],
 
     'notifications' => [
+        'channels' => 'Zdarzenia i kanały',
+        'connected' => 'połączono',
+        'connect_first' => 'Najpierw połącz ten kanał po prawej',
         'title' => 'Kanały powiadomień',
         'lead' => 'Wybierz, dokąd wysyłać każdy typ powiadomień.',
         'event' => 'Zdarzenie',

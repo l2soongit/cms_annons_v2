@@ -44,6 +44,10 @@ class SupportController extends Controller
     {
         abort_unless($ticket->user_id === $request->user()->id, 404);
 
-        return view('cabinet.support.show', ['ticket' => $ticket->load('conversation')]);
+        return view('cabinet.support.show', [
+            'ticket' => $ticket->load('conversation'),
+            // Список звернень зліва від чату, як у демо кабінету
+            'tickets' => $request->user()->hasMany(Ticket::class)->with('conversation.participants')->latest('updated_at')->get(),
+        ]);
     }
 }

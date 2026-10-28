@@ -1,4 +1,4 @@
-<x-layouts.app :title="$server->name.' | '.__('cabinet.title')">
+<x-layouts.cabinet :server="$server" :title="$server->name.' | '.__('cabinet.title')">
     <a href="{{ route('cabinet') }}" class="text-sm text-moss hover:text-bone">{{ __('cabinet.my_servers') }}</a>
 
     <div class="mt-2 flex flex-wrap items-start justify-between gap-4">
@@ -29,9 +29,9 @@
         <p class="mt-6 rounded-md border border-amber/40 bg-amber/10 px-4 py-3 text-sm">{{ __('cabinet.pending_notice') }}</p>
     @endif
 
-    <div class="mt-10 grid gap-x-12 gap-y-12 lg:grid-cols-2">
+    <div class="mt-6 grid gap-4 lg:grid-cols-2 lg:items-start">
         {{-- Статистика --}}
-        <section aria-labelledby="s-stats" class="lg:col-span-2">
+        <section aria-labelledby="s-stats" class="c-card lg:col-span-2">
             <h2 id="s-stats" class="font-display text-lg font-medium">{{ __('cabinet.stats.title') }}</h2>
             <dl class="mt-4 grid grid-cols-2 gap-6 border-y border-seam py-5 sm:grid-cols-4">
                 <div><dt class="text-sm text-moss">{{ __('cabinet.stats.rank') }}</dt><dd class="mt-1 font-display text-2xl">{{ $server->rank ? '#'.$server->rank : '—' }}</dd></div>
@@ -64,84 +64,107 @@
             $balance = auth()->user()->balance;
             $published = $server->status === \App\Enums\ServerStatus::Published;
         @endphp
-        <section aria-labelledby="s-promo" id="s-promo" class="lg:col-span-2">
-            <div class="flex flex-wrap items-baseline justify-between gap-3">
-                <h2 id="s-promo" class="font-display text-lg font-medium">{{ __('billing.promo.title') }}</h2>
-                <p class="text-sm text-moss">{{ __('billing.promo.lead', ['balance' => \App\Billing\Money::format($balance)]) }}
-                    <a href="{{ route('cabinet.balance') }}" class="ml-2 text-amber hover:underline">{{ __('billing.promo.top_up') }}</a></p>
+        @php
+            // Відрив до місця вище — щоб підказати пакет «Підняття», який його закриває
+            $above = $published && $server->rank > 1
+                ? \App\Models\Server::where('game_id', $server->game_id)->published()->where('rank', $server->rank - 1)->first(['score'])
+                : null;
+            $gapUp = $above ? (int) max(1, ceil($above->score - $server->score) + 1) : null;
+            $offerStyle = [
+                'boost' => ['▲', '#34d3991a', '#34d399'],
+                'vip' => ['★', '#fbbf241a', '#fbbf24'],
+                'highlight' => ['◆', '#60a5fa1a', '#60a5fa'],
+                'coming_soon' => ['⏱', '#f973161a', '#f97316'],
+            ];
+        @endphp
+        <section aria-labelledby="s-promo" id="s-promo" class="lg:col-span-2" style="scroll-margin-top:16px">
+            <div class="c-card">
+                <h2 id="s-promo">{{ __('billing.promo.title') }}
+                    <span class="c-more">{{ __('billing.promo.lead', ['balance' => \App\Billing\Money::format($balance)]) }} <a href="{{ route('cabinet.balance') }}" style="color:var(--c-amber)">{{ __('billing.promo.top_up') }}</a></span>
+                </h2>
+
+                @if ($activeOrders->isNotEmpty())
+                    <div class="c-svc">
+                        @foreach ($activeOrders as $order)
+                            @php
+                                [$glyph, $bg, $fg] = $offerStyle[$order->tariff->service] ?? ['▣', '#fbbf241a', '#fbbf24'];
+                                $total = $order->starts_at && $order->ends_at ? max(1, $order->starts_at->diffInSeconds($order->ends_at)) : null;
+                                $left = $total ? max(0, min(100, round(now()->diffInSeconds($order->ends_at, false) / $total * 100))) : 100;
+                                $ending = $order->ends_at && $order->ends_at->lt(now()->addDays(3));
+                            @endphp
+                            <div @class(['c-svc-row', 'is-warn' => $ending])>
+                                <span class="c-ic" style="background:{{ $bg }};color:{{ $fg }}" aria-hidden="true">{{ $glyph }}</span>
+                                <div>
+                                    <b>{{ $order->tariff->name }}</b>
+                                    <small>{{ $order->starts_at->isFuture() ? $order->starts_at->format('d.m.Y').' – ' : '' }}{{ __('billing.promo.until', ['date' => $order->ends_at?->format('d.m.Y H:i') ?? '∞']) }}</small>
+                                    @if ($order->ends_at)<div class="c-left"><i style="width:{{ $order->starts_at->isFuture() ? 100 : $left }}%"></i></div>@endif
+                                </div>
+                                @unless (in_array($order->tariff->service, ['boost', 'coming_soon'], true))
+                                    <form method="POST" action="{{ route('cabinet.orders.auto-renew', $order) }}" class="c-ar">
+                                        @csrf
+                                        <span class="c-hide-sm">{{ __('billing.promo.auto_renew') }}</span>
+                                        <button class="c-switch" role="switch" aria-checked="{{ $order->auto_renew ? 'true' : 'false' }}" aria-pressed="{{ $order->auto_renew ? 'true' : 'false' }}" aria-label="{{ __('billing.promo.auto_renew') }}"></button>
+                                    </form>
+                                @endunless
+                            </div>
+                        @endforeach
+                    </div>
+                @endif
+                @if (! $published)
+                    <p class="c-muted" style="margin-top:12px;font-size:14px">{{ __('billing.promo.unpublished') }}</p>
+                @endif
+                @error('tariff_id', 'promo')<div class="c-warn" role="alert">{{ $message }}</div>@enderror
             </div>
 
-            @if ($activeOrders->isNotEmpty())
-                <h3 class="mt-5 text-sm font-medium text-moss">{{ __('billing.promo.active') }}</h3>
-                <ul class="mt-2 divide-y divide-seam border-y border-seam text-sm">
-                    @foreach ($activeOrders as $order)
-                        <li class="flex flex-wrap items-center justify-between gap-3 py-3">
-                            <span><b class="font-medium">{{ $order->tariff->name }}</b>
-                                <span class="text-moss">{{ $order->starts_at->isFuture() ? $order->starts_at->format('d.m.Y').' – ' : '' }}{{ __('billing.promo.until', ['date' => $order->ends_at?->format('d.m.Y H:i') ?? '∞']) }}</span></span>
-                            @unless (in_array($order->tariff->service, ['boost', 'coming_soon'], true))
-                                <form method="POST" action="{{ route('cabinet.orders.auto-renew', $order) }}">
-                                    @csrf
-                                    <button class="inline-flex items-center gap-2 text-moss hover:text-bone" aria-pressed="{{ $order->auto_renew ? 'true' : 'false' }}">
-                                        <span @class(['inline-block size-3 rounded-full border', 'border-signal bg-signal' => $order->auto_renew, 'border-moss' => ! $order->auto_renew])></span>{{ __('billing.promo.auto_renew') }}
-                                    </button>
-                                </form>
-                            @endunless
-                        </li>
+            @if ($published && $tariffs->isNotEmpty())
+                <div class="c-offers" style="margin-top:16px">
+                    @foreach ($tariffs as $service => $list)
+                        @php
+                            [$glyph, $bg, $fg] = $offerStyle[$service] ?? ['▣', '#fbbf241a', '#fbbf24'];
+                            $blocked = $service === 'coming_soon' && ! $server->opens_at?->isFuture();
+                            $closes = $service === 'boost' && $gapUp ? $list->first(fn ($t) => $t->points >= $gapUp) : null;
+                            $pick = $list->firstWhere('id', (int) old('tariff_id')) ?? $closes ?? $list->first();
+                        @endphp
+                        <form method="POST" action="{{ route('cabinet.servers.orders', $server) }}" class="c-card c-offer" data-offer>
+                            @csrf
+                            @if ($closes)<span class="c-tag">{{ __('billing.promo.closes_gap', ['place' => $server->rank - 1]) }}</span>@endif
+                            <span class="c-ic" style="background:{{ $bg }};color:{{ $fg }}" aria-hidden="true">{{ $glyph }}</span>
+                            <h3>{{ __("billing.services.{$service}") }}</h3>
+                            <p>{{ __("billing.service_hints.{$service}") }}@if ($service === 'vip') {{ __('billing.promo.vip_slots', ['taken' => $vipTaken, 'total' => $server->game->vip_slots]) }}@endif</p>
+                            @if ($blocked)
+                                <p class="c-down" style="flex:0">{{ __('billing.promo.opening_needed') }}</p>
+                                <a class="c-btn" href="{{ route('cabinet.servers.edit', $server) }}">{{ __('cabinet.edit') }}</a>
+                            @else
+                                @if ($list->count() > 1)
+                                    <div class="c-days" role="radiogroup" aria-label="{{ __("billing.services.{$service}") }}" style="margin-top:0">
+                                        @foreach ($list as $tariff)
+                                            @php
+                                                $term = match ($service) {
+                                                    'boost' => '+'.$tariff->points,
+                                                    'coming_soon' => __('billing.promo.until_opening'),
+                                                    default => __('billing.promo.days', ['n' => $tariff->days]),
+                                                };
+                                            @endphp
+                                            <button type="button" role="radio" aria-checked="{{ $tariff->is($pick) ? 'true' : 'false' }}" aria-pressed="{{ $tariff->is($pick) ? 'true' : 'false' }}"
+                                                    data-tariff="{{ $tariff->id }}" data-price="{{ \App\Billing\Money::format($tariff->price) }}">{{ $term }}</button>
+                                        @endforeach
+                                    </div>
+                                @elseif ($service === 'coming_soon')
+                                    <p class="c-faint" style="flex:0;font-size:12px">{{ __('billing.promo.until_opening') }} · {{ $server->opens_at->format('d.m') }}</p>
+                                @endif
+                                <div class="c-price c-num" data-price-out>{{ \App\Billing\Money::format($pick->price) }}</div>
+                                <details class="c-extra">
+                                    <summary>{{ __('billing.promo.more_options') }}</summary>
+                                    <div class="c-inp" style="margin-top:8px"><input name="promo_code" maxlength="32" placeholder="{{ __('billing.promo.code') }}" aria-label="{{ __('billing.promo.code') }}" value="{{ old('promo_code') }}" style="text-transform:uppercase"></div>
+                                    @unless (in_array($service, ['boost', 'coming_soon'], true))
+                                        <label class="c-check"><input type="checkbox" name="auto_renew" value="1" @checked(old('auto_renew'))>{{ __('billing.promo.renew_hint') }}</label>
+                                    @endunless
+                                </details>
+                                <button class="c-btn is-go" name="tariff_id" value="{{ $pick->id }}" data-buy>{{ __('billing.promo.buy_now') }}</button>
+                            @endif
+                        </form>
                     @endforeach
-                </ul>
-            @endif
-
-            @if (! $published)
-                <p class="mt-4 text-sm text-moss">{{ __('billing.promo.unpublished') }}</p>
-            @elseif ($tariffs->isNotEmpty())
-                <form method="POST" action="{{ route('cabinet.servers.orders', $server) }}" class="mt-6">
-                    @csrf
-                    <fieldset>
-                        <legend class="text-sm font-medium">{{ __('billing.promo.buy') }}</legend>
-                        <div class="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-                            @foreach ($tariffs as $service => $list)
-                                @php
-                                    $blocked = $service === 'coming_soon' && ! $server->opens_at?->isFuture();
-                                @endphp
-                                <div class="rounded-md border border-seam p-4">
-                                    <p class="font-medium">{{ __("billing.services.{$service}") }}</p>
-                                    <p class="mt-1 text-xs text-moss">{{ __("billing.service_hints.{$service}") }}</p>
-                                    @if ($service === 'vip')
-                                        <p class="mt-1 text-xs text-moss">{{ __('billing.promo.vip_slots', ['taken' => $vipTaken, 'total' => $server->game->vip_slots]) }}</p>
-                                    @endif
-                                    @if ($blocked)
-                                        <p class="mt-3 text-xs text-fade">{{ __('billing.promo.opening_needed') }}</p>
-                                    @else
-                                        <div class="mt-3 space-y-2">
-                                            @foreach ($list as $tariff)
-                                                <label class="flex items-center justify-between gap-2 rounded border border-seam px-2.5 py-2 text-sm has-checked:border-amber">
-                                                    @php
-                                                        $term = match ($service) {
-                                                            'boost' => __('billing.promo.points', ['n' => $tariff->points]),
-                                                            'coming_soon' => __('billing.promo.until_opening'),
-                                                            default => __('billing.promo.days', ['n' => $tariff->days]),
-                                                        };
-                                                    @endphp
-                                                    <span class="flex items-center gap-2"><input type="radio" name="tariff_id" value="{{ $tariff->id }}" @checked((int) old('tariff_id') === $tariff->id) required class="accent-amber">{{ $term }}</span>
-                                                    <span class="tabular-nums">{{ \App\Billing\Money::format($tariff->price) }}</span>
-                                                </label>
-                                            @endforeach
-                                        </div>
-                                    @endif
-                                </div>
-                            @endforeach
-                        </div>
-                    </fieldset>
-                    @error('tariff_id', 'promo') <p class="mt-3 text-sm text-fade" role="alert">{{ $message }}</p> @enderror
-                    <div class="mt-4 flex flex-wrap items-end gap-4">
-                        <div>
-                            <label for="promo_code" class="mb-1.5 block text-sm font-medium">{{ __('billing.promo.code') }} <span class="font-normal text-moss">({{ __('billing.promo.code_optional') }})</span></label>
-                            <input id="promo_code" name="promo_code" value="{{ old('promo_code') }}" maxlength="32" class="w-44 rounded-md border border-seam bg-slab px-3 py-2.5 uppercase text-bone focus:border-amber focus:outline-none">
-                        </div>
-                        <label class="flex items-center gap-2 pb-3 text-sm"><input type="checkbox" name="auto_renew" value="1" @checked(old('auto_renew')) class="accent-amber">{{ __('billing.promo.renew_hint') }}</label>
-                        <x-button class="ml-auto">{{ __('billing.promo.submit') }}</x-button>
-                    </div>
-                </form>
+                </div>
             @endif
         </section>
 
@@ -153,7 +176,7 @@
                 $statusImg = route('widgets.status', ['server' => $server->id, 'size' => '468x60']);
                 $pageUrl = route('servers.show', $server);
             @endphp
-            <section aria-labelledby="s-widgets" class="lg:col-span-2">
+            <section aria-labelledby="s-widgets" class="c-card lg:col-span-2">
                 <h2 id="s-widgets" class="font-display text-lg font-medium">{{ __('cabinet.widgets.title') }}</h2>
                 <p class="mt-3 text-moss">{{ __('cabinet.widgets.lead') }} <a href="{{ route('developers') }}#widgets" class="text-amber hover:underline">{{ __('cabinet.widgets.more') }}</a></p>
                 <div class="mt-4 flex flex-wrap items-center gap-4">
@@ -177,7 +200,7 @@
         @endif
 
         {{-- Підтвердження власності --}}
-        <section aria-labelledby="s-verify">
+        <section aria-labelledby="s-verify" class="c-card">
             <h2 id="s-verify" class="font-display text-lg font-medium">{{ __('cabinet.verify.title') }}</h2>
             @if ($server->verified_at)
                 <p class="mt-3 text-signal">{{ __('cabinet.verify.done', ['date' => $server->verified_at->format('d.m.Y')]) }}</p>
@@ -200,7 +223,7 @@
         </section>
 
         {{-- Vote-callback --}}
-        <section aria-labelledby="s-callback">
+        <section aria-labelledby="s-callback" class="c-card">
             <h2 id="s-callback" class="font-display text-lg font-medium">{{ __('cabinet.callback.title') }}</h2>
             <p class="mt-3 text-moss">{{ __('cabinet.callback.lead') }}</p>
             <form method="POST" action="{{ route('cabinet.servers.callback', $server) }}" class="mt-4 space-y-4">
@@ -219,7 +242,7 @@
         </section>
 
         {{-- API-ключ --}}
-        <section aria-labelledby="s-api">
+        <section aria-labelledby="s-api" class="c-card">
             <h2 id="s-api" class="font-display text-lg font-medium">{{ __('cabinet.api.title') }}</h2>
             <p class="mt-3 text-moss">{{ __('cabinet.api.lead') }}</p>
             <p class="mt-4 text-sm">{{ __('cabinet.api.server_id') }}: <span class="font-medium">{{ $server->id }}</span></p>
@@ -234,7 +257,7 @@
         </section>
 
         {{-- Співвласники --}}
-        <section aria-labelledby="s-owners">
+        <section aria-labelledby="s-owners" class="c-card">
             <h2 id="s-owners" class="font-display text-lg font-medium">{{ __('owners.title') }}</h2>
             <p class="mt-3 text-moss">{{ __('owners.lead') }}</p>
             <ul class="mt-4 text-sm">
@@ -295,7 +318,7 @@
         </section>
 
         {{-- Останні голоси --}}
-        <section aria-labelledby="s-votes">
+        <section aria-labelledby="s-votes" class="c-card">
             <h2 id="s-votes" class="font-display text-lg font-medium">{{ __('cabinet.votes.title') }}</h2>
             @if ($recentVotes->isEmpty())
                 <p class="mt-3 text-moss">{{ __('cabinet.votes.empty') }}</p>
@@ -314,4 +337,17 @@
             @endif
         </section>
     </div>
-</x-layouts.app>
+
+    <x-slot:scripts>
+        <script>
+            // Просування: перемикач терміну міняє ціну й тариф, який купує кнопка картки
+            document.querySelectorAll('[data-offer]').forEach((card) => {
+                card.querySelectorAll('[data-tariff]').forEach((chip) => chip.addEventListener('click', () => {
+                    card.querySelectorAll('[data-tariff]').forEach((c) => { c.setAttribute('aria-checked', String(c === chip)); c.setAttribute('aria-pressed', String(c === chip)); });
+                    card.querySelector('[data-buy]').value = chip.dataset.tariff;
+                    card.querySelector('[data-price-out]').textContent = chip.dataset.price;
+                }));
+            });
+        </script>
+    </x-slot:scripts>
+</x-layouts.cabinet>

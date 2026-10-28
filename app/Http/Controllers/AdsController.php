@@ -41,11 +41,23 @@ class AdsController extends Controller
             $busy[$tariff->placement.'-'.$gameId] ??= $billing->busyDays($tariff->placement, $gameId);
         }
 
+        // Власні банери серверів — щоб календар одразу попередив про дати, на які новий банер був би прихований
+        $own = Banner::whereIn('server_id', $servers->pluck('id'))->where('is_active', true)->where('ends_at', '>', now())
+            ->where(fn ($q) => $q->whereNull('order_id')->orWhereHas('order', fn ($o) => $o->whereNotIn('status', ['cancelled', 'refunded'])))
+            ->get(['server_id', 'placement', 'starts_at', 'ends_at'])
+            ->groupBy('server_id')
+            ->map(fn ($list) => $list->map(fn (Banner $b) => [
+                'placement' => $b->placement,
+                'from' => $b->starts_at->toDateString(),
+                'to' => $b->ends_at->copy()->subSecond()->toDateString(),
+            ])->values());
+
         return view('cabinet.ads', [
             'user' => $user,
             'servers' => $servers,
             'tariffs' => $tariffs,
             'busy' => $busy,
+            'own' => $own,
             'banners' => Banner::with(['server', 'game', 'order'])
                 ->whereHas('order', fn ($q) => $q->where('user_id', $user->id))
                 ->latest('starts_at')->get(),

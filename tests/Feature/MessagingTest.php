@@ -65,7 +65,7 @@ class MessagingTest extends TestCase
         Notification::assertSentTo($server->owner, NewMessage::class);
 
         // Власник бачить непрочитаний діалог і відповідає; гравець бачить «Прочитано» під своїм повідомленням
-        $this->actingAs($server->owner)->get(route('cabinet.messages'))->assertOk()->assertSee('Gamer')->assertSee('Повідомлення (1)');
+        $this->actingAs($server->owner)->get(route('cabinet.messages'))->assertOk()->assertSee('Gamer')->assertSee('<span class="c-badge">1</span>', false);
         Livewire::actingAs($server->owner)->test(Thread::class, ['conversation' => $conversation])
             ->assertSee('Коли вайп?')
             ->set('body', 'У п’ятницю')

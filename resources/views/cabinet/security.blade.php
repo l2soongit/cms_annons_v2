@@ -1,8 +1,7 @@
-<x-layouts.app :title="__('profile.nav.security').' | graj.club'">
-    <x-cabinet-nav />
+<x-layouts.cabinet :title="__('profile.nav.security').' | graj.club'" :heading="__('cabinet.nav.security')" :subtitle="__('profile.security.lead')">
     <x-flash class="mb-6" />
 
-    <section class="max-w-xl" aria-labelledby="s-2fa">
+    <section class="c-card" style="max-width:640px" aria-labelledby="s-2fa">
         <h2 id="s-2fa" class="font-display text-lg font-medium">{{ __('profile.security.title') }}</h2>
         <p class="mt-3 text-moss">{{ __('profile.security.lead') }}</p>
 
@@ -55,4 +54,4 @@
             </form>
         @endif
     </section>
-</x-layouts.app>
+</x-layouts.cabinet>

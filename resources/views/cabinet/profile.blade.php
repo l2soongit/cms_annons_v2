@@ -1,9 +1,8 @@
-<x-layouts.app :title="__('profile.nav.profile').' | graj.club'">
-    <x-cabinet-nav />
+<x-layouts.cabinet :title="__('profile.nav.profile').' | graj.club'" :heading="__('profile.nav.profile')" :subtitle="__('profile.lead')">
     <x-flash class="mb-6" />
 
-    <div class="grid max-w-4xl gap-x-12 gap-y-12 lg:grid-cols-2">
-        <section aria-labelledby="p-info">
+    <div class="grid gap-4 lg:grid-cols-2 lg:items-start">
+        <section class="c-card" aria-labelledby="p-info">
             <h2 id="p-info" class="font-display text-lg font-medium">{{ __('profile.info_title') }}</h2>
             <form method="POST" action="{{ route('user-profile-information.update') }}" class="mt-5 space-y-5">
                 @csrf @method('PUT')
@@ -25,7 +24,7 @@
             </form>
         </section>
 
-        <section aria-labelledby="p-password">
+        <section class="c-card" aria-labelledby="p-password">
             <h2 id="p-password" class="font-display text-lg font-medium">{{ __('profile.password_title') }}</h2>
             <form method="POST" action="{{ route('user-password.update') }}" class="mt-5 space-y-5">
                 @csrf @method('PUT')
@@ -39,7 +38,7 @@
             </form>
         </section>
 
-        <section aria-labelledby="p-social">
+        <section class="c-card" aria-labelledby="p-social">
             <h2 id="p-social" class="font-display text-lg font-medium">{{ __('profile.social_title') }}</h2>
             <ul class="mt-4 space-y-2 text-sm">
                 @foreach (['google' => 'Google', 'discord' => 'Discord'] as $provider => $label)
@@ -52,7 +51,7 @@
             <p class="mt-3 text-xs text-moss">{{ __('profile.social_hint') }}</p>
         </section>
 
-        <section aria-labelledby="p-delete">
+        <section class="c-card" aria-labelledby="p-delete">
             <h2 id="p-delete" class="font-display text-lg font-medium text-fade">{{ __('profile.delete_title') }}</h2>
             <p class="mt-3 text-sm text-moss">{{ __('profile.delete_lead') }}</p>
             <form method="POST" action="{{ route('cabinet.profile.destroy') }}" class="mt-4 space-y-4" onsubmit="return confirm(@js(__('profile.delete_confirm')))">
@@ -65,4 +64,4 @@
             </form>
         </section>
     </div>
-</x-layouts.app>
+</x-layouts.cabinet>

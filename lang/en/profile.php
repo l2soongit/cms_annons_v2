@@ -1,6 +1,7 @@
 <?php
 
 return [
+    'lead' => 'Name, email, interface language, password and social login.',
     'nav' => [
         'profile' => 'Profile',
         'security' => 'Security',
@@ -52,6 +53,9 @@ return [
     ],
 
     'notifications' => [
+        'channels' => 'Events and channels',
+        'connected' => 'connected',
+        'connect_first' => 'Connect this channel on the right first',
         'title' => 'Notification channels',
         'lead' => 'Choose where each type of notification goes.',
         'event' => 'Event',

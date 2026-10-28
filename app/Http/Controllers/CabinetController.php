@@ -26,7 +26,7 @@ class CabinetController extends Controller
     {
         $user = $request->user();
 
-        $servers = Server::with('game')
+        $servers = Server::with(['game', 'media' => fn ($q) => $q->where('type', 'logo')])
             ->where('user_id', $user->id)
             ->orWhereHas('coOwners', fn ($q) => $q->whereKey($user->id))
             ->latest()

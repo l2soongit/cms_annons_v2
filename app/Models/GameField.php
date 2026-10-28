@@ -24,6 +24,17 @@ class GameField extends Model
         ];
     }
 
+    /**
+     * Варіант списку за значенням: value, label і необов’язкові short (коротка назва), note (підпис),
+     * color (колір позначки), connect (команда підключення з {address}), driver (протокол).
+     *
+     * @return array<string, string>|null
+     */
+    public function option(?string $value): ?array
+    {
+        return $value === null ? null : collect($this->options)->firstWhere('value', $value);
+    }
+
     /** @return BelongsTo<Game, $this> */
     public function game(): BelongsTo
     {

@@ -19,7 +19,7 @@
   @forelse ($servers as $server)
     @include('games.themes.gta-card', ['server' => $server, 'rank' => $server->rank ?? $servers->firstItem() + $loop->index, 'vip' => false])
   @empty
-    <div class="empty"><b>{{ __('ui.game.empty') }}</b>{{ __('ui.game.empty_hint') }}</div>
+    <div class="empty"><b>{{ $game->pageText('game.empty') }}</b>{{ $game->pageText('game.empty_hint') }}</div>
   @endforelse
 </div>
 

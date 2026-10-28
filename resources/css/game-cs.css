@@ -104,8 +104,9 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .ver-switch a small { display: block; font: 600 10px var(--font); font-style: normal; letter-spacing: .06em; color: var(--faint); }
 .ver-switch a[aria-pressed="true"] { color: var(--ct-2); background: linear-gradient(180deg, #4fc3f71f, transparent); }
 .ver-switch a[aria-pressed="true"]::after { content: ''; position: absolute; left: 12px; right: 12px; bottom: 0; height: 2px; background: var(--ct); box-shadow: 0 0 10px var(--ct); }
-.ver-switch a[data-v="CS 1.6"][aria-pressed="true"] { color: var(--t-2); background: linear-gradient(180deg, #f2a33a1f, transparent); }
-.ver-switch a[data-v="CS 1.6"][aria-pressed="true"]::after { background: var(--t); box-shadow: 0 0 10px var(--t); }
+/* Свій колір версії задається у варіанті поля в адмінці (--v), напр. помаранчевий для CS 1.6 */
+.ver-switch a[style*="--v"][aria-pressed="true"] { color: color-mix(in srgb, var(--v) 55%, #fff); background: linear-gradient(180deg, color-mix(in srgb, var(--v) 12%, transparent), transparent); }
+.ver-switch a[style*="--v"][aria-pressed="true"]::after { background: var(--v); box-shadow: 0 0 10px var(--v); }
 .modes { display: flex; flex-wrap: wrap; gap: 6px; }
 .mode-chip { border: 1px solid var(--line-2); background: none; color: var(--muted); padding: 5px 12px; font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .05em; cursor: pointer; transition: all .15s; }
 .mode-chip:hover { color: var(--text); border-color: var(--ct); }
@@ -158,7 +159,6 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .row { position: relative; padding: 10px 16px; border-bottom: 1px solid #ffffff08; transition: background-color .2s; }
 .row:nth-child(even) { background: #ffffff03; }
 .row::before { content: ''; position: absolute; left: 0; top: 8px; bottom: 8px; width: 3px; background: var(--side, var(--ct)); box-shadow: 0 0 10px var(--side, var(--ct)); opacity: .8; }
-.row.v16 { --side: var(--t); }
 .row:hover { background: #4fc3f70d; }
 .row.vip { overflow: hidden; background: linear-gradient(90deg, #f2a33a1a, transparent 50%); }
 .row.vip::after { content: ''; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, transparent, #ffcd8018, transparent); transform: translateX(-100%); animation: vipscan 3.5s ease-in-out infinite; }
@@ -182,7 +182,7 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .badges { margin-top: 4px; display: flex; flex-wrap: nowrap; gap: 5px; align-items: center; overflow: hidden; mask-image: linear-gradient(90deg, #000 85%, transparent); }
 .bdg { flex: none; }
 .bdg { font-size: 10px; font-weight: 800; padding: 1px 6px; text-transform: uppercase; letter-spacing: .04em; border: 1px solid var(--line-2); color: var(--muted); }
-.bdg.ver2 { color: var(--ct-2); border-color: #4fc3f755; } .bdg.ver16 { color: var(--t-2); border-color: #f2a33a55; }
+.bdg.ver { color: color-mix(in srgb, var(--side, var(--ct)) 55%, #fff); border-color: color-mix(in srgb, var(--side, var(--ct)) 35%, transparent); }
 .bdg.tick { color: #c4b5fd; border-color: #a78bfa55; }
 .bdg.vac { color: var(--up); border-color: #34d39955; display: inline-flex; align-items: center; gap: 3px; }
 .bdg.new { color: #04121d; background: var(--up); border-color: var(--up); }
@@ -196,8 +196,7 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 .players small { color: var(--faint); font-size: 12px; }
 .pbar { margin-top: 5px; display: grid; grid-template-columns: repeat(10, 1fr); gap: 2px; height: 5px; }
 .pbar i { background: #ffffff12; }
-.pbar i.on { background: var(--ct); box-shadow: 0 0 6px #4fc3f788; }
-.row.v16 .pbar i.on { background: var(--t); box-shadow: 0 0 6px #f2a33a88; }
+.pbar i.on { background: var(--side, var(--ct)); box-shadow: 0 0 6px color-mix(in srgb, var(--side, var(--ct)) 55%, transparent); }
 .pbar.full i.on { background: var(--red); box-shadow: 0 0 6px #ff5a5a88; }
 .ping { display: flex; align-items: center; gap: 8px; justify-content: flex-end; font: italic 800 14px var(--display); }
 .ping [data-ping] { min-width: 50px; text-align: right; }

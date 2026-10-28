@@ -14,7 +14,7 @@
     $client = [
         'game' => $game->slug,
         'seasonEnd' => $stats['season_end'],
-        'feed' => ['url' => route('home.live'), 'after' => (int) \App\Models\Vote::where('created_at', '<', now()->subMinutes(10))->max('id'), 'enabled' => (bool) config('graj.home.live_feed')],
+        'feed' => ['url' => route('home.live'), 'after' => (int) \App\Models\Vote::where('created_at', '<', now()->subMinutes(10))->max('id'), 'enabled' => config('graj.home.live_feed') && $game->showsBlock('live')],
         'locale' => app()->getLocale(),
         't' => ['toastVote' => __('ui.home.toast_vote'), 'toastFrom' => __('ui.home.toast_from'), 'toastAnon' => __('ui.home.toast_anon'), 'votes' => __('ui.server.votes'), 'untilStart' => __('ui.game.until_start')],
     ];
@@ -45,8 +45,8 @@
       </dl>
     </div>
     <div class="hero-cta">
-      <div class="season">{{ __('ui.home.season_left') }}<b class="num" id="season">&nbsp;</b></div>
-      <a class="btn btn-gold" href="{{ $addUrl }}">{{ __('ui.game.add_own', ['game' => $game->shortName()]) }}</a>
+      @if ($game->showsBlock('season'))<div class="season">{{ $game->pageText('home.season_left') }}<b class="num" id="season">&nbsp;</b></div>@endif
+      <a class="btn btn-gold" href="{{ $addUrl }}">{{ $game->pageText('game.add_own', ['game' => $game->shortName()]) }}</a>
     </div>
   </section>
 
@@ -88,8 +88,9 @@
     </div>
 
     <aside class="side">
+      @if ($game->showsBlock('soon'))
       <section class="panel" data-reveal>
-        <h3>{{ __('ui.home.coming_soon') }}</h3>
+        <h3>{{ $game->pageText('home.coming_soon') }}</h3>
         <div id="soon">
           @forelse ($comingSoon as $s)
             @php $opens = $s->opens_at->copy()->startOfDay(); @endphp
@@ -111,9 +112,11 @@
           @endforelse
         </div>
       </section>
+      @endif
 
+      @if ($game->showsBlock('fame'))
       <section class="panel fame" data-reveal>
-        <h3><span>{{ __('ui.game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h3>
+        <h3><span>{{ $game->pageText('game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h3>
         @if ($fame->isNotEmpty())
           <ul id="fame">
             @foreach ($fame as $i => $winner)
@@ -126,10 +129,11 @@
           <p class="muted">{{ __('ui.game.fame_empty') }}</p>
         @endif
       </section>
+      @endif
 
-      @if ($shares)
+      @if ($shares && $game->showsBlock('popular'))
         <section class="panel" data-reveal>
-          <h3>{{ __('ui.game.popular_by')[$filters->first()->key] ?? __('ui.game.popular', ['field' => mb_strtolower($filters->first()->label)]) }}</h3>
+          <h3>{{ __('ui.game.popular_by')[$popularField->key] ?? __('ui.game.popular', ['field' => mb_strtolower($popularField->label)]) }}</h3>
           <div class="chron-bars" id="chron-bars">
             @foreach ($shares as $share)
               <div class="cb"><div class="l"><b>{{ $share['label'] }}</b><span class="num">{{ $share['percent'] }}%</span></div><div class="track"><i data-w="{{ $share['width'] }}"></i></div></div>

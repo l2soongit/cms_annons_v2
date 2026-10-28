@@ -84,9 +84,9 @@ class GameThemePageTest extends TestCase
 
     public function test_game_without_own_design_keeps_generic_page(): void
     {
-        $this->makeServer('Block Test', ['game' => 'minecraft']);
+        $this->makeServer('Block Test', ['game' => 'dayz']);
 
-        $this->get('/minecraft')
+        $this->get('/dayz')
             ->assertOk()
             ->assertSee('Block Test')
             ->assertDontSee('class="ghero"', false);

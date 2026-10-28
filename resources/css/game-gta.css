@@ -172,9 +172,9 @@ header.scrolled .bar { padding-block: 4px; background: #18181bf0; }
 .bb-row .soon-item b { font: 400 20px var(--lore); font-style: italic; text-shadow: 2px 2px 0 #6d28d9; }
 .band { margin-top: 40px; display: grid; grid-template-columns: 1.2fr 1fr; gap: 16px; }
 /* Фірмові кольори платформ у фільтрі */
-.chip[data-v="FiveM"] { --p: #f97316; } .chip[data-v="RAGE:MP"] { --p: #38bdf8; } .chip[data-v="alt:V"] { --p: #22c55e; } .chip[data-v="SA-MP"] { --p: #eab308; }
-.chip[data-v="FiveM"], .chip[data-v="RAGE:MP"], .chip[data-v="alt:V"], .chip[data-v="SA-MP"] { color: var(--p); border-color: color-mix(in srgb, var(--p) 45%, transparent); }
-.chip[data-v="FiveM"][aria-pressed="true"], .chip[data-v="RAGE:MP"][aria-pressed="true"], .chip[data-v="alt:V"][aria-pressed="true"], .chip[data-v="SA-MP"][aria-pressed="true"] { background: var(--p); color: #0b0618; box-shadow: 0 4px 18px -6px var(--p); }
+/* Колір платформи задається у варіанті поля в адмінці (--p) */
+.chip.tinted { color: var(--p); border-color: color-mix(in srgb, var(--p) 45%, transparent); }
+.chip.tinted[aria-pressed="true"] { background: var(--p); color: #0b0618; box-shadow: 0 4px 18px -6px var(--p); }
 @media (max-width: 1024px) { .bb-row { grid-template-columns: 1fr 1fr; } .band { grid-template-columns: 1fr; } }
 @media (max-width: 640px) { .bb-row { grid-template-columns: 1fr; } }
 

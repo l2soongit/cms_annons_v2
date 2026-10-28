@@ -55,18 +55,28 @@ class GameSeeder extends Seeder
                 'default_port' => 7777,
                 'fields' => [
                     $this->select('platform', ['uk' => 'Платформа', 'en' => 'Platform'], ['SA-MP', 'FiveM', 'RAGE:MP', 'alt:V'], inUrl: true,
-                        drivers: ['SA-MP' => 'samp', 'FiveM' => 'fivem', 'RAGE:MP' => 'tcp', 'alt:V' => 'tcp']),
+                        drivers: ['SA-MP' => 'samp', 'FiveM' => 'fivem', 'RAGE:MP' => 'tcp', 'alt:V' => 'tcp'],
+                        // FiveM приймає команду в консолі F8, інші клієнти — адресу
+                        extras: ['SA-MP' => ['color' => '#eab308'], 'FiveM' => ['color' => '#f97316', 'connect' => 'connect {address}'], 'RAGE:MP' => ['color' => '#38bdf8'], 'alt:V' => ['color' => '#22c55e']]),
                     $this->select('roleplay', ['uk' => 'Режим', 'en' => 'Mode'], ['RP', 'Freeroam', 'DM']),
                 ],
             ],
             [
                 'slug' => 'minecraft',
                 'name' => ['uk' => 'Minecraft', 'en' => 'Minecraft'],
+                'eyebrow' => ['uk' => 'Пісочниця · Java і Bedrock', 'en' => 'Sandbox · Java and Bedrock'],
+                'description' => [
+                    'uk' => 'Виживання з друзями, SkyBlock, анархія чи міні-ігри — обери версію й режим, а ми покажемо сервери, де вже копають.',
+                    'en' => 'Survival with friends, SkyBlock, anarchy or minigames — pick a version and mode, and we will show servers where people are already digging.',
+                ],
                 'query_driver' => 'minecraft',
                 'default_port' => 25565,
+                'page' => ['popular_field' => 'version'],
                 'fields' => [
-                    $this->select('edition', ['uk' => 'Видання', 'en' => 'Edition'], ['Java', 'Bedrock'], inUrl: true,
-                        drivers: ['Java' => 'minecraft', 'Bedrock' => 'bedrock']),
+                    // Java+Bedrock (Geyser) опитується як Java: гравці Bedrock заходять через той самий сервер
+                    $this->select('edition', ['uk' => 'Видання', 'en' => 'Edition'], ['Java', 'Bedrock', 'Java+Bedrock'], inUrl: true,
+                        drivers: ['Java' => 'minecraft', 'Bedrock' => 'bedrock', 'Java+Bedrock' => 'minecraft'],
+                        extras: ['Java' => ['color' => '#ffaa00'], 'Bedrock' => ['color' => '#55ffff'], 'Java+Bedrock' => ['short' => 'Java+Bed', 'color' => '#55ff55']]),
                     $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['1.8', '1.12', '1.16', '1.20', '1.21']),
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Виживання', 'SkyBlock', 'Анархія', 'Міні-ігри', 'Творчий']),
                 ],
@@ -102,7 +112,8 @@ class GameSeeder extends Seeder
                 'query_driver' => 'source',
                 'default_port' => 27015,
                 'fields' => [
-                    $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['CS 1.6', 'CS2'], inUrl: true),
+                    $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['CS 1.6', 'CS2'], inUrl: true,
+                        extras: ['CS 1.6' => ['short' => '1.6', 'note' => 'GoldSrc', 'color' => '#f2a33a', 'connect' => 'connect {address}'], 'CS2' => ['short' => '2', 'note' => 'Source 2', 'connect' => 'connect {address}']]),
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Public', 'Deathmatch', 'Surf', 'Zombie', 'Retake', 'Jailbreak']),
                     // Сервер не повідомляє тикрейт у відповіді, тому його вказує власник; фільтр — пункт «128 tick» у меню закупівлі
                     ['is_required' => false, 'is_filterable' => false] + $this->select('tickrate', ['uk' => 'Тикрейт', 'en' => 'Tickrate'], ['64', '100', '128']),
@@ -113,8 +124,9 @@ class GameSeeder extends Seeder
 
     /**
      * @param  array<string, string>  $drivers  варіант => протокол моніторингу (перекриває драйвер гри)
+     * @param  array<string, array<string, string>>  $extras  варіант => оформлення (short, note, color, connect)
      */
-    private function select(string $key, array $label, array $values, bool $inUrl = false, array $drivers = []): array
+    private function select(string $key, array $label, array $values, bool $inUrl = false, array $drivers = [], array $extras = []): array
     {
         return [
             'key' => $key,
@@ -124,6 +136,7 @@ class GameSeeder extends Seeder
                 'value' => str($v)->slug()->value() ?: $v,
                 'label' => $v,
                 'driver' => $drivers[$v] ?? null,
+                ...$extras[$v] ?? [],
             ]), $values),
             'is_required' => true,
             'is_filterable' => true,

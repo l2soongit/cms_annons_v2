@@ -1,0 +1,277 @@
+/*
+ * Сторінка гри в стилі Minecraft (тема mc), перенесена з design/game/minecraft.html. Фільтри-інвентар ліворуч, список у стилі
+ * ігрового меню «Мережева гра» з кольоровим MOTD, анонси відкриття як досягнення, голоси як повідомлення в чаті.
+ * Піксельний шрифт Press Start 2P (з кирилицею) — лише для заголовків і ігрових елементів.
+ */
+:root {
+  --bg: #0b0f0a; --bg-2: #10150e; --card: #171d14; --line: #2a3424; --line-2: #3d4a34;
+  --text: #f1f5ee; --muted: #a3b09a; --faint: #74806c;
+  --grass: #6cc644; --grass-d: #4e9a2a; --dirt: #8b5a2b; --dirt-d: #6b4320; --stone: #7d7d7d; --stone-d: #5a5a5a;
+  --sky: #78b6ff; --gold: #ffd84a; --diamond: #4ee6d6; --redstone: #e5332b;
+  --pixel: 'Press Start 2P', monospace; --display: 'Unbounded', sans-serif; --font: 'Manrope', system-ui, sans-serif;
+}
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+body { background: var(--bg); color: var(--text); font: 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+:focus-visible { outline: 3px solid var(--gold); outline-offset: 2px; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+.num { font-variant-numeric: tabular-nums; }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+.px { font-family: var(--pixel); letter-spacing: 0; }
+
+/* Ігрова кнопка: кам'яна, з фаскою; при наведенні — синювата, як у меню гри */
+.btn { position: relative; display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 10px 16px; font: 10px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; cursor: pointer; white-space: nowrap;
+  background: linear-gradient(180deg, #8b8b8b, #6f6f6f); border: 2px solid #000; box-shadow: inset 2px 2px 0 #b5b5b5, inset -2px -2px 0 #4a4a4a; image-rendering: pixelated; transition: none; }
+.btn:hover { background: linear-gradient(180deg, #7f8fd6, #5f6fb8); box-shadow: inset 2px 2px 0 #b3bff0, inset -2px -2px 0 #3c4787; }
+.btn:active { box-shadow: inset -2px -2px 0 #b5b5b5, inset 2px 2px 0 #4a4a4a; }
+.btn-green { background: linear-gradient(180deg, #5fae3b, #3f8a22); box-shadow: inset 2px 2px 0 #8fd66a, inset -2px -2px 0 #2a5c16; }
+.btn-green:hover { background: linear-gradient(180deg, #6fc447, #4b9e2b); }
+.btn-sm { padding: 7px 10px; font-size: 8px; }
+.btn.copied { background: linear-gradient(180deg, #ffd84a, #c9a21d); color: #2a2000; text-shadow: none; }
+
+/* Шапка */
+header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
+.bar { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 16px; border-radius: 4px; background: #10150ecc; backdrop-filter: blur(14px); border: 2px solid #000; box-shadow: inset 0 0 0 2px var(--line); }
+.logo { display: flex; align-items: center; gap: 12px; font: 700 17px var(--display); letter-spacing: -0.02em; }
+.logo i { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(90deg, #fbbf24, #f97316); display: grid; place-items: center; }
+.bar nav { display: flex; gap: 4px; margin: 0 auto; font-size: 14px; font-weight: 600; color: var(--muted); }
+.bar nav a { padding: 6px 12px; }
+.bar nav a:hover { color: var(--text); }
+.bar nav a[aria-current] { color: #10200a; background: var(--grass); box-shadow: inset 0 -3px 0 var(--grass-d); }
+.crumbs { margin-top: 16px; font-size: 13px; color: var(--faint); display: flex; gap: 8px; }
+
+/* ── Банер: піксельний світ ── */
+.mhero { position: relative; isolation: isolate; overflow: hidden; margin-top: 16px; height: 380px; border: 4px solid #000; box-shadow: inset 0 0 0 2px #ffffff22; image-rendering: pixelated; }
+.mhero .sky { position: absolute; inset: 0; z-index: -3; background: linear-gradient(180deg, #4a8fe0 0%, #78b6ff 55%, #b8dcff 100%); animation: daycycle 40s ease-in-out infinite alternate; }
+@keyframes daycycle { 70% { filter: hue-rotate(0deg) brightness(1); } 100% { filter: hue-rotate(-30deg) saturate(1.3) brightness(.8); } }
+.msun { position: absolute; z-index: -2; top: 36px; right: 22%; width: 64px; height: 64px; background: #fff7c2; box-shadow: 0 0 0 8px #fff3a066, 0 0 60px #fff3a0; }
+.mcloud { position: absolute; z-index: -2; height: 24px; background: #fff; box-shadow: 24px -24px 0 #fff, 48px -24px 0 #fff, 72px 0 0 #fff, 48px 0 0 #fff, 24px 0 0 #fff; opacity: .95; animation: cloud linear infinite; }
+@keyframes cloud { from { transform: translateX(-200px); } to { transform: translateX(1400px); } }
+/* Рельєф: стовпчики блоків різної висоти — трава, земля, камінь з рудами */
+.terrain { position: absolute; left: 0; right: 0; bottom: 0; z-index: -1; display: flex; align-items: flex-end; height: 62%; }
+.col { flex: 1; display: flex; flex-direction: column; }
+.blk { aspect-ratio: 1; width: 100%; }
+.blk.g { background: linear-gradient(180deg, #6cc644 0 35%, #8b5a2b 35%); box-shadow: inset 0 -2px 0 #0002, inset 2px 0 0 #fff1; }
+.blk.d { background: #8b5a2b; box-shadow: inset 0 -2px 0 #0002, inset 3px 3px 0 #a06a35, inset -3px -3px 0 #6b4320; }
+.blk.s { background: #7d7d7d; box-shadow: inset 3px 3px 0 #8f8f8f, inset -3px -3px 0 #626262; }
+.blk.o { background: radial-gradient(circle at 30% 35%, var(--ore) 0 14%, transparent 15%), radial-gradient(circle at 70% 65%, var(--ore) 0 12%, transparent 13%), #7d7d7d; box-shadow: inset 3px 3px 0 #8f8f8f, inset -3px -3px 0 #626262; animation: ore 2.4s ease-in-out infinite; }
+@keyframes ore { 50% { filter: brightness(1.35) drop-shadow(0 0 4px var(--ore)); } }
+.tree { position: absolute; z-index: -1; display: grid; grid-template-columns: repeat(3, var(--b)); }
+.tree i { width: var(--b); height: var(--b); }
+.tree .lf { background: #3e8a2a; box-shadow: inset 3px 3px 0 #4fa335, inset -3px -3px 0 #2f6b1f; }
+.tree .tr { background: #6b4a2b; box-shadow: inset 3px 0 0 #7d5a36, inset -3px 0 0 #553a21; }
+/* 3D-блок трави, що обертається */
+.cube-wrap { position: absolute; right: 12%; top: 26%; width: 96px; height: 96px; perspective: 600px; animation: bob 3s ease-in-out infinite; }
+.cube { position: relative; width: 96px; height: 96px; transform-style: preserve-3d; animation: spin 10s linear infinite; }
+.cube i { position: absolute; inset: 0; background: linear-gradient(180deg, #6cc644 0 28%, #8b5a2b 28%); box-shadow: inset 0 0 0 3px #0003, inset 6px 18px 0 -2px #ffffff10; }
+.cube i:nth-child(1) { transform: translateZ(48px); } .cube i:nth-child(2) { transform: rotateY(90deg) translateZ(48px); }
+.cube i:nth-child(3) { transform: rotateY(180deg) translateZ(48px); } .cube i:nth-child(4) { transform: rotateY(-90deg) translateZ(48px); }
+.cube i:nth-child(5) { transform: rotateX(90deg) translateZ(48px); background: #6cc644; } .cube i:nth-child(6) { transform: rotateX(-90deg) translateZ(48px); background: #6b4320; }
+@keyframes spin { from { transform: rotateX(-24deg) rotateY(0); } to { transform: rotateX(-24deg) rotateY(360deg); } }
+@keyframes bob { 50% { transform: translateY(-14px); } }
+.cube-shadow { position: absolute; right: calc(12% + 18px); top: calc(26% + 150px); width: 60px; height: 10px; background: #0004; filter: blur(4px); animation: shadow 3s ease-in-out infinite; }
+@keyframes shadow { 50% { transform: scale(.7); opacity: .6; } }
+.mhero .content { position: absolute; left: 32px; top: 32px; max-width: 560px; }
+.mhero .tagpx { display: inline-block; padding: 6px 10px; font: 8px var(--pixel); color: #fff; background: #0008; border: 2px solid #000; }
+.mhero h1 { margin-top: 16px; font: 40px/1.15 var(--pixel); color: #e8e8e8; text-shadow: 4px 4px 0 #3f3f3f, 0 0 0 #000; -webkit-text-stroke: 1px #2b2b2b; }
+.mhero h1 .w { display: inline-block; animation: drop .6s cubic-bezier(.3,1.4,.5,1) both; animation-delay: calc(var(--i) * 70ms + 150ms); }
+@keyframes drop { from { transform: translateY(-60px); opacity: 0; } }
+.splash { position: absolute; left: 380px; top: 100px; font: 12px var(--pixel); color: #ffff55; text-shadow: 2px 2px 0 #3f3f00; transform: rotate(-16deg); animation: splash .5s ease-in-out infinite alternate; white-space: nowrap; }
+@keyframes splash { to { transform: rotate(-16deg) scale(1.08); } }
+.mhero .lead { margin-top: 18px; color: #fff; font-weight: 700; text-shadow: 0 2px 6px #0009; max-width: 44ch; }
+
+/* Панель статистики під банером — як хотбар */
+/* Скільки клітинок — стільки колонок: таймер сезону можна вимкнути в адмінці */
+.hotbar { display: grid; grid-auto-flow: column; grid-auto-columns: 1fr; border: 4px solid #000; border-top: 0; background: #1d1d1d; }
+.hotbar div { padding: 14px 18px; border-right: 2px solid #000; box-shadow: inset 2px 2px 0 #3a3a3a, inset -2px -2px 0 #111; }
+.hotbar div:last-child { border-right: 0; }
+.hotbar b { display: block; font: 16px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; }
+.hotbar b.g { color: var(--grass); } .hotbar b.y { color: var(--gold); }
+.hotbar span { font-size: 12px; color: var(--muted); }
+
+/* ── Макет: інвентар-фільтри ліворуч, список праворуч ── */
+.mlayout { display: grid; grid-template-columns: 290px 1fr; gap: 24px; margin-top: 32px; align-items: start; }
+.inv { position: sticky; top: 88px; padding: 16px; background: #c6c6c6; color: #3f3f3f; border: 4px solid #000; box-shadow: inset 4px 4px 0 #fff, inset -4px -4px 0 #555; }
+.inv h3 { font: 10px var(--pixel); color: #3f3f3f; margin: 14px 0 10px; }
+.inv h3:first-child { margin-top: 0; }
+/* Перемикач Java / Bedrock — як важіль */
+.lever { display: grid; grid-template-columns: 1fr 1fr; border: 2px solid #000; }
+/* Слоти предметів для версій і режимів */
+.slots { display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.slot { text-decoration: none; position: relative; aspect-ratio: 1; display: grid; place-items: center; background: #8b8b8b; border: 0; cursor: pointer; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; font: 8px var(--pixel); color: #fff; text-shadow: 1px 1px 0 #333; }
+.slot:hover { background: #a2a2a2; }
+.slot[aria-pressed="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8, 0 0 0 2px #fff; }
+.slot .cnt { position: absolute; right: 3px; bottom: 2px; font-size: 7px; }
+.slot-row { display: grid; gap: 4px; }
+.mode-slot { display: flex; align-items: center; gap: 8px; padding: 6px; width: 100%; background: #8b8b8b; border: 0; cursor: pointer; box-shadow: inset 2px 2px 0 #373737, inset -2px -2px 0 #fff; font: 8px var(--pixel); color: #fff; text-shadow: 1px 1px 0 #333; text-align: left; }
+.mode-slot:hover { background: #a2a2a2; }
+.mode-slot[aria-pressed="true"] { background: #6f8f5a; box-shadow: inset 2px 2px 0 #2b3b20, inset -2px -2px 0 #c8f0a8; }
+.mode-slot .ic { flex: none; width: 24px; height: 24px; display: grid; place-items: center; background: #0003; }
+.mode-slot .cnt { margin-left: auto; }
+.inv input { width: 100%; padding: 8px; font: 9px var(--pixel); color: #fff; background: #000; border: 2px solid #a0a0a0; }
+.inv input::placeholder { color: #777; }
+
+/* ── Список у стилі меню «Мережева гра» ── */
+.mp { border: 4px solid #000; background: #00000066; background-image: linear-gradient(#0009, #0009), repeating-conic-gradient(#3b2a1a 0 25%, #4a3523 0 50%); background-size: auto, 32px 32px; padding: 8px; }
+.mp-head { display: flex; justify-content: space-between; align-items: center; padding: 8px 8px 12px; font: 10px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; flex-wrap: wrap; gap: 8px; }
+.sorts { display: flex; gap: 4px; }
+.entry { position: relative; display: grid; grid-template-columns: 40px 72px 1fr auto; gap: 14px; align-items: center; padding: 8px 10px; border: 2px solid transparent; cursor: pointer; transition: background-color .1s; }
+.entry:hover { background: #ffffff0d; }
+.entry.sel { border-color: #fff; background: #ffffff12; }
+.entry.vip { background: linear-gradient(90deg, #ffd84a1a, transparent 50%); border-color: #ffd84a88; }
+.entry .rank { font: 14px var(--pixel); color: #aaa; text-align: center; text-shadow: 2px 2px 0 #222; }
+.entry .rank.r1 { color: #ffd84a; } .entry .rank.r2 { color: #e6e6e6; } .entry .rank.r3 { color: #e8915a; }
+.icon { width: 72px; height: 72px; image-rendering: pixelated; border: 2px solid #000; background: #222; }
+.info { min-width: 0; }
+.info .name { font: 12px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; display: flex; align-items: center; gap: 8px; }
+.motd { margin-top: 8px; font: 9px/1.7 var(--pixel); color: #aaa; text-shadow: 1px 1px 0 #2a2a2a; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.motd span.obf { animation: obf .15s steps(1) infinite; }
+@keyframes obf { 50% { opacity: .4; } }
+.tags { margin-top: 6px; display: flex; gap: 6px; flex-wrap: wrap; }
+.tag { font: 7px var(--pixel); padding: 3px 5px; color: #fff; background: #0006; border: 1px solid #555; }
+/* Колір видання задається у варіанті поля в адмінці (--ed) */
+.tag.ed { color: var(--ed, #ffaa00); border-color: color-mix(in srgb, var(--ed, #ffaa00) 55%, transparent); }
+.tag.vipt { color: #2a2000; background: #ffd84a; border-color: #000; }
+.tag.new { color: #55ff55; border-color: #55ff5588; }
+.side-stats { text-align: right; display: grid; justify-items: end; gap: 6px; }
+.players { font: 10px var(--pixel); color: #aaa; text-shadow: 1px 1px 0 #222; display: flex; align-items: center; gap: 8px; }
+.players b { color: #fff; font-weight: 400; }
+/* Індикатор пінгу: 5 рисок різної висоти */
+.ping { display: inline-flex; align-items: flex-end; gap: 1px; height: 14px; }
+.ping i { width: 3px; background: #333; }
+.ping i:nth-child(1) { height: 4px; } .ping i:nth-child(2) { height: 6px; } .ping i:nth-child(3) { height: 8px; } .ping i:nth-child(4) { height: 11px; } .ping i:nth-child(5) { height: 14px; }
+.ping.p5 i, .ping.p4 i:nth-child(-n+4), .ping.p3 i:nth-child(-n+3) { background: #55ff55; }
+.ping.p2 i:nth-child(-n+2) { background: #ffff55; } .ping.p1 i:nth-child(1) { background: #ff5555; }
+.ping.off i { background: #552222; }
+.vt { font: 9px var(--pixel); color: #ffd84a; text-shadow: 1px 1px 0 #3f3000; }
+.acts { display: flex; gap: 6px; }
+.empty { padding: 40px; text-align: center; font: 10px var(--pixel); color: #aaa; line-height: 2; }
+.vip-sep { margin: 4px 8px 8px; height: 2px; background: repeating-linear-gradient(90deg, #ffd84a 0 6px, transparent 6px 10px); }
+
+/* ── «Скоро відкриття» як спливні досягнення ── */
+.achs { margin-top: 32px; }
+.sec-px { font: 14px var(--pixel); color: #fff; text-shadow: 3px 3px 0 #3f3f3f; margin-bottom: 14px; }
+.ach-row { display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; }
+.ach { display: grid; grid-template-columns: 52px 1fr; gap: 12px; padding: 12px; background: #212121; border: 2px solid #000; box-shadow: inset 2px 2px 0 #555, inset -2px -2px 0 #111, 0 8px 0 -4px #0006; }
+.ach .aico { width: 52px; height: 52px; display: grid; place-items: center; background: #3a3a3a; box-shadow: inset 2px 2px 0 #1a1a1a, inset -2px -2px 0 #5a5a5a; }
+.ach .atitle { font: 9px var(--pixel); color: #ffff55; text-shadow: 1px 1px 0 #3f3f00; }
+.ach .aname { margin-top: 6px; font: 10px var(--pixel); color: #fff; }
+.ach .ainfo { margin-top: 4px; font-size: 12px; color: var(--muted); }
+.ach .afoot { grid-column: 1 / -1; display: flex; justify-content: space-between; align-items: center; font-size: 12px; color: var(--muted); }
+
+/* ── Нижня смуга: зал слави як дерево досягнень, версії як смуги досвіду ── */
+.band { margin-top: 40px; display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.panel { padding: 18px; background: #1a1a1a; border: 2px solid #000; box-shadow: inset 2px 2px 0 #3a3a3a, inset -2px -2px 0 #0c0c0c; }
+.panel h3 { font: 11px var(--pixel); color: #fff; text-shadow: 2px 2px 0 #3f3f3f; margin-bottom: 14px; }
+.fame li { list-style: none; display: grid; grid-template-columns: 40px 1fr auto; gap: 12px; align-items: center; padding: 8px 0; border-bottom: 2px dashed #2a2a2a; }
+.fame ul { padding: 0; }
+.fame .trophy { width: 36px; height: 36px; display: grid; place-items: center; background: #2b2b2b; box-shadow: inset 2px 2px 0 #111, inset -2px -2px 0 #444; }
+.fame b { font: 9px var(--pixel); color: #fff; }
+.fame small { display: block; font-size: 12px; color: var(--muted); }
+.fame .v { font: 9px var(--pixel); color: #ffd84a; }
+.xp { margin-top: 12px; }
+.xp .l { display: flex; justify-content: space-between; font: 9px var(--pixel); color: #fff; margin-bottom: 6px; }
+.xp .l span { color: #80ff20; }
+.xp .track { height: 10px; background: #000; border: 2px solid #000; box-shadow: inset 0 0 0 1px #333; }
+.xp .track i { display: block; height: 100%; width: 0; background: linear-gradient(180deg, #b6ff4a, #6fd400 50%, #4a9e00); transition: width 1.4s steps(20); }
+
+/* Повідомлення голосів — як ігровий чат */
+.chat { position: fixed; left: 16px; bottom: 16px; z-index: 40; display: grid; gap: 2px; pointer-events: none; width: min(420px, calc(100% - 32px)); }
+.chat p { padding: 4px 8px; background: #0008; font: 9px/1.6 var(--pixel); color: #fff; text-shadow: 1px 1px 0 #3f3f3f; animation: chat-in .2s steps(2) both; }
+.chat p.out { animation: chat-out .6s ease forwards; }
+.chat .nick { color: #55ffff; } .chat .srv { color: #ffff55; }
+@keyframes chat-in { from { opacity: 0; } }
+@keyframes chat-out { to { opacity: 0; } }
+
+[data-reveal] { opacity: 0; transform: translateY(16px); transition: opacity .5s steps(5), transform .5s steps(5); }
+[data-reveal].in { opacity: 1; transform: none; }
+footer { margin-top: 80px; border-top: 2px solid #000; box-shadow: inset 0 2px 0 var(--line); padding: 28px 0; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  [data-reveal] { opacity: 1 !important; transform: none !important; }
+  .chat { display: none; }
+}
+@media (max-width: 1024px) {
+  .mlayout { grid-template-columns: 1fr; }
+  .inv { position: static; }
+  .ach-row { grid-template-columns: 1fr 1fr; }
+  .band { grid-template-columns: 1fr; }
+  .bar nav { display: none; }
+  .splash { display: none; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  .mhero { height: 320px; }
+  .mhero h1 { font-size: 24px; }
+  .cube-wrap { right: 6%; top: 52%; transform: scale(.6); }
+  .hotbar { grid-auto-flow: row; grid-template-columns: 1fr 1fr; }
+  .ach-row { grid-template-columns: 1fr; }
+  .entry { grid-template-columns: 28px 48px 1fr; }
+  .icon { width: 48px; height: 48px; }
+  .side-stats { grid-column: 2 / -1; justify-items: start; text-align: left; }
+}
+
+/* ═══ Доповнення для сайту ═══ */
+/* Обкладинка гри з адмінки — поверх неба, під рельєфом */
+.mhero .hero-img { position: absolute; inset: 0; z-index: -2; background: center / cover no-repeat; opacity: .55; }
+.mcloud { width: 24px; }
+.bar .actions { display: flex; gap: 8px; }
+.bar .actions form { display: contents; }
+.logo img { display: block; }
+.btn-ghost { background: linear-gradient(180deg, #8b8b8b, #6f6f6f); }
+.toasts { display: none; }
+/* Перемикачі, слоти й сортування — посилання (працюють і без скрипта) */
+.lever a { display: block; text-align: center; padding: 8px 6px; font: 9px var(--pixel); background: #8b8b8b; color: #fff; text-shadow: 1px 1px 0 #333; box-shadow: inset 2px 2px 0 #aaa, inset -2px -2px 0 #555; }
+.lever a:hover { background: #9c9c9c; }
+.lever a[aria-pressed="true"] { background: var(--grass-d); box-shadow: inset 2px 2px 0 #7fcf55, inset -2px -2px 0 #2a5c16; }
+.sorts a { display: block; padding: 6px 8px; font: 8px var(--pixel); color: #fff; background: #0006; border: 2px solid #555; }
+.sorts a[aria-pressed="true"] { border-color: #fff; background: #ffffff1a; }
+.inv .reset { display: flex; margin-top: 12px; width: 100%; }
+.info .name a:hover { color: var(--gold); }
+.info .name a { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.icon { object-fit: cover; }
+.players .off { color: #ff5555; }
+.vt [data-server-votes] { color: inherit; }
+.btn.copied, .btn.copied:hover { background: linear-gradient(180deg, #ffd84a, #c9a21d); color: #2a2000; text-shadow: none; box-shadow: inset 2px 2px 0 #fff3a0, inset -2px -2px 0 #8a6d00; }
+.more { display: flex; justify-content: center; padding: 12px; }
+#list.loading { opacity: .5; transition: opacity .2s; }
+.muted { color: var(--muted); font-size: 13px; }
+.fame a:hover b { color: var(--gold); }
+.ach .afoot { gap: 8px; }
+/* Таймер відкриття: чорні клітинки з зеленими піксельними цифрами; стара цифра «їде» вгору */
+.ach .cd { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 4px; }
+.ach .cd .unit { text-align: center; padding: 0 0 4px; background: #000; box-shadow: inset 2px 2px 0 #333; }
+.ach .cd .tile { position: relative; height: 30px; overflow: hidden; }
+.ach .cd .val { position: absolute; inset: 0; display: grid; place-items: center; font: 14px var(--pixel); color: #55ff55; text-shadow: 2px 2px 0 #153f15; }
+.ach .cd .val.in { animation: px-in .3s steps(3) both; }
+.ach .cd .val.out { animation: px-out .3s steps(3) both; }
+@keyframes px-in { from { transform: translateY(100%); } }
+@keyframes px-out { to { transform: translateY(-100%); } }
+.ach .cd .lbl { font-size: 10px; color: #777; }
+.bump { animation: bump .5s steps(4); }
+@keyframes bump { 50% { color: #fff; } }
+/* Заголовок великими літерами, як у демо («MINE» «CRAFT»), хоч у адмінці назва звичайна */
+.mhero h1 { text-transform: uppercase; }
+/* Колонки сітки не розтягуються під довгий MOTD чи кнопки — інакше на телефоні сторінка ширша за екран */
+.mlayout > *, .ach-row > *, .band > * { min-width: 0; }
+@media (max-width: 1024px) {
+  .mlayout { grid-template-columns: minmax(0, 1fr); }
+}
+@media (max-width: 640px) {
+  .mhero .content { left: 16px; right: 16px; top: 20px; }
+  .mhero .lead { font-size: 14px; }
+  .entry { grid-template-columns: 28px 48px minmax(0, 1fr); gap: 10px; }
+  .mp-head .sorts { flex-wrap: wrap; }
+  .ach .afoot { flex-wrap: wrap; }
+  .bar { gap: 10px; padding-left: 10px; }
+  .bar .actions { gap: 4px; margin-left: auto; }
+  .bar .actions .btn { padding: 7px 7px; font-size: 7px; }
+  .hotbar b { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .mhero h1 .w { opacity: 1 !important; transform: none !important; }
+}

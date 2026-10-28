@@ -23,6 +23,65 @@ class Game extends Model
         'cs' => 'Тактичний радар (CS)',
     ];
 
+    /** Блоки сторінки гри, які адмін може вимкнути: ключ => назва в адмінці */
+    public const BLOCKS = [
+        'soon' => '«Скоро відкриття»',
+        'fame' => 'Зал слави',
+        'popular' => 'Популярність (хроніки, версії, карти)',
+        'season' => 'Таймер фіналу сезону',
+        'live' => 'Живі сповіщення про голоси',
+    ];
+
+    /**
+     * Тексти стилю, які можна перевизначити в адмінці: стиль => [ключ перекладу ui.* => назва поля].
+     * Порожнє поле — текст за замовчуванням з перекладів; :game — коротка назва гри.
+     */
+    public const THEME_TEXTS = [
+        'l2' => [
+            'home.season_left' => 'Підпис таймера сезону',
+            'game.add_own' => 'Кнопка в банері (:game — назва гри)',
+            'home.coming_soon' => 'Заголовок «Скоро відкриття»',
+            'game.fame' => 'Заголовок залу слави',
+            'game.empty' => 'Порожній список',
+            'game.empty_hint' => 'Підказка до порожнього списку',
+        ],
+        'gta' => [
+            'home.season_left' => 'Підпис таймера сезону',
+            'game.add_own' => 'Кнопка в банері (:game — назва гри)',
+            'game.soon_accent' => 'Виділене слово заголовка «Скоро відкриття»',
+            'game.soon_title_gta' => 'Заголовок «Скоро відкриття» (:accent — виділене слово)',
+            'game.fame' => 'Заголовок залу слави',
+            'game.empty' => 'Порожній список',
+            'game.empty_hint' => 'Підказка до порожнього списку',
+        ],
+        'cs' => [
+            'cs.season' => 'Підпис таймера сезону',
+            'cs.radar' => 'Підпис під радаром',
+            'cs.buy' => 'Заголовок меню закупівлі',
+            'cs.buy_hint' => 'Підказка під меню закупівлі',
+            'cs.board' => 'Заголовок таблиці серверів',
+            'cs.live' => 'Позначка «онлайн оновлюється»',
+            'cs.soon' => 'Заголовок «Скоро старт»',
+            'cs.mvp' => 'Заголовок залу слави (MVP)',
+            'cs.popular_maps' => 'Заголовок популярних карт',
+            'cs.empty' => 'Порожній список',
+            'cs.empty_hint' => 'Підказка до порожнього списку',
+        ],
+        'mc' => [
+            'mc.splash' => 'Жовті написи в банері (по одному на рядок)',
+            'mc.season' => 'Підпис таймера сезону',
+            'mc.soon' => 'Заголовок «Скоро відкриття»',
+            'mc.soon_title' => 'Напис на картці анонсу',
+            'mc.fame' => 'Заголовок залу слави',
+            'mc.popular' => 'Заголовок популярних версій',
+            'mc.empty' => 'Порожній список',
+            'mc.empty_hint' => 'Підказка до порожнього списку',
+        ],
+    ];
+
+    /** Скільки анонсів «Скоро відкриття» показувати за замовчуванням */
+    public const SOON_LIMIT = 3;
+
     protected $guarded = [];
 
     public array $translatable = ['name', 'hero_title', 'eyebrow', 'description', 'seo_title', 'seo_description'];
@@ -31,6 +90,7 @@ class Game extends Model
     {
         return [
             'is_active' => 'boolean',
+            'page' => 'array',
         ];
     }
 
@@ -96,6 +156,51 @@ class Game extends Model
     public function navName(): string
     {
         return mb_strlen($this->name) > 12 ? $this->shortName() : $this->name;
+    }
+
+    /** Чи показувати блок сторінки; нові й не налаштовані ігри показують усі блоки */
+    public function showsBlock(string $block): bool
+    {
+        return (bool) ($this->page['blocks'][$block] ?? true);
+    }
+
+    public function soonLimit(): int
+    {
+        return max(1, min(6, (int) ($this->page['soon_limit'] ?? self::SOON_LIMIT)));
+    }
+
+    /** Ключ поля для блоку популярності; порожньо — перший фільтр гри */
+    public function popularFieldKey(): ?string
+    {
+        return $this->page['popular_field'] ?? null;
+    }
+
+    /**
+     * Текст сторінки: свій з адмінки для поточної мови або переклад ui.<key>.
+     * Для списків (написи Minecraft) повертає масив рядків.
+     *
+     * @return string|array<int, string>
+     */
+    public function pageText(string $key, array $replace = []): string|array
+    {
+        $default = __("ui.{$key}", $replace);
+        $custom = trim((string) ($this->page['texts'][app()->getLocale()][self::textKey($key)] ?? ''));
+
+        if ($custom === '') {
+            return $default;
+        }
+
+        if (is_array($default)) {
+            return array_values(array_filter(array_map('trim', preg_split('/\R/u', $custom))));
+        }
+
+        return strtr($custom, collect($replace)->mapWithKeys(fn ($v, $k) => [":{$k}" => $v])->all());
+    }
+
+    /** Ключ у JSON без крапок: у формі адмінки крапка означає вкладеність */
+    public static function textKey(string $key): string
+    {
+        return str_replace('.', '_', $key);
     }
 
     public function scopeActive(Builder $query): void

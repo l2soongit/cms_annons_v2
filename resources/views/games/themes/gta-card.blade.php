@@ -2,15 +2,16 @@
     // Кольори картки стабільні для назви сервера
     $palette = [['#ff4fa3', '#6d28d9'], ['#fb923c', '#9a3412'], ['#22d3ee', '#0e7490'], ['#a3e635', '#3f6212'], ['#c084fc', '#581c87'], ['#fde047', '#a16207'], ['#f472b6', '#831843'], ['#f87171', '#7f1d1d'], ['#e879f9', '#701a75'], ['#38bdf8', '#075985']];
     [$c1, $c2] = $palette[crc32($server->name) % count($palette)];
-    $platforms = ['FiveM' => '#f97316', 'RAGE:MP' => '#38bdf8', 'alt:V' => '#22c55e', 'SA-MP' => '#eab308'];
-    $labels = $server->fieldValues->sortBy(fn ($v) => $v->field?->sort)->values()
-        ->map(fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value);
+    $values = $server->fieldValues->sortBy(fn ($v) => $v->field?->sort)->values();
+    $labels = $values->map(fn ($v) => collect($v->field?->options)->firstWhere('value', $v->value)['label'] ?? $v->value);
+    // Колір позначки платформи — з варіанта поля в адмінці
+    $platformColor = ($first = $values->first()) ? ($first->field?->option($first->value)['color'] ?? null) : null;
     $platform = $labels[0] ?? null;
     $mode = $labels[1] ?? null;
     $banner = $server->media->firstWhere('type', 'banner');
     $fill = $server->is_online ? (int) round($server->fillRatio() * 100) : 0;
-    // FiveM приймає команду в консолі F8, інші клієнти — адресу
-    $connect = $platform === 'FiveM' ? 'connect '.$server->address() : $server->address();
+    // Команда підключення з варіанта платформи (FiveM — «connect …» для консолі F8), інакше адреса
+    $connect = $server->connectCommand();
     $lead = ! $vip && $rank === 1;
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
 
@@ -40,7 +41,7 @@
       <div class="gname">
         <h3><a href="{{ route('servers.show', $server) }}">{{ $server->name }}</a></h3>
         <div class="gmeta">
-          @if ($platform)<span class="plat" style="--p:{{ $platforms[$platform] ?? 'var(--gc)' }}">{{ $platform }}</span>@endif
+          @if ($platform)<span class="plat" style="--p:{{ $platformColor ?? 'var(--gc)' }}">{{ $platform }}</span>@endif
           @if ($mode)<span class="mode">{{ $mode }}</span>@endif
           @if ($server->created_at?->gt(now()->subDays(7)))<span class="badge new">{{ __('ui.game.badge_new') }}</span>@endif
           @if ($server->verified_at)<svg class="ver" width="16" height="16" viewBox="0 0 20 20" fill="currentColor" role="img" aria-label="{{ __('ui.server.verified') }}"><path fill-rule="evenodd" d="M10 18a8 8 0 1 0 0-16 8 8 0 0 0 0 16Zm3.86-9.86a.75.75 0 0 0-1.22-.88l-3.24 4.5-1.6-1.6a.75.75 0 1 0-1.06 1.06l2.22 2.22a.75.75 0 0 0 1.14-.09l3.76-5.21Z" clip-rule="evenodd"/></svg>@endif
@@ -63,7 +64,7 @@
     </div>
     <div class="gact">
       <a class="btn btn-gold btn-sm" href="{{ route('servers.vote', $server) }}">{{ __('ui.server.vote') }}</a>
-      <button class="btn btn-ghost btn-sm connect" type="button" data-connect="{{ $connect }}" data-copied="{{ $platform === 'FiveM' ? __('ui.game.copied_f8') : __('ui.game.copied') }}" @disabled(! $server->is_online)>
+      <button class="btn btn-ghost btn-sm connect" type="button" data-connect="{{ $connect }}" data-copied="{{ $connect !== $server->address() ? __('ui.game.copied_f8') : __('ui.game.copied') }}" @disabled(! $server->is_online)>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>{{ __('ui.game.connect') }}</button>
       <code class="addr" title="{{ $connect }}">{{ $connect }}</code>
     </div>

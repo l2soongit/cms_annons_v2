@@ -10,7 +10,7 @@
   @forelse ($servers as $server)
     @include('games.themes.cs-row', ['server' => $server, 'rank' => $server->rank ?? $servers->firstItem() + $loop->index, 'vip' => false])
   @empty
-    <div class="empty"><b>{{ __('ui.cs.empty') }}</b>{{ __('ui.cs.empty_hint') }}</div>
+    <div class="empty"><b>{{ $game->pageText('cs.empty') }}</b>{{ $game->pageText('cs.empty_hint') }}</div>
   @endforelse
 </div>
 

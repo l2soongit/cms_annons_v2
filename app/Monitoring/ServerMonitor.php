@@ -49,6 +49,7 @@ class ServerMonitor
             // Карта й VAC лишаються останніми відомими, поки сервер офлайн
             'current_map' => $result->map ?? $server->current_map,
             'vac' => $result->vac ?? $server->vac,
+            'motd' => $result->motd ?? $server->motd,
             'ping_ms' => $result->online ? $result->pingMs : null,
             'offline_since' => $result->online ? null : ($server->offline_since ?? $now),
             'suspicious_online' => $this->isSuspicious($server, $result),

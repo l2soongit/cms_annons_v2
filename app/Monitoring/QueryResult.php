@@ -13,6 +13,8 @@ final class QueryResult
         // Лише протоколи, що їх повідомляють (Steam A2S): поточна карта й захист VAC
         public readonly ?string $map = null,
         public readonly ?bool $vac = null,
+        // Minecraft: опис сервера з кодами кольорів §
+        public readonly ?string $motd = null,
     ) {}
 
     public static function offline(): self

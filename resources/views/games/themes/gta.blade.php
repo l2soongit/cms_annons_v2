@@ -13,7 +13,7 @@
     $client = [
         'game' => $game->slug,
         'seasonEnd' => $stats['season_end'],
-        'feed' => ['url' => route('home.live'), 'after' => (int) \App\Models\Vote::where('created_at', '<', now()->subMinutes(10))->max('id'), 'enabled' => (bool) config('graj.home.live_feed')],
+        'feed' => ['url' => route('home.live'), 'after' => (int) \App\Models\Vote::where('created_at', '<', now()->subMinutes(10))->max('id'), 'enabled' => config('graj.home.live_feed') && $game->showsBlock('live')],
         'locale' => app()->getLocale(),
         't' => ['toastVote' => __('ui.home.toast_vote'), 'toastFrom' => __('ui.home.toast_from'), 'toastAnon' => __('ui.home.toast_anon'), 'votes' => __('ui.server.votes'), 'untilStart' => __('ui.game.until_start')],
     ];
@@ -49,15 +49,15 @@
       </dl>
     </div>
     <div class="hero-cta">
-      <div class="season">{{ __('ui.home.season_left') }}<b class="num" id="season">&nbsp;</b></div>
-      <a class="btn btn-gold" href="{{ route('cabinet.servers.create', ['game' => $game->slug]) }}">{{ __('ui.game.add_own', ['game' => $game->shortName()]) }}</a>
+      @if ($game->showsBlock('season'))<div class="season">{{ $game->pageText('home.season_left') }}<b class="num" id="season">&nbsp;</b></div>@endif
+      <a class="btn btn-gold" href="{{ route('cabinet.servers.create', ['game' => $game->slug]) }}">{{ $game->pageText('game.add_own', ['game' => $game->shortName()]) }}</a>
     </div>
   </section>
 
   <!-- GTA: без бічної колонки. Вгорі — білборди «Скоро відкриття», далі сітка карток на всю ширину -->
-  @if ($comingSoon->isNotEmpty())
+  @if ($comingSoon->isNotEmpty() && $game->showsBlock('soon'))
     <section class="billboards" aria-labelledby="soon-h" data-reveal>
-      <h2 id="soon-h" class="sec-title">{!! __('ui.game.soon_title_gta', ['accent' => '<span class="lore">'.e(__('ui.game.soon_accent')).'</span>']) !!}</h2>
+      <h2 id="soon-h" class="sec-title">{!! str_replace(':accent', '<span class="lore">'.e($game->pageText('game.soon_accent')).'</span>', e($game->pageText('game.soon_title_gta'))) !!}</h2>
       <div class="bb-row" id="soon">
         @foreach ($comingSoon as $s)
           @php $opens = $s->opens_at->copy()->startOfDay(); @endphp
@@ -89,7 +89,7 @@
             @foreach ($field->options as $option)
               @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
               @if ($n || $on)
-                <a class="chip" href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
+                <a @class(['chip', 'tinted' => ! empty($option['color'])]) href="{{ $filterUrl($field->key, $on ? null : $option['value']) }}" aria-pressed="{{ $on ? 'true' : 'false' }}" data-v="{{ $option['label'] }}" @if (! empty($option['color'])) style="--p:{{ $option['color'] }}" @endif data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
               @endif
             @endforeach
           </div></div>
@@ -119,8 +119,9 @@
 
   <!-- Широка смуга внизу: зал слави і популярність платформ -->
   <section class="band" data-reveal>
+    @if ($game->showsBlock('fame'))
     <div class="panel fame">
-      <h3><span>{{ __('ui.game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h3>
+      <h3><span>{{ $game->pageText('game.fame') }} <span class="lore gold" style="font-size:18px">{{ $game->shortName() }}</span></span></h3>
       @if ($fame->isNotEmpty())
         <ul id="fame">
           @foreach ($fame as $i => $winner)
@@ -133,9 +134,10 @@
         <p class="muted">{{ __('ui.game.fame_empty') }}</p>
       @endif
     </div>
-    @if ($shares)
+    @endif
+    @if ($shares && $game->showsBlock('popular'))
       <div class="panel">
-        <h3>{{ __('ui.game.popular_by')[$filters->first()->key] ?? __('ui.game.popular', ['field' => mb_strtolower($filters->first()->label)]) }}</h3>
+        <h3>{{ __('ui.game.popular_by')[$popularField->key] ?? __('ui.game.popular', ['field' => mb_strtolower($popularField->label)]) }}</h3>
         <div class="chron-bars" id="chron-bars">
           @foreach ($shares as $share)
             <div class="cb"><div class="l"><b>{{ $share['label'] }}</b><span class="num">{{ $share['percent'] }}%</span></div><div class="track"><i data-w="{{ $share['width'] }}"></i></div></div>

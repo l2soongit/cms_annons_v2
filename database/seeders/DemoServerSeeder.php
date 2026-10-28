@@ -27,6 +27,24 @@ class DemoServerSeeder extends Seeder
         'counter-strike' => ['Public 24/7 Dust2', 'Retake Pro', 'Surf Paradise', 'Zombie Escape UA', 'Jailbreak Night'],
     ];
 
+    /** Опис серверів Minecraft з кодами кольорів, як їх віддає моніторинг */
+    private const MOTD = [
+        'Карпати SMP' => '§aКарпати SMP §7| §e1.21
+§fВиживання без донату §7• §bсезон 5',
+        'SkyIsland' => '§eSkyIsland §7— класика 1.8
+§fОстрови, генератори, топ кланів',
+        'Bedrock Village' => '§bBedrock Village
+§fSkyBlock для телефону й консолі',
+        'Анархія Степ' => '§cАнархія Степ
+§7Сервер перезапускається...',
+        'Blockforge' => '§4§lBLOCKFORGE §8» §cАнархія
+§7Без правил. §kxx§r §7Без вайпів.',
+        'Minigames Hub' => '§6§lMINIGAMES HUB§r
+§aBedWars §7• §eSkyWars §7• §dParkour',
+        'Pixel Realm' => '§dPixel Realm §7| §fJava + Bedrock
+§eТворчий режим і конкурси будівель',
+    ];
+
     public function run(): void
     {
         $owner = User::firstOrCreate(
@@ -57,6 +75,7 @@ class DemoServerSeeder extends Seeder
                     'ping_ms' => $online ? fake()->numberBetween(8, 120) : null,
                     'current_map' => $game->slug === 'counter-strike' ? fake()->randomElement(['de_dust2', 'de_mirage', 'de_inferno', 'de_nuke', 'de_ancient', 'cs_office', 'surf_utopia']) : null,
                     'vac' => $game->slug === 'counter-strike' ? fake()->boolean(70) : null,
+                    'motd' => self::MOTD[$name] ?? null,
                     'checked_at' => now()->subMinutes(fake()->numberBetween(1, 5)),
                     'callback_secret' => Str::random(40),
                     'verify_token' => Str::lower(Str::random(16)),

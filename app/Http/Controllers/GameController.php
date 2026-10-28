@@ -95,6 +95,9 @@ class GameController extends Controller
             return view("{$theme}-list", compact('game', 'servers', 'vip', 'active', 'search'));
         }
 
+        // Поле блоку популярності обирає адмін (L2 — хроніки, Minecraft — версії); за замовчуванням перший фільтр
+        $popularField = $filters->firstWhere('key', $game->popularFieldKey()) ?? $filters->first();
+
         return view($theme, [
             'game' => $game,
             'servers' => $servers,
@@ -106,9 +109,10 @@ class GameController extends Controller
             'counts' => $this->optionCounts($game),
             'stats' => $this->stats($game),
             'comingSoon' => $game->servers()->published()->where('opens_at', '>', today())
-                ->with('fieldValues.field')->orderBy('opens_at')->limit(3)->get(),
+                ->with('fieldValues.field')->orderBy('opens_at')->limit($game->soonLimit())->get(),
             'fame' => $this->winners($game, 4)->where('place', 1)->values(),
-            'shares' => $this->shares($game, $filters->first()),
+            'popularField' => $popularField,
+            'shares' => $this->shares($game, $popularField),
             'perks' => $game->themeKey() === 'cs' ? $this->perkCounts($game) : [],
             'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
         ]);

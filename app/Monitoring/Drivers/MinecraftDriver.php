@@ -4,6 +4,7 @@ namespace App\Monitoring\Drivers;
 
 use App\Monitoring\Contracts\ServerQueryDriver;
 use App\Monitoring\QueryResult;
+use App\Support\Motd;
 
 /**
  * Minecraft Java Edition: Server List Ping (handshake + status request).
@@ -42,14 +43,16 @@ class MinecraftDriver implements ServerQueryDriver
             }
 
             $data = json_decode($json, true) ?: [];
-            $motd = $data['description'] ?? null;
+            $description = $data['description'] ?? null;
+            $motd = is_array($description) ? self::chatToLegacy($description) : (is_string($description) ? $description : null);
 
             return new QueryResult(
                 true,
                 (int) ($data['players']['online'] ?? 0),
                 (int) ($data['players']['max'] ?? 0),
-                is_array($motd) ? self::flattenChat($motd) : $motd,
+                $motd === null ? null : Motd::plain($motd),
                 (int) ((hrtime(true) - $start) / 1e6),
+                motd: $motd === null ? null : Motd::clip($motd),
             );
         } catch (\Throwable) {
             return new QueryResult(true);
@@ -100,13 +103,25 @@ class MinecraftDriver implements ServerQueryDriver
         throw new \RuntimeException('VarInt too long');
     }
 
-    private static function flattenChat(array $component): string
+    /**
+     * Текстовий компонент чату → рядок з кодами §, як у старих серверів: кожен шматок отримує
+     * повний успадкований стиль (§r, колір, жирний, «зашифрований»).
+     */
+    private static function chatToLegacy(array $component, array $style = []): string
     {
-        $text = $component['text'] ?? '';
+        $style = [
+            'color' => Motd::colorCode($component['color'] ?? null) ?? ($style['color'] ?? null),
+            'bold' => $component['bold'] ?? ($style['bold'] ?? false),
+            'obfuscated' => $component['obfuscated'] ?? ($style['obfuscated'] ?? false),
+        ];
+
+        $text = (string) ($component['text'] ?? '');
+        $out = $text === '' ? '' : '§r'.($style['color'] ? '§'.$style['color'] : '').($style['bold'] ? '§l' : '').($style['obfuscated'] ? '§k' : '').$text;
+
         foreach ($component['extra'] ?? [] as $part) {
-            $text .= is_array($part) ? self::flattenChat($part) : $part;
+            $out .= is_array($part) ? self::chatToLegacy($part, $style) : self::chatToLegacy(['text' => (string) $part], $style);
         }
 
-        return $text;
+        return $out;
     }
 }

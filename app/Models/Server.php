@@ -122,6 +122,27 @@ class Server extends Model
         return $this->port ? "{$this->host}:{$this->port}" : $this->host;
     }
 
+    /**
+     * Що копіює кнопка «Підключитися»: команда з варіанта поля (напр. «connect {address}» для FiveM і CS) або адреса.
+     * Потрібні завантажені fieldValues.field.
+     */
+    public function connectCommand(): string
+    {
+        $template = $this->fieldValues
+            ->map(fn ($v) => $v->field?->option($v->value)['connect'] ?? null)
+            ->first(fn ($t) => is_string($t) && trim($t) !== '');
+
+        return $template ? str_replace('{address}', $this->address(), trim($template)) : $this->address();
+    }
+
+    /** Варіант поля сервера за ключем поля (з short, note, color…); потрібні завантажені fieldValues.field */
+    public function fieldOption(string $key): ?array
+    {
+        $value = $this->fieldValues->first(fn ($v) => $v->field?->key === $key);
+
+        return $value ? ($value->field->option($value->value) ?? ['value' => $value->value, 'label' => $value->value]) : null;
+    }
+
     /** Підписи значень полів гри («Interlude», «x50»); потрібні завантажені fieldValues.field */
     public function fieldLabels(): string
     {

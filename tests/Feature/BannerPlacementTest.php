@@ -130,7 +130,10 @@ class BannerPlacementTest extends TestCase
         $owner->forceFill(['email_verified_at' => now()])->save();
         // Біля кожного місця — схема сторінки з підписом, де стоятиме банер
         $this->actingAs($owner)->get('/cabinet/ads')->assertOk()->assertSee(__('billing.ads.placements.game_side'))
-            ->assertSee(__('billing.ads.where.game_side'))->assertSee(__('billing.ads.where.header'))->assertSee('<svg viewBox="0 0 200 130"', false);
+            ->assertSee(__('billing.ads.where.game_side'))->assertSee(__('billing.ads.where.header'))->assertSee('images/ad-places/game_side.webp', false)->assertSee(__('billing.ads.zoom'));
+        foreach (array_keys(Banner::PLACEMENTS) as $placement) {
+            $this->assertFileExists(public_path("images/ad-places/{$placement}.webp"), "Немає скріншота місця {$placement}");
+        }
     }
 
     public function test_every_themed_game_page_has_its_game_slot(): void

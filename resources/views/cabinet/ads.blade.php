@@ -60,7 +60,7 @@
                                         @endif
                                     </p>
                                 </div>
-                                <x-ad-placement-preview :placement="$first->placement" class="w-full max-w-[200px] sm:w-[200px]" />
+                                <x-ad-placement-preview :placement="$first->placement" :game="$first->game" class="w-full sm:w-72 lg:w-80" />
                                 </div>
                             @endforeach
                         </div>

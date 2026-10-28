@@ -1,56 +1,17 @@
-{{-- Схема сторінки, де стоїть рекламне місце: покупець бачить, куди потрапить банер. Кольори — з теми сайту --}}
-@props(['placement'])
+{{-- Скріншот сторінки сайту з позначеним місцем банера: покупець бачить, куди саме потрапить реклама.
+     Знімки в public/images/ad-places — оновлюються разом із дизайном сторінок. Клік відкриває повний розмір --}}
+@props(['placement', 'game' => null])
 @php
-    $muted = 'fill:var(--color-seam)';
-    $soft = 'fill:var(--color-slab-2)';
-    $spot = 'fill:var(--color-amber)';
+    // Банер гри: у кожної гри свій стиль сторінки, тож і знімок свій (game-<slug>.webp), інакше — загальний
+    $name = $placement === 'game' && $game && is_file(public_path("images/ad-places/game-{$game->slug}.webp")) ? "game-{$game->slug}" : $placement;
+    $src = asset("images/ad-places/{$name}.webp");
+    [$iw, $ih] = @getimagesize(public_path("images/ad-places/{$name}.webp")) ?: [1000, 540];
 @endphp
 <figure {{ $attributes->merge(['class' => 'shrink-0']) }}>
-    <svg viewBox="0 0 200 130" width="200" height="130" role="img" aria-label="{{ __("billing.ads.where.{$placement}") }}"
-         style="display:block;width:100%;max-width:200px;height:auto;border:1px solid var(--color-seam);border-radius:6px;background:var(--color-slab)">
-        {{-- Вікно браузера й навігація --}}
-        <rect x="0" y="0" width="200" height="10" style="{{ $soft }}"/>
-        <circle cx="6" cy="5" r="1.6" style="{{ $muted }}"/><circle cx="11" cy="5" r="1.6" style="{{ $muted }}"/><circle cx="16" cy="5" r="1.6" style="{{ $muted }}"/>
-        <rect x="8" y="14" width="26" height="5" rx="1.5" style="{{ $muted }}"/>
-        <rect x="120" y="14" width="72" height="5" rx="1.5" style="{{ $muted }}"/>
-
-        {{-- Шапка є на всіх сторінках, крім голосування --}}
-        @unless ($placement === 'vote')
-            <rect x="8" y="23" width="184" height="12" rx="2" style="{{ $placement === 'header' ? $spot : $muted }}" opacity="{{ $placement === 'header' ? 1 : .45 }}"/>
-        @endunless
-
-        @if ($placement === 'vote')
-            {{-- Сторінка голосування: вузька колонка — заголовок, поле нікнейму, кнопка, під нею банер --}}
-            <rect x="62" y="26" width="76" height="7" rx="1.5" style="{{ $muted }}"/>
-            <rect x="62" y="37" width="56" height="4" rx="1" style="{{ $soft }}"/>
-            <rect x="62" y="47" width="76" height="10" rx="2" style="{{ $soft }}"/>
-            <rect x="62" y="61" width="76" height="9" rx="2" style="{{ $muted }}"/>
-            <rect x="70" y="78" width="60" height="44" rx="2" style="{{ $spot }}"/>
-        @elseif ($placement === 'sidebar')
-            {{-- Сторінка сервера: назва, опис зліва, бічна колонка справа --}}
-            <rect x="8" y="40" width="20" height="20" rx="3" style="{{ $muted }}"/>
-            <rect x="32" y="42" width="60" height="6" rx="1.5" style="{{ $muted }}"/>
-            <rect x="32" y="52" width="40" height="4" rx="1" style="{{ $soft }}"/>
-            @foreach ([66, 76, 86, 96, 106, 116] as $y)
-                <rect x="8" y="{{ $y }}" width="{{ $loop->even ? 112 : 124 }}" height="5" rx="1" style="{{ $soft }}"/>
-            @endforeach
-            <rect x="142" y="40" width="50" height="42" rx="2" style="{{ $spot }}"/>
-            <rect x="142" y="86" width="50" height="36" rx="2" style="{{ $soft }}"/>
-        @else
-            {{-- Сторінка гри (для шапки — вона ж як приклад): блок гри, банер гри, список серверів --}}
-            <rect x="8" y="39" width="184" height="24" rx="3" style="{{ $soft }}"/>
-            <rect x="14" y="45" width="58" height="7" rx="1.5" style="{{ $muted }}"/>
-            <rect x="14" y="55" width="40" height="3" rx="1" style="{{ $muted }}"/>
-            <rect x="8" y="67" width="{{ $placement === 'game_side' ? 128 : 184 }}" height="10" rx="2"
-                  style="{{ $placement === 'game' ? $spot : $muted }}" opacity="{{ $placement === 'game' ? 1 : .45 }}"/>
-            @foreach ([81, 92, 103, 114] as $y)
-                <rect x="8" y="{{ $y }}" width="{{ $placement === 'game_side' ? 128 : 184 }}" height="8" rx="1.5" style="{{ $soft }}"/>
-            @endforeach
-            @if ($placement === 'game_side')
-                <rect x="142" y="67" width="50" height="34" rx="2" style="{{ $spot }}"/>
-                <rect x="142" y="105" width="50" height="17" rx="2" style="{{ $soft }}"/>
-            @endif
-        @endif
-    </svg>
-    <figcaption class="mt-1.5 max-w-[200px] text-xs text-moss">{{ __("billing.ads.where.{$placement}") }}</figcaption>
+    <a href="{{ $src }}" target="_blank" rel="noopener" class="group relative block overflow-hidden rounded-lg border border-seam hover:border-amber">
+        <img src="{{ $src }}" alt="{{ __("billing.ads.where.{$placement}") }}" width="{{ $iw }}" height="{{ $ih }}" loading="lazy" decoding="async"
+             class="block h-auto w-full transition duration-200 group-hover:scale-[1.02]">
+        <span class="absolute right-2 bottom-2 rounded bg-black/70 px-2 py-0.5 text-[11px] font-medium text-white opacity-0 transition group-hover:opacity-100 group-focus-visible:opacity-100">{{ __('billing.ads.zoom') }}</span>
+    </a>
+    <figcaption class="mt-2 text-xs text-moss">{{ __("billing.ads.where.{$placement}") }}</figcaption>
 </figure>

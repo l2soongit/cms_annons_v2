@@ -117,6 +117,7 @@ return [
         'busy' => 'Booked days',
         'busy_none' => 'all days are free',
         'clash_hint' => 'The header appears on every page, so other placements for the same server on the same dates cannot be bought together with it. The game banner and the game side column are on the same page too, so only one of them at a time.',
+        'zoom' => 'Open full size',
         'where' => [
             'header' => 'At the top of every page, right below the menu',
             'game' => 'On your game page, below the game block, above the server list',

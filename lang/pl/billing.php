@@ -117,6 +117,7 @@ return [
         'busy' => 'Zajęte dni',
         'busy_none' => 'wszystkie dni wolne',
         'clash_hint' => 'Nagłówek jest widoczny na wszystkich stronach, dlatego razem z nim nie można kupić innych miejsc dla tego samego serwera w tych samych terminach. Baner gry i kolumna boczna gry są na tej samej stronie, więc jednocześnie tylko jedno z nich.',
+        'zoom' => 'Otwórz w pełnym rozmiarze',
         'where' => [
             'header' => 'Na górze każdej strony, tuż pod menu',
             'game' => 'Na stronie Twojej gry, pod blokiem gry, nad listą serwerów',

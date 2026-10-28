@@ -224,11 +224,8 @@ main { min-width: 0; padding: 20px 32px 64px; }
 .place-opt .pr { grid-row: 1 / 3; grid-column: 2; font-weight: 800; }
 .place-opt[aria-pressed="true"] { border-color: var(--amber); background: #fbbf240d; }
 .mock { position: relative; border-radius: var(--r); border: 1px solid var(--line-2); background: var(--bg-2); overflow: hidden; }
-.mock svg { display: block; width: 100%; height: auto; }
-.mock .spot { fill: var(--amber); transition: opacity .2s; animation: glow 1.6s ease-in-out infinite; }
-@keyframes glow { 50% { opacity: .55; } }
-.mock .dim { fill: #27272a; }
-.mock .soft { fill: #1f1f23; }
+.mock img { display: block; width: 100%; height: auto; transition: transform .2s; }
+.mock a:hover img { transform: scale(1.02); }
 .mock-cap { margin-top: 10px; font-size: 13px; color: var(--muted); }
 .cal { display: grid; grid-template-columns: repeat(7, 1fr); gap: 4px; margin-top: 12px; }
 .cal .dw { font-size: 11px; font-weight: 700; color: var(--faint); text-align: center; padding-bottom: 2px; }
@@ -506,7 +503,7 @@ td small { display: block; color: var(--faint); font-size: 12px; }
         <div class="stack">
           <div class="card">
             <h2>Де буде банер</h2>
-            <div class="mock" style="margin-top:14px"><svg id="mock" viewBox="0 0 400 250" aria-label="Схема сторінки з місцем банера"></svg></div>
+            <div class="mock" id="mock" style="margin-top:14px"></div>
             <p class="mock-cap" id="mockCap"></p>
           </div>
           <div class="card">
@@ -696,24 +693,11 @@ td small { display: block; color: var(--faint); font-size: 12px; }
   // Власна шапка в демо: 20–21 листопада — інші місця на ці дні не продаються (крім голосування, де шапки немає)
   const ownHeader = [20, 21];
   let place = 'game_side', from = null, to = null;
+  // Скріншоти справжніх сторінок сайту з позначеним місцем (ті самі, що в кабінеті: public/images/ad-places)
   const mock = (p) => {
-    const S = (x, y, w, h, cls) => `<rect x="${x}" y="${y}" width="${w}" height="${h}" rx="4" class="${cls}"/>`;
-    let s = S(0, 0, 400, 18, 'soft') + S(14, 5, 50, 8, 'dim') + S(250, 5, 136, 8, 'dim');
-    if (p !== 'vote') s += S(14, 28, 372, 24, p === 'header' ? 'spot' : 'dim');
-    if (p === 'vote') {
-      s += S(130, 34, 140, 12, 'dim') + S(130, 52, 100, 7, 'soft') + S(130, 70, 140, 18, 'soft') + S(130, 94, 140, 16, 'dim') + S(145, 122, 110, 100, 'spot');
-    } else if (p === 'sidebar') {
-      s += S(14, 62, 40, 40, 'dim') + S(62, 66, 120, 12, 'dim') + S(62, 84, 80, 8, 'soft');
-      for (let i = 0; i < 6; i++) s += S(14, 116 + i * 20, i % 2 ? 230 : 250, 10, 'soft');
-      s += S(284, 62, 102, 86, 'spot') + S(284, 156, 102, 80, 'soft');
-    } else {
-      s += S(14, 62, 372, 48, 'soft') + S(26, 74, 120, 14, 'dim') + S(26, 94, 80, 6, 'dim');
-      const w = p === 'game_side' ? 258 : 372;
-      s += S(14, 120, w, 20, p === 'game' ? 'spot' : 'dim');
-      for (let i = 0; i < 4; i++) s += S(14, 148 + i * 24, w, 16, 'soft');
-      if (p === 'game_side') s += S(284, 120, 102, 84, 'spot') + S(284, 212, 102, 30, 'soft');
-    }
-    $('#mock').innerHTML = s; $('#mockCap').textContent = places[p].cap; $('#size').textContent = places[p].size;
+    const src = `../../public/images/ad-places/${p}.webp`;
+    $('#mock').innerHTML = `<a href="${src}" target="_blank" rel="noopener"><img src="${src}" alt="${places[p].cap}"></a>`;
+    $('#mockCap').textContent = places[p].cap; $('#size').textContent = places[p].size;
   };
   const renderPlaces = () => {
     $('#places').innerHTML = Object.entries(places).map(([k, v]) => `<button class="place-opt" aria-pressed="${k === place}" data-place="${k}"><b>${v.name}</b><small>${v.size} px</small><span class="pr num">${v.price} ₴/день</span></button>`).join('');

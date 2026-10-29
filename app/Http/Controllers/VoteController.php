@@ -17,11 +17,19 @@ class VoteController extends Controller
     {
         abort_unless($server->status === ServerStatus::Published, 404);
 
-        $server->load('game');
+        $server->load(['game', 'media' => fn ($q) => $q->where('type', 'logo')]);
+
+        // Відрив від сусіда в рейтингу — мотивує проголосувати
+        $neighbor = $server->rank
+            ? Server::published()->where('game_id', $server->game_id)->where('rank', $server->rank > 1 ? $server->rank - 1 : 2)->value('votes_month')
+            : null;
 
         return view('servers.vote', [
             'server' => $server,
             'nextVoteAt' => $votes->nextVoteAt($server, $request->ip(), $request->user()),
+            // Щойно проголосував: стан «Дякуємо» на цій самій сторінці
+            'voted' => $request->session()->get('voted'),
+            'neighbor' => $neighbor,
         ]);
     }
 
@@ -43,6 +51,6 @@ class VoteController extends Controller
             ]);
         }
 
-        return to_route('servers.show', $server)->with('voted', true);
+        return to_route('servers.vote', $server)->with('voted', ['nickname' => $data['nickname'] ?? null]);
     }
 }

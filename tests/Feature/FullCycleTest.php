@@ -95,7 +95,8 @@ class FullCycleTest extends TestCase
         foreach (['Hero' => '93.10.1.1', 'Mage' => '94.20.2.2'] as $nick => $ip) {
             $this->withServerVariables(['REMOTE_ADDR' => $ip])
                 ->post(route('servers.vote.store', $server), ['nickname' => $nick])
-                ->assertRedirect(route('servers.show', $server))
+                // Після голосу — стан «Дякуємо» на сторінці голосування
+                ->assertRedirect(route('servers.vote', $server))
                 ->assertSessionHasNoErrors();
         }
         $this->assertSame(2, $server->votes()->where('status', 'counted')->count());

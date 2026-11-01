@@ -1,0 +1,757 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сервери World of Warcraft — 3.3.5a, Classic, x5, x100 | graj.club</title>
+<meta name="description" content="Рейтинг приватних серверів World of Warcraft: версія клієнта, рейти, тип реалму, баланс фракцій, донат і живий онлайн. Знайди свій реалм.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;800;900&family=Manrope:wght@400;500;600;700;800&family=Unbounded:wght@700&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо сторінки гри: World of Warcraft. Концепція «арканний портал і журнал героя»: нічні гори, портал, що обертається,
+ * кругла мінікарта з точками серверів, перемикач фракції (Альянс / Орда) перефарбовує сторінку.
+ * Статистика — смуга досвіду й відлік сезону; «Скоро відкриття» — журнал завдань із жовтим «!»;
+ * фільтри — книга заклинань: версія клієнта за номером збірки, рейти кольорами якості предметів, тип реалму, донат, модифікації;
+ * рядок сервера — підказка до предмета: назва кольором рейту, реалми проєкту, баланс фракцій, рядок set realmlist;
+ * голоси — спливають як «досягнення».
+ * Що показують на WoW-топах (topg.org, mmotop.ru) і на що зважають гравці: версія, тип реалму, рейти діапазонами,
+ * донат (pay-to-win), модифікації, баланс фракцій, онлайн, аптайм, нові сервери, кілька реалмів у проєкту.
+ * Cinzel — той самий шрифт, яким WoW позначена на головній.
+ */
+:root {
+  --bg: #080a14; --bg-2: #0d1020; --card: #11152a; --card-2: #171c36; --line: #262c4d; --line-2: #3a4170;
+  --text: #ece8dc; --muted: #aeb0c8; --faint: #7d80a0;
+  --gold: #d9b45a; --gold-2: #f3d98b; --gold-d: #8a6a24;
+  --arcane: #7c9cff; --arcane-2: #b8c8ff; --fel: #5ef28a;
+  --alli: #3d7fff; --horde: #e0332f;
+  --tint: var(--arcane);
+  --q0: #9d9d9d; --q1: #ffffff; --q2: #1eff00; --q3: #3b9bff; --q4: #a335ee; --q5: #ff8000;
+  --up: #5ef28a; --down: #ff6b5a; --quest: #ffd100;
+  --display: 'Cinzel', serif; --font: 'Manrope', system-ui, sans-serif; --mono: 'JetBrains Mono', ui-monospace, monospace;
+  /* Рамка в золоті, як вікна інтерфейсу гри */
+  --frame: linear-gradient(180deg, #2a2440, #141228);
+}
+body[data-faction="alli"] { --tint: var(--alli); }
+body[data-faction="horde"] { --tint: var(--horde); }
+* { box-sizing: border-box; margin: 0; }
+html, body { overflow-x: clip; }
+body { background: var(--bg); color: var(--text); font: 16px/1.6 var(--font); -webkit-font-smoothing: antialiased; transition: background-color .6s; }
+body::before { content: ''; position: fixed; inset: 0; z-index: -1; pointer-events: none; background: radial-gradient(1100px 600px at 85% -10%, color-mix(in srgb, var(--tint) 18%, transparent), transparent 60%), radial-gradient(800px 500px at -10% 60%, #2a1f5522, transparent 60%); transition: background .6s; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--gold); outline-offset: 2px; }
+[hidden] { display: none !important; }
+.wrap { max-width: 1200px; margin: 0 auto; padding: 0 24px; position: relative; }
+.num { font-variant-numeric: tabular-nums; }
+.mono { font-family: var(--mono); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+
+/* Кнопки: золота фаска */
+.btn { display: inline-flex; align-items: center; justify-content: center; gap: 8px; padding: 9px 16px; border-radius: 6px; border: 1px solid var(--gold-d); background: linear-gradient(180deg, #2b2547, #1a1630);
+  font: 700 13px var(--font); letter-spacing: .02em; white-space: nowrap; box-shadow: inset 0 1px 0 #ffffff14, 0 1px 0 #0008; transition: border-color .15s, filter .15s, background .15s; }
+.btn:hover { border-color: var(--gold); }
+.btn.go { background: linear-gradient(180deg, #a0151b, #6d0b10); border-color: var(--gold); color: var(--gold-2); text-shadow: 0 1px 0 #000; box-shadow: inset 0 1px 0 #ffffff26, 0 0 0 1px #000, 0 6px 18px -8px #a0151b; }
+.btn.go:hover { filter: brightness(1.15); }
+.btn.sm { padding: 6px 11px; font-size: 12px; }
+.btn.done { background: #14361f; border-color: var(--up); color: var(--up); }
+
+/* Шапка */
+header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
+.bar { display: flex; align-items: center; gap: 24px; padding: 8px 8px 8px 16px; border-radius: 10px; background: #0c0e1cf2; backdrop-filter: blur(10px); border: 1px solid var(--line); }
+.logo { display: flex; align-items: center; gap: 12px; font: 700 17px 'Unbounded', var(--font); letter-spacing: -0.02em; }
+.logo i { width: 32px; height: 32px; border-radius: 8px; background: linear-gradient(90deg, #fbbf24, #f97316); display: grid; place-items: center; }
+.bar nav { display: flex; gap: 2px; margin: 0 auto; font-weight: 700; font-size: 14px; color: var(--muted); }
+.bar nav a { padding: 6px 12px; border-radius: 6px; }
+.bar nav a:hover { color: var(--text); }
+.bar nav a[aria-current] { color: var(--gold-2); background: #2a2440; box-shadow: inset 0 0 0 1px var(--gold-d); }
+.crumbs { margin-top: 16px; font-size: 13px; color: var(--faint); display: flex; gap: 8px; }
+.crumbs a:hover { color: var(--text); }
+
+/* ── Банер: нічні гори, портал, мінікарта ── */
+.whero { position: relative; isolation: isolate; overflow: hidden; margin-top: 16px; min-height: 460px; display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; align-items: center;
+  padding: 44px 44px 44px 52px; border-radius: 14px; border: 1px solid var(--gold-d); box-shadow: inset 0 0 0 1px #000, inset 0 0 60px #0008; }
+.whero .sky { position: absolute; inset: 0; z-index: -4; background: radial-gradient(ellipse at 62% 30%, #2b2a78 0%, #141238 45%, #07061a 100%); }
+.whero .aurora { position: absolute; inset: -20% -10% 40%; z-index: -3; background: conic-gradient(from 200deg at 40% 60%, transparent, color-mix(in srgb, var(--tint) 30%, transparent), transparent 30%, #5ef28a22, transparent 60%); filter: blur(40px); animation: aurora 18s ease-in-out infinite alternate; transition: background .6s; }
+@keyframes aurora { to { transform: translateX(8%) skewX(-8deg); } }
+.whero .stars { position: absolute; inset: 0; z-index: -3; background-image: radial-gradient(1px 1px at 8% 14%, #fff, transparent), radial-gradient(1px 1px at 22% 30%, #c7d2fe, transparent), radial-gradient(1.5px 1.5px at 41% 10%, #fff, transparent), radial-gradient(1px 1px at 58% 22%, #fff, transparent), radial-gradient(1px 1px at 72% 8%, #c7d2fe, transparent), radial-gradient(1.5px 1.5px at 86% 26%, #fff, transparent), radial-gradient(1px 1px at 94% 12%, #fff, transparent), radial-gradient(1px 1px at 33% 44%, #c7d2fe, transparent); animation: twinkle 5s ease-in-out infinite; }
+@keyframes twinkle { 50% { opacity: .5; } }
+.whero .peaks { position: absolute; left: 0; right: 0; bottom: 0; height: 58%; z-index: -2; width: 100%; }
+/* Портал: кільця обертаються назустріч, ядро пульсує; клік — сплеск */
+.portal { position: absolute; z-index: -2; left: 59%; top: 42%; width: 250px; height: 250px; margin: -125px 0 0 -125px; pointer-events: none; }
+.portal i { position: absolute; inset: 0; border-radius: 50%; }
+.portal .r1 { background: conic-gradient(from 0deg, var(--tint), #a855f7, #22d3ee, var(--tint)); -webkit-mask: radial-gradient(circle, transparent 54%, #000 56% 66%, transparent 68%); mask: radial-gradient(circle, transparent 54%, #000 56% 66%, transparent 68%); filter: drop-shadow(0 0 24px var(--tint)); animation: spin 10s linear infinite; transition: background .6s; }
+.portal .r2 { inset: 26px; background: conic-gradient(from 90deg, transparent, #e0e7ff, transparent 40%, var(--tint), transparent 80%); -webkit-mask: radial-gradient(circle, transparent 60%, #000 62% 68%, transparent 70%); mask: radial-gradient(circle, transparent 60%, #000 62% 68%, transparent 70%); animation: spin 6s linear infinite reverse; opacity: .8; }
+.portal .core { inset: 58px; background: radial-gradient(circle, #ffffff 0%, color-mix(in srgb, var(--tint) 70%, #fff) 18%, color-mix(in srgb, var(--tint) 30%, transparent) 50%, transparent 72%); animation: breathe 4s ease-in-out infinite; }
+.portal.burst .core { animation: burst .9s ease-out; }
+@keyframes spin { to { transform: rotate(360deg); } }
+@keyframes breathe { 50% { transform: scale(1.08); filter: brightness(1.2); } }
+@keyframes burst { 30% { transform: scale(1.7); filter: brightness(2); } }
+#sparks { position: absolute; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; }
+.whero { cursor: pointer; }
+
+/* Ліва частина: назва */
+.wtitle { max-width: 520px; }
+.eyebrow { display: inline-flex; gap: 8px; align-items: center; padding: 4px 12px; border-radius: 999px; border: 1px solid var(--gold-d); background: #0008; color: var(--gold-2); font-size: 12px; font-weight: 700; letter-spacing: .04em; }
+.wtitle h1 { margin-top: 18px; font: 900 68px/1 var(--display); letter-spacing: .02em; text-transform: uppercase;
+  background: linear-gradient(180deg, #fff6d6 0%, var(--gold-2) 35%, var(--gold) 60%, #8a6a24 100%); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 3px 0 #000) drop-shadow(0 0 22px #d9b45a55); }
+.wtitle h1 small { display: block; font-size: .42em; letter-spacing: .3em; margin-bottom: 6px; }
+.wtitle h1 span { display: inline-block; animation: rune-in .8s cubic-bezier(.2,.8,.2,1) backwards; animation-delay: calc(var(--i) * 60ms + 150ms); }
+@keyframes rune-in { from { opacity: 0; transform: translateY(-14px) scale(1.2); filter: blur(6px); } }
+.wtitle p { margin-top: 16px; color: #d6d4e6; max-width: 440px; text-shadow: 0 1px 8px #07061a; }
+/* Перемикач фракції */
+.faction { margin-top: 22px; display: inline-flex; padding: 4px; gap: 4px; border-radius: 10px; background: #0009; border: 1px solid var(--line-2); }
+.faction button { display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border: 0; border-radius: 7px; background: transparent; font-weight: 800; font-size: 13px; color: var(--muted); transition: background .2s, color .2s; }
+.faction button svg { width: 18px; height: 18px; }
+.faction button[aria-pressed="true"] { color: #fff; background: color-mix(in srgb, var(--c) 45%, #000); box-shadow: inset 0 0 0 1px var(--c); }
+.hint { margin-top: 12px; font-size: 12px; color: var(--faint); }
+
+/* Мінікарта */
+.minimap { position: relative; justify-self: end; width: 300px; height: 300px; }
+.minimap .disc { position: absolute; inset: 14px; border-radius: 50%; overflow: hidden; isolation: isolate; clip-path: circle(50%); background:
+  radial-gradient(circle at 30% 35%, #3b5a2c 0 12%, transparent 13%), radial-gradient(circle at 70% 60%, #4a6b33 0 16%, transparent 17%), radial-gradient(circle at 45% 75%, #6b5a36 0 10%, transparent 11%),
+  radial-gradient(circle at 60% 25%, #2f4a6b 0 9%, transparent 10%), radial-gradient(circle at 50% 50%, #2c3d22, #1a2414 70%); box-shadow: inset 0 0 30px #000c; }
+.minimap .disc::after { content: ''; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 0deg, transparent 0 80%, color-mix(in srgb, var(--tint) 35%, transparent)); animation: spin 6s linear infinite; mix-blend-mode: screen; }
+.minimap .ring { position: absolute; inset: 0; border-radius: 50%; border: 10px solid #3a2f14; box-shadow: inset 0 0 0 2px var(--gold), 0 0 0 2px var(--gold-d), 0 12px 40px #000c; pointer-events: none; }
+.minimap .n { position: absolute; top: 2px; left: 50%; transform: translateX(-50%); z-index: 2; font: 800 12px var(--display); color: var(--gold-2); background: #3a2f14; padding: 0 6px; border-radius: 4px; border: 1px solid var(--gold); }
+.minimap .zone { position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%); z-index: 2; padding: 3px 12px; border-radius: 6px; background: #000c; border: 1px solid var(--gold-d); font: 700 12px var(--display); color: var(--gold-2); white-space: nowrap; }
+.blip { position: absolute; z-index: 3; width: 12px; height: 12px; margin: -6px; border-radius: 50%; border: 0; padding: 0; background: var(--quest); box-shadow: 0 0 0 2px #000, 0 0 10px var(--quest); }
+.blip.off { background: #666; box-shadow: 0 0 0 2px #000; }
+.blip:hover, .blip:focus-visible { transform: scale(1.4); }
+.blip::after { content: attr(data-name); position: absolute; left: 50%; bottom: 150%; transform: translateX(-50%); white-space: nowrap; padding: 3px 8px; border-radius: 4px; background: #000e; border: 1px solid var(--gold-d); font: 700 11px var(--font); color: var(--text); opacity: 0; pointer-events: none; transition: opacity .15s; }
+.blip:hover::after, .blip:focus-visible::after { opacity: 1; }
+
+/* ── Смуга досвіду й лічильники ── */
+.xp { margin-top: 16px; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)) 1.2fr; gap: 12px; }
+.stat { padding: 14px 16px; border-radius: 10px; background: var(--frame); border: 1px solid var(--line-2); box-shadow: inset 0 1px 0 #ffffff0d; }
+.stat .lbl { font-size: 12px; color: var(--muted); font-weight: 700; letter-spacing: .03em; }
+.stat b { display: block; font: 800 26px var(--display); color: var(--gold-2); }
+.stat.season b { color: var(--text); }
+.xpbar { grid-column: 1 / -1; position: relative; height: 22px; border-radius: 4px; background: #0a0c18; border: 1px solid #000; box-shadow: 0 0 0 1px var(--gold-d); overflow: hidden; }
+.xpbar i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(180deg, #b77cff, #6a2fbf); transition: width 1.6s cubic-bezier(.2,.8,.2,1); }
+.xpbar::after { content: ''; position: absolute; inset: 0; background: linear-gradient(90deg, transparent calc(100% - 2px), #000c 0) 0 0 / 10% 100%; pointer-events: none; }
+.xpbar span { position: absolute; inset: 0; display: grid; place-items: center; font: 700 12px var(--font); color: #fff; text-shadow: 0 1px 2px #000; }
+
+/* ── Журнал завдань: скоро відкриття ── */
+.sec { font: 800 22px var(--display); color: var(--gold-2); letter-spacing: .03em; text-shadow: 0 2px 0 #000; margin-bottom: 14px; display: flex; align-items: center; gap: 10px; }
+.sec small { font: 600 13px var(--font); color: var(--faint); letter-spacing: 0; text-shadow: none; }
+.quests { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
+.quest { position: relative; padding: 16px 16px 16px 54px; border-radius: 10px; border: 1px solid #5a4620; background: linear-gradient(180deg, #f1e3bd, #dcc898); color: #2b1d08; box-shadow: inset 0 0 30px #8a6a2455, 0 10px 30px -18px #000; }
+.quest .mark { position: absolute; left: 14px; top: 14px; font: 900 34px/1 var(--display); color: var(--quest); -webkit-text-stroke: 1.5px #000; animation: hover 2.4s ease-in-out infinite; }
+@keyframes hover { 50% { transform: translateY(-4px); } }
+.quest h3 { font: 800 16px/1.25 var(--display); }
+.quest p { font-size: 13px; margin-top: 4px; color: #4a3612; }
+.quest .rw { margin-top: 10px; display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 12px; font-weight: 700; }
+.quest .rw b { font: 800 15px var(--mono); color: #6d0b10; }
+.quest .btn { color: var(--gold-2); }
+
+/* ── Розкладка: фільтри + сервери ── */
+.layout { margin-top: 36px; display: grid; grid-template-columns: 290px minmax(0, 1fr); gap: 24px; align-items: start; }
+.book { position: sticky; top: 92px; padding: 18px; border-radius: 12px; background: var(--frame); border: 1px solid var(--gold-d); box-shadow: inset 0 0 0 1px #000, 0 20px 50px -30px #000; max-height: calc(100vh - 110px); overflow: auto; scrollbar-width: thin; }
+.book h2 { font: 800 13px var(--display); letter-spacing: .08em; text-transform: uppercase; color: var(--gold); margin: 16px 0 8px; }
+.book h2:first-child { margin-top: 0; }
+/* Версії клієнта: емблеми доповнень */
+.exps { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+.exps button { position: relative; display: grid; justify-items: center; gap: 2px; padding: 8px 4px 6px; border-radius: 8px; border: 1px solid var(--line-2); background: #0a0c18; font-size: 11px; font-weight: 700; color: var(--muted); transition: border-color .15s, background .15s, transform .15s; }
+.exps button .em { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font: 900 11px var(--display); color: #000; background: radial-gradient(circle at 35% 30%, #fff8, transparent 50%), var(--c); box-shadow: 0 0 0 2px #000, 0 0 0 3px var(--gold-d); }
+.exps button small { font: 500 10px var(--mono); color: var(--faint); }
+.exps button:hover { transform: translateY(-1px); border-color: var(--gold-d); }
+.exps button[aria-pressed="true"] { border-color: var(--gold); background: #2a2440; color: var(--text); box-shadow: 0 0 14px -4px var(--c); }
+.exps button .cnt { position: absolute; top: 3px; right: 5px; font: 700 10px var(--mono); color: var(--faint); }
+/* Рейти кольорами якості предметів */
+.quality { display: grid; gap: 4px; }
+.quality button { display: flex; justify-content: space-between; align-items: center; padding: 6px 10px; border-radius: 6px; border: 1px solid transparent; background: #0a0c18; font-weight: 800; font-size: 13px; color: var(--c); text-align: left; }
+.quality button small { color: var(--faint); font-weight: 600; font-size: 11px; }
+.quality button[aria-pressed="true"] { border-color: var(--c); background: color-mix(in srgb, var(--c) 12%, #0a0c18); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chips button { padding: 5px 10px; border-radius: 6px; border: 1px solid var(--line-2); background: #0a0c18; font-size: 12px; font-weight: 700; color: var(--muted); }
+.chips button[aria-pressed="true"] { border-color: var(--gold); color: var(--gold-2); background: #2a2440; }
+.check { display: flex; gap: 10px; align-items: center; margin-top: 8px; font-size: 13px; color: var(--muted); cursor: pointer; }
+.check input { accent-color: var(--gold); width: 16px; height: 16px; }
+#q { width: 100%; padding: 9px 12px; border-radius: 6px; border: 1px solid var(--line-2); background: #0a0c18; color: var(--text); font: inherit; font-size: 14px; }
+#q:focus { outline: none; border-color: var(--gold); }
+.reset { margin-top: 14px; width: 100%; }
+
+.list-head { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; margin-bottom: 12px; }
+.total { color: var(--muted); font-size: 14px; }
+.total b { color: var(--gold-2); }
+.sorts { display: flex; gap: 4px; padding: 4px; border-radius: 8px; background: #0a0c18; border: 1px solid var(--line); }
+.sorts button { padding: 5px 12px; border: 0; border-radius: 6px; background: transparent; font-size: 13px; font-weight: 700; color: var(--muted); }
+.sorts button[aria-pressed="true"] { background: #2a2440; color: var(--gold-2); box-shadow: inset 0 0 0 1px var(--gold-d); }
+
+/* Рядок сервера: підказка до предмета */
+#list { display: grid; gap: 10px; }
+.srv { position: relative; display: grid; grid-template-columns: 44px minmax(0, 1fr) 220px; gap: 6px 18px; padding: 16px 18px; border-radius: 8px;
+  background: linear-gradient(180deg, #0f1430f2, #090c1ef2); border: 1px solid #5d6a99; box-shadow: inset 0 0 0 1px #000, 0 10px 30px -20px #000; animation: card-in .4s ease backwards; animation-delay: calc(var(--i) * 40ms); transition: border-color .2s, transform .2s; }
+.srv:hover { border-color: var(--c); transform: translateY(-1px); }
+.srv.vip { border-color: var(--q5); box-shadow: inset 0 0 0 1px #000, 0 0 24px -10px var(--q5); }
+.srv.flash { animation: flashrow 1.4s ease; }
+@keyframes flashrow { 30% { box-shadow: 0 0 0 2px var(--quest), 0 0 30px var(--quest); } }
+@keyframes card-in { from { opacity: 0; transform: translateY(8px); } }
+.srv .rank { font: 900 22px var(--display); color: var(--faint); text-align: center; padding-top: 2px; }
+.srv .rank.top { color: var(--gold-2); text-shadow: 0 0 12px #d9b45a88; }
+.srv .main { min-width: 0; }
+.srv h3 { font: 800 18px/1.25 var(--display); color: var(--c); text-shadow: 0 1px 0 #000; }
+.srv h3 a:hover { text-decoration: underline; }
+.srv .tag { display: inline-block; margin-left: 6px; padding: 1px 7px; border-radius: 4px; font: 800 10px var(--font); letter-spacing: .06em; text-transform: uppercase; vertical-align: 3px; }
+.srv .tag.vip { background: var(--q5); color: #000; }
+.srv .tag.new { background: var(--fel); color: #000; }
+.srv .tt { margin-top: 4px; font-size: 13px; line-height: 1.55; }
+.srv .tt .w { color: #fff; }
+.srv .tt .y { color: var(--quest); }
+.srv .tt .g { color: var(--q2); }
+.srv .tt .gr { color: var(--q0); }
+.srv .tt .r { color: var(--down); }
+.realms { margin-top: 8px; display: flex; flex-wrap: wrap; gap: 6px; }
+.realms span { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; border-radius: 4px; background: #ffffff0a; border: 1px solid var(--line-2); font-size: 12px; font-weight: 700; }
+.realms span b { color: var(--rc); }
+.realms span i { width: 6px; height: 6px; border-radius: 50%; background: var(--up); }
+.realms span.off i { background: #666; }
+.realmlist { margin-top: 10px; display: flex; align-items: center; gap: 8px; max-width: 100%; }
+.realmlist code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 5px 10px; border-radius: 4px; background: #000; border: 1px solid var(--line-2); font: 500 12px var(--mono); color: var(--arcane-2); }
+.realmlist button { padding: 5px 10px; border-radius: 4px; border: 1px solid var(--line-2); background: #1a1630; font-size: 12px; font-weight: 700; }
+.realmlist button.ok { border-color: var(--up); color: var(--up); }
+.side { display: grid; gap: 10px; align-content: start; }
+.pop { display: flex; justify-content: space-between; align-items: baseline; font-size: 13px; color: var(--muted); }
+.pop b { font: 800 20px var(--display); color: var(--text); }
+.pop b.off { color: var(--faint); font-size: 15px; }
+.pop .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 8px var(--up); margin-right: 6px; animation: pulse 2s infinite; }
+.pop .dot.off { background: #666; box-shadow: none; animation: none; }
+@keyframes pulse { 50% { opacity: .4; } }
+/* Баланс фракцій */
+.bal { display: grid; gap: 3px; }
+.bal .lbl { display: flex; justify-content: space-between; font-size: 11px; font-weight: 800; }
+.bal .lbl .a { color: #7fb0ff; } .bal .lbl .h { color: #ff7b72; }
+.bal .track { height: 8px; border-radius: 4px; overflow: hidden; display: flex; background: #000; border: 1px solid #000; box-shadow: 0 0 0 1px var(--line-2); }
+.bal .track i { background: linear-gradient(180deg, #5d9bff, #1e4fbf); }
+.bal .track b { flex: 1; background: linear-gradient(180deg, #ff5a52, #a3181a); }
+.bal.mine-alli .lbl .a, .bal.mine-horde .lbl .h { text-decoration: underline; }
+.votes { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.votes span { font-size: 12px; color: var(--muted); }
+.votes span b { color: var(--gold-2); font-size: 15px; }
+.empty { padding: 40px; text-align: center; border-radius: 10px; border: 1px dashed var(--line-2); color: var(--muted); }
+.empty b { display: block; font: 800 18px var(--display); color: var(--gold-2); margin-bottom: 6px; }
+
+/* ── Нижній блок: досягнення (зал слави) і популярні версії ── */
+.band { margin-top: 44px; display: grid; grid-template-columns: 1.1fr 1fr; gap: 20px; }
+.panel { padding: 20px; border-radius: 12px; background: var(--frame); border: 1px solid var(--line-2); }
+.ach { display: grid; gap: 8px; }
+.ach div { display: grid; grid-template-columns: 44px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 12px; border-radius: 8px; background: linear-gradient(90deg, #2a2210, #15110a); border: 1px solid var(--gold-d); }
+.ach .ico { width: 44px; height: 44px; border-radius: 8px; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #fff4, transparent 55%), linear-gradient(135deg, var(--gold), #6b4c12); box-shadow: inset 0 0 0 2px #000, 0 0 0 1px var(--gold); font: 900 16px var(--display); color: #1a1205; }
+.ach b { font: 800 15px var(--display); color: var(--gold-2); display: block; }
+.ach small { font-size: 12px; color: var(--muted); }
+.ach .pts { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; background: radial-gradient(circle, #3a2f14, #1a1205); border: 1px solid var(--gold); font: 800 13px var(--display); color: var(--gold-2); }
+.verbars { display: grid; gap: 10px; }
+.verbars div { display: grid; grid-template-columns: 110px minmax(0, 1fr) 54px; gap: 10px; align-items: center; font-size: 13px; font-weight: 700; }
+.verbars .t { height: 12px; border-radius: 3px; background: #0a0c18; border: 1px solid #000; overflow: hidden; }
+.verbars .t i { display: block; height: 100%; width: 0; background: linear-gradient(90deg, color-mix(in srgb, var(--c) 60%, #000), var(--c)); transition: width 1.2s cubic-bezier(.2,.8,.2,1); }
+.verbars span:last-child { text-align: right; color: var(--muted); font-family: var(--mono); font-size: 12px; }
+
+/* Голос — тост «досягнення» */
+.toasts { position: fixed; left: 50%; bottom: 24px; z-index: 50; transform: translateX(-50%); display: grid; gap: 8px; pointer-events: none; width: min(420px, calc(100vw - 32px)); }
+.toast { display: grid; grid-template-columns: 48px minmax(0, 1fr) 40px; gap: 12px; align-items: center; padding: 10px 14px; border-radius: 10px; background: linear-gradient(180deg, #2a2210f5, #120e06f5); border: 2px solid var(--gold); box-shadow: 0 0 0 1px #000, 0 10px 40px #000c, 0 0 30px -10px var(--gold); animation: toast-in .5s cubic-bezier(.2,1.4,.4,1); }
+.toast.out { animation: toast-out .5s forwards; }
+.toast .ico { width: 48px; height: 48px; border-radius: 8px; display: grid; place-items: center; background: radial-gradient(circle at 35% 30%, #fff4, transparent 55%), linear-gradient(135deg, var(--gold), #6b4c12); box-shadow: inset 0 0 0 2px #000; }
+.toast small { display: block; font: 700 11px var(--display); letter-spacing: .14em; text-transform: uppercase; color: var(--gold); }
+.toast p { font-size: 13px; line-height: 1.35; }
+.toast p b { color: var(--gold-2); }
+.toast .pts { display: grid; place-items: center; width: 40px; height: 40px; border-radius: 50%; border: 1px solid var(--gold); font: 800 13px var(--display); color: var(--gold-2); background: #1a1205; }
+@keyframes toast-in { from { opacity: 0; transform: translateY(30px) scale(.9); } }
+@keyframes toast-out { to { opacity: 0; transform: translateY(10px); } }
+
+[data-reveal] { opacity: 0; transform: translateY(24px); transition: opacity .7s cubic-bezier(.2,.8,.2,1), transform .7s cubic-bezier(.2,.8,.2,1); }
+[data-reveal].in { opacity: 1; transform: none; }
+
+footer { margin-top: 56px; padding: 28px 0 40px; border-top: 1px solid var(--line); color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+@media (max-width: 1080px) {
+  .srv { grid-template-columns: 40px minmax(0, 1fr) 190px; }
+  .quests { grid-template-columns: 1fr 1fr; }
+  .xp { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 920px) {
+  .bar nav { display: none; }
+  .whero { grid-template-columns: 1fr; padding: 32px; }
+  .minimap { justify-self: start; width: 240px; height: 240px; }
+  .portal { left: 72%; top: 30%; }
+  .layout { grid-template-columns: 1fr; }
+  .book { position: static; max-height: none; }
+  .exps { grid-template-columns: repeat(5, 1fr); }
+  .band { grid-template-columns: 1fr; }
+}
+@media (max-width: 640px) {
+  .wrap { padding: 0 16px; }
+  .bar { gap: 8px; }
+  .bar .btn:not(.go) { display: none; }
+  .whero { padding: 24px 20px; min-height: 0; }
+  .wtitle h1 { font-size: 42px; }
+  .minimap { display: none; }
+  .portal { left: 92%; top: 12%; width: 170px; height: 170px; margin: -85px 0 0 -85px; opacity: .6; }
+  .portal .r2 { inset: 18px; } .portal .core { inset: 40px; }
+  .quests { grid-template-columns: 1fr; }
+  .exps { grid-template-columns: repeat(3, 1fr); }
+  .srv { grid-template-columns: 30px minmax(0, 1fr); gap: 10px 12px; padding: 14px 12px; }
+  .srv .side { grid-column: 2; }
+  .stat b { font-size: 21px; }
+  .verbars div { grid-template-columns: 90px minmax(0, 1fr) 44px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  [data-reveal] { opacity: 1; transform: none; }
+}
+</style>
+</head>
+<body data-faction="">
+<div class="toasts" id="toasts" aria-live="polite"></div>
+
+<header>
+  <div class="wrap">
+    <div class="bar">
+      <a class="logo" href="#"><i><svg width="16" height="16" viewBox="0 0 24 24" fill="#1c1003" aria-hidden="true"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg></i>graj.club</a>
+      <nav aria-label="Ігри"><a href="lineage2.html">Lineage 2</a><a href="gta.html">GTA</a><a href="minecraft.html">Minecraft</a><a href="dayz.html">DayZ</a><a href="rust.html">Rust</a><a href="cs.html">CS</a><a href="#" aria-current="page">WoW</a></nav>
+      <a class="btn sm" href="#">Увійти</a>
+      <a class="btn sm go" href="#">Додати сервер</a>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <nav class="crumbs" aria-label="Навігація"><a href="#">Головна</a><span aria-hidden="true">/</span><span>World of Warcraft</span></nav>
+
+  <!-- Банер: нічні гори, портал, мінікарта; клік — сплеск порталу -->
+  <section class="whero" id="whero" aria-labelledby="game-h">
+    <div class="sky" aria-hidden="true"></div>
+    <div class="aurora" aria-hidden="true"></div>
+    <div class="stars" aria-hidden="true"></div>
+    <div class="portal" id="portal" aria-hidden="true"><i class="r1"></i><i class="r2"></i><i class="core"></i></div>
+    <svg class="peaks" viewBox="0 0 1200 300" preserveAspectRatio="none" aria-hidden="true">
+      <path fill="#1c1a48" d="M0 300 V170 L90 110 L160 150 L250 60 L340 140 L420 100 L520 170 L610 80 L700 150 L800 40 L900 130 L980 90 L1080 150 L1200 100 V300 Z"/>
+      <path fill="#e0e7ff" opacity=".18" d="M250 60 L232 78 L262 76 Z M610 80 L590 100 L626 98 Z M800 40 L776 66 L820 62 Z"/>
+      <!-- Замок на скелі -->
+      <g fill="#0e0c2a"><path d="M860 190 h100 v-50 h-100z"/><path d="M872 140 v-40 h16 v40z M932 140 v-56 h16 v56z"/><path d="M866 102 l14 -18 l14 18z M926 86 l14 -22 l14 22z"/><rect x="900" y="160" width="12" height="30"/></g>
+      <rect x="937" y="100" width="6" height="10" fill="#ffd100" opacity=".8"/>
+      <path fill="#0c0b26" d="M0 300 V220 L120 180 L240 230 L380 190 L520 240 L660 200 L800 230 L960 190 L1100 230 L1200 210 V300 Z"/>
+      <path fill="#07061a" d="M0 300 V262 C 200 240, 400 270, 600 252 S 1000 246, 1200 262 V300 Z"/>
+    </svg>
+    <canvas id="sparks" aria-hidden="true"></canvas>
+
+    <div class="wtitle">
+      <span class="eyebrow">Фентезі MMORPG · приватні сервери</span>
+      <h1 id="game-h"><small>World of</small><span style="--i:0">W</span><span style="--i:1">a</span><span style="--i:2">r</span><span style="--i:3">c</span><span style="--i:4">r</span><span style="--i:5">a</span><span style="--i:6">f</span><span style="--i:7">t</span></h1>
+      <p>Від Classic і Burning Crusade до Wrath of the Lich King і Legion. Обери версію, рейти й тип реалму — покажемо, де збираються рейди й наскільки рівні фракції.</p>
+      <div class="faction" role="group" aria-label="Твоя фракція">
+        <button type="button" aria-pressed="false" data-f="alli" style="--c:var(--alli)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l8 3v6c0 5-3.4 9.4-8 11-4.6-1.6-8-6-8-11V5z"/></svg>Альянс</button>
+        <button type="button" aria-pressed="false" data-f="horde" style="--c:var(--horde)"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l3 6 6-2-3 6 3 6-6-2-3 6-3-6-6 2 3-6-3-6 6 2z"/></svg>Орда</button>
+      </div>
+      <div class="hint">Обери фракцію — у списку підсвітимо твою частку на реалмах. Клацни по небу — відкрити портал.</div>
+    </div>
+
+    <div class="minimap" aria-label="Мінікарта серверів">
+      <div class="disc" id="disc"></div>
+      <div class="ring"></div>
+      <span class="n">N</span>
+      <span class="zone" id="zone">Азерот · 9 серверів</span>
+    </div>
+  </section>
+
+  <!-- Лічильники й смуга досвіду -->
+  <div class="xp" aria-label="Статистика">
+    <div class="stat"><span class="lbl">Серверів</span><b class="num" data-count="9">0</b></div>
+    <div class="stat"><span class="lbl">Гравців онлайн</span><b class="num" id="g-online" data-count="0">0</b></div>
+    <div class="stat"><span class="lbl">Голосів у листопаді</span><b class="num" id="g-votes" data-count="0">0</b></div>
+    <div class="stat season"><span class="lbl">Фінал сезону через</span><b class="num" id="season">—</b></div>
+    <div class="xpbar" title="Голоси місяця до цілі сезону"><i id="xp"></i><span id="xp-t">Досвід сезону</span></div>
+  </div>
+
+  <!-- Журнал завдань: скоро відкриття -->
+  <section style="margin-top:40px" aria-labelledby="q-h" data-reveal>
+    <h2 class="sec" id="q-h">Журнал завдань <small>скоро відкриття</small></h2>
+    <div class="quests" id="quests"></div>
+  </section>
+
+  <div class="layout">
+    <!-- Книга заклинань: фільтри -->
+    <aside class="book" aria-label="Фільтри" data-reveal>
+      <h2>Версія клієнта</h2>
+      <div class="exps" id="exps"></div>
+      <h2>Рейти досвіду</h2>
+      <div class="quality" id="rates"></div>
+      <h2>Тип реалму</h2>
+      <div class="chips" id="types"></div>
+      <h2>Донат</h2>
+      <div class="chips" id="donate"></div>
+      <h2>Модифікації</h2>
+      <div class="chips" id="mods"></div>
+      <label class="check"><input type="checkbox" id="balanced"> Рівні фракції — 40–60%</label>
+      <label class="check"><input type="checkbox" id="online-only"> Лише онлайн</label>
+      <label class="check"><input type="checkbox" id="fresh"> Нові — до 30 днів</label>
+      <label class="check"><input type="checkbox" id="uptime"> Аптайм понад 95%</label>
+      <h2>Пошук</h2>
+      <label class="sr" for="q">Назва або адреса сервера</label>
+      <input id="q" type="search" placeholder="Назва або realmlist...">
+      <button class="btn sm reset" id="reset" type="button" hidden>Скинути фільтри</button>
+    </aside>
+
+    <!-- Сервери -->
+    <section aria-label="Сервери" data-reveal>
+      <div class="list-head">
+        <span class="total">Знайдено: <b class="num" id="count">0</b></span>
+        <div class="sorts" role="group" aria-label="Сортування">
+          <button aria-pressed="true" data-sort="votes">Голоси</button><button aria-pressed="false" data-sort="online">Онлайн</button><button aria-pressed="false" data-sort="new">Нові</button><button aria-pressed="false" data-sort="uptime">Аптайм</button>
+        </div>
+      </div>
+      <div id="list"></div>
+    </section>
+  </div>
+
+  <section class="band" data-reveal>
+    <div class="panel"><h2 class="sec">Досягнення реалмів <small>зал слави</small></h2><div class="ach" id="fame"></div></div>
+    <div class="panel"><h2 class="sec">Де зараз грають <small>за версією</small></h2><div class="verbars" id="vers"></div></div>
+  </section>
+</main>
+
+<footer><div class="wrap"><span>© 2026 graj.club</span><span>Стан реалмів перевіряємо кожні 5 хвилин; онлайн і баланс фракцій надсилає сервер через API</span></div></footer>
+
+<script>
+const calm = matchMedia('(prefers-reduced-motion: reduce)').matches;
+const $ = (s, r = document) => r.querySelector(s);
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+const fmt = n => Math.round(n).toLocaleString('uk-UA');
+const rnd = (a, b) => a + Math.random() * (b - a);
+const plural = (n, one, few, many) => { const a = n % 10, b = n % 100; return a === 1 && b !== 11 ? one : a >= 2 && a <= 4 && (b < 12 || b > 14) ? few : many; };
+const esc = s => String(s).replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' })[c]);
+const D = 864e5;
+
+// ── Довідники ──
+// Версії клієнта: як на WoW-топах — за номером збірки
+const EXPS = {
+  classic: ['Classic', '1.12.1', 'VAN', '#e8c46a'],
+  tbc: ['TBC', '2.4.3', 'TBC', '#5ef28a'],
+  wotlk: ['WotLK', '3.3.5a', 'LK', '#8fd3ff'],
+  cata: ['Cataclysm', '4.3.4', 'CT', '#ff8a3d'],
+  mop: ['MoP', '5.4.8', 'MP', '#3fd0a0'],
+  legion: ['Legion', '7.3.5', 'LG', '#7cff4f'],
+};
+// Рейти — кольори якості предметів: Blizzlike білий, далі зелений, синій, фіолетовий, помаранчевий
+const RATES = [
+  ['x1', 'Blizzlike', 1, 1, 'var(--q1)'],
+  ['x2–x5', 'Низькі', 2, 5, 'var(--q2)'],
+  ['x6–x50', 'Середні', 6, 50, 'var(--q3)'],
+  ['x51–x300', 'Високі', 51, 300, 'var(--q4)'],
+  ['x300+', 'Fun · Instant', 301, 1e9, 'var(--q5)'],
+];
+const rateColor = r => RATES.find(([, , a, b]) => r >= a && r <= b)[4];
+const TYPES = { pvp: 'PvP', pve: 'PvE', rp: 'RP', rppvp: 'RP-PvP', ffa: 'FFA-PvP' };
+const DONATE = { none: 'Без донату', cosmetic: 'Лише косметика', p2w: 'Впливає на гру' };
+const MODS = { blizz: 'Blizzlike', light: 'Мінімальні', custom: 'Багато кастому' };
+
+// ── Дані: вигадані сервери ──
+// Реалми проєкту: [назва, рейт, тип, онлайн]
+const now = Date.now();
+const SERVERS = [
+  { name: 'Frostmourne', exp: 'wotlk', donate: 'cosmetic', mods: 'blizz', alli: 47, votes: 1284, uptime: 99.6, age: 610, vip: true, host: 'logon.frostmourne.example',
+    realms: [['Lordaeron', 5, 'pvp', 2140], ['Icecrown', 1, 'pve', 860]], about: 'Скрипти рейдів ICC і RS, арени 3v3, античит.' },
+  { name: 'Azeroth Legacy', exp: 'classic', donate: 'none', mods: 'blizz', alli: 52, votes: 1105, uptime: 99.1, age: 840, host: 'play.azlegacy.example',
+    realms: [['Kalimdor', 1, 'pvp', 1830]], about: 'Прогресія контенту за фазами, як у 2005-му. Без донату взагалі.' },
+  { name: 'Sunwell Reborn', exp: 'tbc', donate: 'cosmetic', mods: 'light', alli: 44, votes: 932, uptime: 98.4, age: 420, host: 'logon.sunwell-reborn.example',
+    realms: [['Quel’Danas', 3, 'pvp', 1210]], about: 'Фаза Sunwell Plateau, Black Temple і Hyjal відкриті.' },
+  { name: 'Kyiv Lich King x100', exp: 'wotlk', donate: 'p2w', mods: 'custom', alli: 38, votes: 811, uptime: 97.2, age: 190, host: 'wow.kyiv-lk.example',
+    realms: [['Fun x100', 100, 'pvp', 640], ['Instant 80', 9999, 'ffa', 310]], about: 'Швидкий старт: 80 рівень за вечір, кастомні шмотки, трансмог.' },
+  { name: 'Pandaria UA', exp: 'mop', donate: 'cosmetic', mods: 'light', alli: 55, votes: 604, uptime: 96.8, age: 260, host: 'logon.pandaria-ua.example',
+    realms: [['Jade', 5, 'pve', 520]], about: 'Сценарії, пет-батли й Siege of Orgrimmar.' },
+  { name: 'Deathwing x10', exp: 'cata', donate: 'cosmetic', mods: 'light', alli: 49, votes: 488, uptime: 98.9, age: 330, host: 'logon.deathwing.example',
+    realms: [['Dragon Soul', 10, 'pvp', 410]], about: 'Firelands і Dragon Soul, рейтингові поля бою.' },
+  { name: 'Broken Isles', exp: 'legion', donate: 'p2w', mods: 'custom', alli: 61, votes: 377, uptime: 93.5, age: 150, host: 'wow.brokenisles.example',
+    realms: [['Argus', 50, 'pvp', 280]], about: 'Артефакти, класові оплоти, Mythic+.' },
+  { name: 'Moonglade RP', exp: 'wotlk', donate: 'none', mods: 'light', alli: 58, votes: 296, uptime: 99.3, age: 14, fresh: true, host: 'rp.moonglade.example',
+    realms: [['Moonglade', 3, 'rppvp', 190]], about: 'Рольовий реалм: івенти гільдій, таверни й лор.' },
+  { name: 'Outland x5', exp: 'tbc', donate: 'cosmetic', mods: 'blizz', alli: 50, votes: 98, uptime: 71.0, age: 520, host: 'logon.outland5.example',
+    realms: [['Shattrath', 5, 'pvp', 0]], about: 'Сервер на технічних роботах до вечора.' },
+].map((s, i) => ({ ...s, id: i, online: s.realms.reduce((a, r) => a + r[3], 0), rate: Math.min(...s.realms.map(r => r[1])), rateMax: Math.max(...s.realms.map(r => r[1])) }));
+
+// Скоро відкриття: [назва, версія, рейт, тип, через днів, нагорода]
+const QUESTS = [
+  ['Icecrown Citadel x7', 'wotlk', 7, 'PvP', 2.3, 'Стартовий набір на 3 персонажі'],
+  ['Vanilla Hardcore', 'classic', 1, 'PvP', 5.6, 'Одне життя — рейтинг виживання'],
+  ['Black Temple x3', 'tbc', 3, 'PvE', 11.2, 'Подвійний досвід у перший тиждень'],
+];
+
+// ── Банер: іскри порталу (canvas); зупиняються поза екраном; клік — сплеск ──
+(() => {
+  const hero = $('#whero'), canvas = $('#sparks'), ctx = canvas.getContext('2d'), portal = $('#portal');
+  let parts = [], visible = true;
+  const dpr = Math.min(devicePixelRatio || 1, 2);
+  const resize = () => { canvas.width = canvas.clientWidth * dpr; canvas.height = canvas.clientHeight * dpr; ctx.setTransform(dpr, 0, 0, dpr, 0, 0); };
+  const center = () => { const h = hero.getBoundingClientRect(), p = portal.getBoundingClientRect(); return [p.left - h.left + p.width / 2, p.top - h.top + p.height / 2, p.width / 2]; };
+  const spawn = burst => { const [cx, cy, r] = center(), a = rnd(0, Math.PI * 2), d = burst ? r * .3 : r * rnd(.55, .7);
+    return { x: cx + Math.cos(a) * d, y: cy + Math.sin(a) * d, vx: Math.cos(a) * (burst ? rnd(2, 6) : rnd(.1, .5)), vy: Math.sin(a) * (burst ? rnd(2, 6) : rnd(.1, .5)) - (burst ? 0 : rnd(.2, .6)), life: burst ? rnd(40, 70) : rnd(70, 140), age: 0, r: rnd(.8, burst ? 2.6 : 1.8) }; };
+  const frame = () => {
+    if (!visible) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    ctx.clearRect(0, 0, w, h);
+    ctx.globalCompositeOperation = 'lighter';
+    if (parts.length < 70) parts.push(spawn(false));
+    const tint = getComputedStyle(document.body).getPropertyValue('--tint').trim();
+    parts = parts.filter(p => p.age++ < p.life);
+    for (const p of parts) {
+      p.x += p.vx; p.y += p.vy; p.vx *= .985; p.vy *= .985;
+      const a = Math.sin(Math.PI * p.age / p.life);
+      ctx.globalAlpha = a; ctx.fillStyle = tint || '#7c9cff';
+      ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+      ctx.globalAlpha = a * .8; ctx.fillStyle = '#fff'; ctx.beginPath(); ctx.arc(p.x, p.y, p.r * .45, 0, 7); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+    requestAnimationFrame(frame);
+  };
+  hero.addEventListener('click', e => {
+    if (e.target.closest('button, a')) return;
+    portal.classList.remove('burst'); void portal.offsetWidth; portal.classList.add('burst');
+    for (let i = 0; i < 80; i++) parts.push(spawn(true));
+  });
+  if (calm) return;
+  resize(); addEventListener('resize', resize);
+  new IntersectionObserver(([e]) => { const was = visible; visible = e.isIntersecting; if (visible && !was) requestAnimationFrame(frame); }).observe(hero);
+  requestAnimationFrame(frame);
+})();
+
+// ── Перемикач фракції: перефарбовує сторінку й підсвічує твою частку на реалмах ──
+let faction = '';
+$$('.faction button').forEach(b => b.addEventListener('click', () => {
+  faction = faction === b.dataset.f ? '' : b.dataset.f;
+  document.body.dataset.faction = faction;
+  $$('.faction button').forEach(x => x.setAttribute('aria-pressed', String(x.dataset.f === faction)));
+  render();
+}));
+
+// ── Мінікарта: точки серверів; клік — до рядка в списку ──
+(() => {
+  const disc = $('#disc'), seeded = (seed => () => (seed = (seed * 1103515245 + 12345) >>> 0) / 4294967296)(42);
+  SERVERS.forEach(s => {
+    const a = seeded() * Math.PI * 2, d = .15 + seeded() * .3;
+    const b = document.createElement('button');
+    b.type = 'button'; b.className = 'blip' + (s.online ? '' : ' off');
+    b.style.left = `${50 + Math.cos(a) * d * 100}%`; b.style.top = `${50 + Math.sin(a) * d * 100}%`;
+    b.dataset.name = s.name; b.setAttribute('aria-label', `${s.name}, перейти до сервера`);
+    b.addEventListener('click', () => {
+      const row = $(`.srv[data-id="${s.id}"]`);
+      if (!row) { resetFilters(); return requestAnimationFrame(() => b.click()); }
+      row.scrollIntoView({ behavior: calm ? 'auto' : 'smooth', block: 'center' });
+      row.classList.remove('flash'); void row.offsetWidth; row.classList.add('flash');
+    });
+    disc.after(b);
+  });
+  $('#zone').textContent = `Азерот · ${SERVERS.length} ${plural(SERVERS.length, 'сервер', 'сервери', 'серверів')}`;
+})();
+
+// ── Фільтри ──
+const state = { exp: '', rate: '', type: '', donate: '', mods: '', balanced: false, online: false, fresh: false, uptime: false, q: '', sort: 'votes' };
+const toggleGroup = (box, key, items, html) => {
+  box.innerHTML = items.map(([v, ...rest]) => html(v, ...rest)).join('');
+  box.addEventListener('click', e => {
+    const b = e.target.closest('button'); if (!b) return;
+    state[key] = state[key] === b.dataset.v ? '' : b.dataset.v;
+    $$('button', box).forEach(x => x.setAttribute('aria-pressed', String(x.dataset.v === state[key])));
+    render();
+  });
+};
+toggleGroup($('#exps'), 'exp', Object.entries(EXPS), (k, [name, build, em, c]) =>
+  `<button type="button" aria-pressed="false" data-v="${k}" style="--c:${c}"><span class="cnt">${SERVERS.filter(s => s.exp === k).length}</span><span class="em">${em}</span>${name}<small>${build}</small></button>`);
+toggleGroup($('#rates'), 'rate', RATES.map((r, i) => [String(i), ...r]), (i, label, note, a, b, c) =>
+  `<button type="button" aria-pressed="false" data-v="${i}" style="--c:${c}">${label}<small>${note}</small></button>`);
+toggleGroup($('#types'), 'type', Object.entries(TYPES), (k, label) => `<button type="button" aria-pressed="false" data-v="${k}">${label}</button>`);
+toggleGroup($('#donate'), 'donate', Object.entries(DONATE), (k, label) => `<button type="button" aria-pressed="false" data-v="${k}">${label}</button>`);
+toggleGroup($('#mods'), 'mods', Object.entries(MODS), (k, label) => `<button type="button" aria-pressed="false" data-v="${k}">${label}</button>`);
+[['#balanced', 'balanced'], ['#online-only', 'online'], ['#fresh', 'fresh'], ['#uptime', 'uptime']].forEach(([sel, key]) => $(sel).addEventListener('change', e => { state[key] = e.target.checked; render(); }));
+$('#q').addEventListener('input', e => { state.q = e.target.value.trim().toLowerCase(); render(); });
+$$('.sorts button').forEach(b => b.addEventListener('click', () => {
+  state.sort = b.dataset.sort;
+  $$('.sorts button').forEach(x => x.setAttribute('aria-pressed', String(x === b)));
+  render();
+}));
+const resetFilters = () => {
+  Object.assign(state, { exp: '', rate: '', type: '', donate: '', mods: '', balanced: false, online: false, fresh: false, uptime: false, q: '' });
+  $$('.book button[aria-pressed]').forEach(x => x.setAttribute('aria-pressed', 'false'));
+  $$('.book input').forEach(x => { x.type === 'checkbox' ? (x.checked = false) : (x.value = ''); });
+  render();
+};
+$('#reset').addEventListener('click', resetFilters);
+
+const matches = s => {
+  if (state.exp && s.exp !== state.exp) return false;
+  if (state.rate !== '') { const [, , a, b] = RATES[state.rate]; if (!s.realms.some(r => r[1] >= a && r[1] <= b)) return false; }
+  if (state.type && !s.realms.some(r => r[2] === state.type)) return false;
+  if (state.donate && s.donate !== state.donate) return false;
+  if (state.mods && s.mods !== state.mods) return false;
+  if (state.balanced && (s.alli < 40 || s.alli > 60)) return false;
+  if (state.online && !s.online) return false;
+  if (state.fresh && s.age > 30) return false;
+  if (state.uptime && s.uptime < 95) return false;
+  if (state.q && !`${s.name} ${s.host} ${s.realms.map(r => r[0]).join(' ')}`.toLowerCase().includes(state.q)) return false;
+  return true;
+};
+const SORTS = { votes: (a, b) => b.votes - a.votes, online: (a, b) => b.online - a.online, new: (a, b) => a.age - b.age, uptime: (a, b) => b.uptime - a.uptime };
+
+// ── Рядок сервера: підказка до предмета ──
+const rateText = s => s.rate === s.rateMax ? `x${s.rate}` : `x${s.rate}–x${s.rateMax}`;
+const row = (s, i, rank) => {
+  const [expName, build] = EXPS[s.exp];
+  const horde = 100 - s.alli;
+  const mine = faction === 'alli' ? `Твоя фракція: ${s.alli}%` : faction === 'horde' ? `Твоя фракція: ${horde}%` : '';
+  const donateLine = s.donate === 'p2w' ? `<span class="r">Донат впливає на гру</span>` : s.donate === 'none' ? `<span class="g">Без донату</span>` : `<span class="g">Донат лише косметичний</span>`;
+  return `<article class="srv${s.vip ? ' vip' : ''}" data-id="${s.id}" style="--i:${i};--c:${rateColor(s.rateMax)}">
+    <div class="rank${rank <= 3 ? ' top' : ''} num">${rank}</div>
+    <div class="main">
+      <h3><a href="#">[${esc(s.name)}]</a>${s.vip ? '<span class="tag vip">VIP</span>' : ''}${s.age <= 30 ? '<span class="tag new">Новий</span>' : ''}</h3>
+      <div class="tt">
+        <span class="w">${expName} · клієнт ${build}</span><br>
+        <span class="y">Рейти ${rateText(s)} · ${[...new Set(s.realms.map(r => TYPES[r[2]]))].join(', ')} · ${MODS[s.mods]}</span><br>
+        ${donateLine} <span class="gr">· аптайм ${s.uptime.toFixed(1).replace('.', ',')}% · на сайті ${s.age} ${plural(s.age, 'день', 'дні', 'днів')}</span><br>
+        <span class="gr">«${esc(s.about)}»</span>
+      </div>
+      <div class="realms">${s.realms.map(([n, r, t, o]) => `<span class="${o ? '' : 'off'}" style="--rc:${rateColor(r)}"><i></i>${esc(n)} <b>x${r >= 9999 ? '∞' : r}</b> ${TYPES[t]}</span>`).join('')}</div>
+      <div class="realmlist"><code>set realmlist ${esc(s.host)}</code><button type="button" data-copy="set realmlist ${esc(s.host)}">Копіювати</button></div>
+    </div>
+    <div class="side">
+      <div class="pop"><span><i class="dot${s.online ? '' : ' off'}"></i>${s.online ? 'Онлайн' : 'Офлайн'}</span>${s.online ? `<b class="num" data-online="${s.id}">${fmt(s.online)}</b>` : '<b class="off">техроботи</b>'}</div>
+      <div class="bal${faction ? ' mine-' + faction : ''}" title="${mine || 'Баланс фракцій'}">
+        <div class="lbl"><span class="a">Альянс ${s.alli}%</span><span class="h">Орда ${horde}%</span></div>
+        <div class="track"><i style="width:${s.alli}%"></i><b></b></div>
+      </div>
+      <div class="votes"><span><b class="num" data-votes="${s.id}">${fmt(s.votes)}</b> ${plural(s.votes, 'голос', 'голоси', 'голосів')}</span><button class="btn sm go" type="button" data-vote="${s.id}">Голосувати</button></div>
+    </div>
+  </article>`;
+};
+
+const render = () => {
+  const all = [...SERVERS].sort(SORTS.votes);
+  const rankOf = new Map(all.map((s, i) => [s.id, i + 1]));
+  const list = SERVERS.filter(matches).sort(SORTS[state.sort]);
+  $('#count').textContent = list.length;
+  $('#list').innerHTML = list.length ? list.map((s, i) => row(s, i, rankOf.get(s.id))).join('')
+    : '<div class="empty"><b>Реалмів не знайдено</b>Спробуй прибрати частину фільтрів — наприклад, рейти чи тип реалму.</div>';
+  const dirty = state.exp || state.rate !== '' || state.type || state.donate || state.mods || state.balanced || state.online || state.fresh || state.uptime || state.q;
+  $('#reset').hidden = !dirty;
+};
+
+// Голос і копіювання realmlist
+$('#list').addEventListener('click', e => {
+  const copy = e.target.closest('[data-copy]');
+  if (copy) {
+    navigator.clipboard?.writeText(copy.dataset.copy).catch(() => {});
+    copy.textContent = 'Скопійовано'; copy.classList.add('ok');
+    setTimeout(() => { copy.textContent = 'Копіювати'; copy.classList.remove('ok'); }, 1600);
+    return;
+  }
+  const vote = e.target.closest('[data-vote]');
+  if (vote && !vote.classList.contains('done')) {
+    const s = SERVERS[vote.dataset.vote];
+    s.votes++; totals.votes++;
+    vote.textContent = 'Дякуємо!'; vote.classList.add('done');
+    const v = $(`[data-votes="${s.id}"]`); if (v) v.textContent = fmt(s.votes);
+    toast('Ти', s.name, 10);
+    updateTotals();
+  }
+});
+
+// ── Журнал завдань ──
+const until = days => { const d = Math.floor(days), h = Math.round((days - d) * 24); return d ? `${d} ${plural(d, 'день', 'дні', 'днів')} ${h} год` : `${h} год`; };
+$('#quests').innerHTML = QUESTS.map(([name, exp, rate, type, days, reward]) => `<article class="quest">
+  <span class="mark" aria-hidden="true">!</span>
+  <h3>${esc(name)}</h3>
+  <p>${EXPS[exp][0]} ${EXPS[exp][1]} · x${rate} · ${type}. Нагорода за старт: ${esc(reward)}.</p>
+  <div class="rw"><span>Старт через <b class="num">${until(days)}</b></span><button class="btn sm go" type="button">Нагадати</button></div>
+</article>`).join('');
+$('#quests').addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  b.textContent = 'Додано в журнал'; b.classList.add('done'); b.classList.remove('go');
+});
+
+// ── Досягнення реалмів і популярні версії ──
+const FAME = [['Жовтень', 'Frostmourne', 'Сервер місяця · 1 412 голосів', 50], ['Вересень', 'Azeroth Legacy', 'Сервер місяця · 1 298 голосів', 50], ['Серпень', 'Frostmourne', 'Сервер місяця · 1 187 голосів', 50], ['Рекорд', 'Kyiv Lich King x100', 'Найшвидший старт: 600 гравців за добу', 25]];
+$('#fame').innerHTML = FAME.map(([m, n, t, p]) => `<div><span class="ico" aria-hidden="true">${m === 'Рекорд' ? '★' : m.slice(0, 3)}</span><span><b>${esc(n)}</b><small>${m} · ${t}</small></span><span class="pts">${p}</span></div>`).join('');
+const versions = () => {
+  const sum = SERVERS.reduce((a, s) => a + s.online, 0) || 1;
+  const rows = Object.entries(EXPS).map(([k, [name, , , c]]) => [name, c, SERVERS.filter(s => s.exp === k).reduce((a, s) => a + s.online, 0)]).sort((a, b) => b[2] - a[2]);
+  $('#vers').innerHTML = rows.map(([n, c, o]) => `<div style="--c:${c}"><span>${n}</span><span class="t"><i data-w="${(o / sum * 100).toFixed(1)}"></i></span><span>${Math.round(o / sum * 100)}%</span></div>`).join('');
+};
+versions();
+
+// ── Лічильники, смуга досвіду, відлік сезону ──
+const totals = { online: SERVERS.reduce((a, s) => a + s.online, 0), votes: SERVERS.reduce((a, s) => a + s.votes, 0) };
+const GOAL = 8000;
+const countUp = (el, to, ms = 1200) => {
+  const from = Number(el.dataset.now || 0); el.dataset.now = to;
+  if (calm) { el.textContent = fmt(to); return; }
+  const t0 = performance.now();
+  const step = t => { const k = Math.min(1, (t - t0) / ms), e = 1 - (1 - k) ** 3; el.textContent = fmt(from + (to - from) * e); if (k < 1) requestAnimationFrame(step); };
+  requestAnimationFrame(step);
+};
+const updateTotals = () => {
+  countUp($('#g-online'), totals.online, 700);
+  countUp($('#g-votes'), totals.votes, 700);
+  $('#xp').style.width = `${Math.min(100, totals.votes / GOAL * 100)}%`;
+  $('#xp-t').textContent = `Досвід сезону: ${fmt(totals.votes)} / ${fmt(GOAL)} голосів`;
+};
+const season = () => {
+  const end = new Date(); end.setMonth(end.getMonth() + 1, 1); end.setHours(0, 0, 0, 0);
+  const ms = end - Date.now(), d = Math.floor(ms / D), h = Math.floor(ms % D / 36e5), m = Math.floor(ms % 36e5 / 6e4);
+  $('#season').textContent = `${d}д ${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+};
+season(); setInterval(season, 30000);
+
+// ── Голоси приходять тостами «досягнення» ──
+const NICKS = ['Arthasik', 'Тралл', 'Jaina_UA', 'Legolazz', 'Кельтас', 'Sylvanka', 'Bolvar', 'Друїд_Іван', 'Varian', 'Shamanchik'];
+const toast = (who, server, pts = 10) => {
+  const box = $('#toasts');
+  const el = document.createElement('div');
+  el.className = 'toast';
+  el.innerHTML = `<span class="ico" aria-hidden="true"><svg width="26" height="26" viewBox="0 0 24 24" fill="#1a1205"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg></span>
+    <span><small>Досягнення</small><p><b>${esc(who)}</b> ${who === 'Ти' ? 'проголосував' : 'голосує'} за <b>${esc(server)}</b></p></span><span class="pts">${pts}</span>`;
+  box.append(el);
+  while (box.children.length > 2) box.firstElementChild.remove();
+  setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 3600);
+};
+
+// ── Живий світ: онлайн реалмів дихає, голоси приходять ──
+setInterval(() => {
+  if (document.hidden) return;
+  for (const s of SERVERS) {
+    if (!s.online) continue;
+    s.realms.forEach(r => { if (r[3]) r[3] = Math.max(20, Math.round(r[3] + rnd(-12, 14))); });
+    s.online = s.realms.reduce((a, r) => a + r[3], 0);
+    const el = $(`[data-online="${s.id}"]`); if (el) el.textContent = fmt(s.online);
+  }
+  totals.online = SERVERS.reduce((a, s) => a + s.online, 0);
+  updateTotals();
+}, 5000);
+if (!calm) setInterval(() => {
+  if (document.hidden) return;
+  const live = SERVERS.filter(s => s.online);
+  const s = live[Math.floor(Math.random() ** 1.6 * live.length)];
+  s.votes++; totals.votes++;
+  const v = $(`[data-votes="${s.id}"]`); if (v) v.textContent = fmt(s.votes);
+  toast(NICKS[Math.floor(rnd(0, NICKS.length))], s.name);
+  updateTotals();
+}, 7000);
+
+// ── Перший рендер і поява блоків під час прокрутки ──
+render();
+$$('.stat b[data-count]').forEach(el => countUp(el, Number(el.dataset.count)));
+updateTotals();
+(() => {
+  const showBars = () => $$('#vers i[data-w]').forEach(i => { i.style.width = i.dataset.w + '%'; });
+  const targets = $$('[data-reveal]');
+  if (calm || !('IntersectionObserver' in window)) { targets.forEach(el => el.classList.add('in')); showBars(); return; }
+  const io = new IntersectionObserver(entries => entries.forEach(e => {
+    if (!e.isIntersecting) return;
+    e.target.classList.add('in');
+    if (e.target.querySelector('#vers')) showBars();
+    io.unobserve(e.target);
+  }), { threshold: 0.12 });
+  targets.forEach(el => io.observe(el));
+})();
+</script>
+</body>
+</html>

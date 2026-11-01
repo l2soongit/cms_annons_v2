@@ -40,6 +40,7 @@ final class Settings
         'home.cta_title',
         'home.cta_text',
         'home.ranking_size',
+        'home.games_style',
         'home.live_feed',
         'home.hero_image',
         'home.hero_image_opacity',

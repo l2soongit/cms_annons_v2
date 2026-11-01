@@ -20,6 +20,14 @@ final class GameNav
         'mu' => ['#ff4d5e', '#4c0519'], 'default' => ['#fbbf24', '#7c2d12'],
     ];
 
+    /** Вбудований логотип гри за темою (public/images/games/<тема>.png), якщо є */
+    public static function builtinLogo(Game $game): ?string
+    {
+        $file = "images/games/{$game->themeKey()}.png";
+
+        return is_file(public_path($file)) ? asset($file) : null;
+    }
+
     /** @return list<array{slug: string, name: string, short: string, url: string, c1: string, c2: string, servers: int, online: int, icon: ?string}> */
     public static function items(): array
     {
@@ -42,8 +50,7 @@ final class GameNav
                 'servers' => $stats[$game->id][0] ?? 0,
                 'online' => $stats[$game->id][1] ?? 0,
                 // Значок з адмінки, інакше — вбудований логотип гри (public/images/games/<тема>.png)
-                'icon' => HomePageData::url($game->icon)
-                    ?? (is_file(public_path("images/games/{$game->themeKey()}.png")) ? asset("images/games/{$game->themeKey()}.png") : null),
+                'icon' => HomePageData::url($game->icon) ?? self::builtinLogo($game),
             ];
         })->all());
     }

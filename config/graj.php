@@ -188,6 +188,8 @@ return [
             'pl' => 'Dodaj go w 3 minuty. Moderacja zwykle trwa do doby.',
         ],
         'ranking_size' => 10,
+        // Вигляд блоку «Обери свою гру»: classic, coverflow, spotlight, accordion, marquee, deck
+        'games_style' => 'classic',
         // Власні зображення (шлях на диску public); без них — анімований фон із демо
         'hero_image' => null,
         'hero_image_opacity' => 35,

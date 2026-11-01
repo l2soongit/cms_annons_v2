@@ -10,6 +10,7 @@ use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 /**
  * Дані головної у вигляді простих масивів: кешуються на хвилину й без змін ідуть у JSON для скрипта.
@@ -105,6 +106,13 @@ final class HomePageData
                 'image' => self::url($g->cover),
                 'icon' => self::url($g->icon),
                 'leader' => $perGame[$g->id]->first()?->name,
+                // Для стилів слайдера «Обери свою гру»: кольори теми, логотип, коротка назва, підпис і опис
+                'short' => $g->shortName(),
+                'c1' => GameNav::COLORS[$g->themeKey()][0],
+                'c2' => GameNav::COLORS[$g->themeKey()][1],
+                'logo' => self::url($g->icon) ?? GameNav::builtinLogo($g),
+                'eyebrow' => (string) $g->eyebrow,
+                'text' => Str::limit(strip_tags((string) $g->description), 140),
             ])->values()->all(),
             'marquee' => $this->marquee(),
             'soon' => $this->soon(),

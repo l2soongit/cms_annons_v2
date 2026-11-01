@@ -11,6 +11,7 @@ use App\Support\Settings as SettingsStore;
 use BackedEnum;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\FileUpload;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
@@ -91,6 +92,8 @@ class HomePageSettings extends Page
                 ]),
             Section::make('Секції')->schema([
                 CheckboxList::make('home.sections')->label('Показувати на головній')->options(HomeContent::SECTIONS)->columns(2),
+                Select::make('home.games_style')->label('Вигляд блоку «Обери свою гру»')->options(HomeContent::GAMES_STYLES)->required()->native(false)
+                    ->helperText('Демо всіх варіантів: design/homepage/games-sliders.html'),
                 TextInput::make('home.ranking_size')->label('Рядків у таблиці лідерів')->numeric()->minValue(3)->maxValue(30)->required(),
                 Toggle::make('home.live_feed')->label('Сповіщення «щойно проголосували»')
                     ->helperText('Справжні голоси за останні хвилини, внизу екрана.'),
@@ -141,6 +144,7 @@ class HomePageSettings extends Page
                 in_array($name, HomeContent::LOCALIZED, true) => collect(array_keys(Locales::all()))->mapWithKeys(fn ($l) => [$l => trim((string) ($value[$l] ?? ''))])->all(),
                 in_array($name, ['quick_links', 'search_hints'], true) => collect(array_keys(Locales::all()))
                     ->mapWithKeys(fn ($l) => [$l => array_values(array_filter(array_map('trim', (array) ($value[$l] ?? []))))])->all(),
+                $name === 'games_style' => array_key_exists((string) $value, HomeContent::GAMES_STYLES) ? (string) $value : 'classic',
                 $name === 'sections' => array_values(array_intersect(array_keys(HomeContent::SECTIONS), (array) $value)),
                 in_array($name, ['ranking_size', 'hero_image_opacity'], true) => (int) $value,
                 in_array($name, self::IMAGES, true) => is_string($value) && $value !== '' ? $value : null,

@@ -57,6 +57,16 @@ return [
         'games_label' => 'Games',
         'games_title' => 'Pick your game',
         'games_lead' => 'Every game has its own ranking and filters: chronicle, version, mode, wipe.',
+        // Стилі блоку «Обери свою гру»
+        'gs' => [
+            'open' => 'Open servers',
+            'choose' => 'Choose a server',
+            'see' => 'See servers',
+            'top_online' => 'Top games by players online',
+            'swipe' => 'or swipe the card',
+            'hover_stop' => 'Hover to pause',
+            'leader_month' => 'Leader of the month:',
+        ],
         'slider_prev' => 'Previous games',
         'slider_next' => 'Next games',
         'slider_pages' => 'Slider pages',

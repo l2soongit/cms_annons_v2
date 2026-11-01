@@ -57,6 +57,16 @@ return [
         'games_label' => 'Gry',
         'games_title' => 'Wybierz swoją grę',
         'games_lead' => 'Każda gra ma własny ranking i filtry: kroniki, wersja, tryb, wipe.',
+        // Стилі блоку «Обери свою гру»
+        'gs' => [
+            'open' => 'Otwórz serwery',
+            'choose' => 'Wybierz serwer',
+            'see' => 'Zobacz serwery',
+            'top_online' => 'Najpopularniejsze gry online',
+            'swipe' => 'lub przesuń kartę',
+            'hover_stop' => 'Najedź, aby zatrzymać',
+            'leader_month' => 'Lider miesiąca:',
+        ],
         'slider_prev' => 'Poprzednie gry',
         'slider_next' => 'Następne gry',
         'slider_pages' => 'Strony slidera',

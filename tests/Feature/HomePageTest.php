@@ -74,6 +74,25 @@ class HomePageTest extends TestCase
         $this->assertSame('Aion Classic', Game::where('slug', 'aion')->first()->name);
     }
 
+    public function test_admin_chooses_games_block_style(): void
+    {
+        $this->makeServer();
+        $marks = ['classic' => 'id="games-slider"', 'coverflow' => 'data-cf', 'spotlight' => 'data-sp', 'accordion' => 'data-ac', 'marquee' => 'data-mq', 'deck' => 'data-dk'];
+
+        foreach ($marks as $style => $mark) {
+            Settings::save(['home.games_style' => $style]);
+            HomePageData::forget();
+            $this->get('/')->assertOk()->assertSee($mark, false)->assertSee('Lineage 2')->assertSee('/images/games/l2.png', false);
+        }
+
+        $this->seed(RoleSeeder::class);
+        $admin = User::factory()->create();
+        $admin->assignRole('admin');
+        Livewire::actingAs($admin)->test(HomePageSettings::class)
+            ->set('data.home.games_style', 'accordion')->call('save')->assertHasNoErrors();
+        $this->assertSame('accordion', config('graj.home.games_style'));
+    }
+
     public function test_home_shows_games_ranking_and_counters(): void
     {
         $this->makeServer();

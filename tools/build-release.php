@@ -112,5 +112,7 @@ foreach ($it as $file) {
     }
 }
 $zip->close();
+// Розпакована копія не потрібна: інакше Pint і PHPStan перевірятимуть її як частину проєкту
+$rm($stage);
 
 printf("\nГотово: %s (%d файлів, %.1f МБ)\n", $zipPath, $count, filesize($zipPath) / 1048576);

@@ -40,6 +40,9 @@ class AppServiceProvider extends ServiceProvider
     {
         Model::preventLazyLoading(! $this->app->isProduction());
 
+        // Тимчасові завантаження Livewire: за замовчуванням до 12 МБ, а архів оновлення важить ~25 МБ
+        config(['livewire.temporary_file_upload.rules' => ['required', 'file', 'max:204800']]);
+
         // Основна мова сайту (без префікса в адресі); app.locale далі змінюється під мову запиту
         config(['app.locale_default' => config('app.locale_default', config('app.locale'))]);
 

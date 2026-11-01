@@ -26,8 +26,16 @@ if (! class_exists(ZipArchive::class)) {
     exit(1);
 }
 
-$version = trim((string) shell_exec('git describe --tags --always 2>'.(PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null'))) ?: date('Ymd');
-$version = date('Y.m.d').'-'.preg_replace('/[^A-Za-z0-9.\-]/', '', $version);
+// Версія: --version=v… (CI передає тег релізу) або дата й короткий хеш коміту.
+// Записується у VERSION — за ним сайт порівнює себе з останнім релізом (адмінка → «Оновлення»)
+$versionArg = current(array_filter($argv, fn ($a) => str_starts_with($a, '--version=')));
+if ($versionArg) {
+    $version = substr($versionArg, strlen('--version='));
+} else {
+    $sha = trim((string) shell_exec('git rev-parse --short HEAD 2>'.(PHP_OS_FAMILY === 'Windows' ? 'NUL' : '/dev/null'))) ?: 'local';
+    $version = 'v'.date('Y.m.d').'-'.$sha;
+}
+$version = preg_replace('/[^A-Za-z0-9.\-]/', '', $version);
 
 if (! $skipAssets) {
     $run('npm run build');
@@ -93,6 +101,8 @@ foreach (glob("{$stage}/bootstrap/cache/*.php") as $cached) {
 foreach (['.env', 'storage/installed', 'public/hot', 'public/storage', 'database/database.sqlite'] as $f) {
     @unlink("{$stage}/{$f}");
 }
+
+file_put_contents("{$stage}/VERSION", $version."\n");
 
 $zipPath = "{$root}/dist/graj-club-{$version}.zip";
 @unlink($zipPath);

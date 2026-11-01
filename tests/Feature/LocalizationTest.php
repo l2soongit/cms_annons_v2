@@ -8,10 +8,13 @@ use App\Filament\Pages\Translations as TranslationsPage;
 use App\Filament\Resources\GameResource\Pages\EditGame;
 use App\Models\Game;
 use App\Models\Server;
+use App\Models\Tariff;
 use App\Models\User;
+use App\Support\ContentTranslations;
 use App\Support\Translations;
 use Database\Seeders\GameSeeder;
 use Database\Seeders\RoleSeeder;
+use Database\Seeders\TariffSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Livewire;
 use Tests\TestCase;
@@ -178,15 +181,15 @@ class LocalizationTest extends TestCase
 
     public function test_seeded_content_is_translated_into_every_language(): void
     {
-        $this->seed([GameSeeder::class, \Database\Seeders\TariffSeeder::class]);
-        \App\Support\ContentTranslations::fill();
+        $this->seed([GameSeeder::class, TariffSeeder::class]);
+        ContentTranslations::fill();
 
         $dayz = Game::where('slug', 'dayz')->first();
         foreach (['uk', 'en', 'ru', 'pl'] as $locale) {
             $this->assertNotEmpty($dayz->getTranslation('description', $locale, false), "DayZ без опису: {$locale}");
         }
-        $this->assertSame('VIP na 7 dni', \App\Models\Tariff::where('service', 'vip')->where('days', 7)->first()->getTranslation('name', 'pl', false));
-        $this->assertSame('Header banner, 1 day', \App\Models\Tariff::where('placement', 'header')->where('days', 1)->first()->getTranslation('name', 'en', false));
+        $this->assertSame('VIP na 7 dni', Tariff::where('service', 'vip')->where('days', 7)->first()->getTranslation('name', 'pl', false));
+        $this->assertSame('Header banner, 1 day', Tariff::where('placement', 'header')->where('days', 1)->first()->getTranslation('name', 'en', false));
 
         app()->setLocale('ru');
         $mode = Game::where('slug', 'minecraft')->first()->fields()->where('key', 'mode')->first();

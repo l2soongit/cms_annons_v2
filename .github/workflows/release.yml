@@ -1,0 +1,76 @@
+name: Release
+
+# Після зеленого CI на main збирає архів для хостингу й публікує його як GitHub Release.
+# Сайти, встановлені з архіву, бачать реліз в адмінці («Оновлення») і ставлять його вручну або автоматично.
+# Можна запустити й вручну з вкладки Actions.
+on:
+  workflow_run:
+    workflows: [CI]
+    types: [completed]
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v5
+        with:
+          # Для workflow_run — саме той коміт, який пройшов CI
+          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
+          fetch-depth: 50
+
+      - uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.3'
+          extensions: mbstring, intl, gd, zip
+          coverage: none
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Version
+        id: v
+        run: |
+          SHA=$(git rev-parse --short HEAD)
+          echo "tag=v$(date -u +%Y.%m.%d)-${SHA}" >> "$GITHUB_OUTPUT"
+
+      - name: Build archive
+        run: |
+          npm ci
+          php tools/build-release.php --version=${{ steps.v.outputs.tag }}
+
+      # Список змін — заголовки комітів після попереднього релізу
+      - name: Release notes
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          PREV=$(gh release view --json tagName -q .tagName 2>/dev/null || true)
+          PREV_SHA=$(echo "$PREV" | sed -n 's/.*-\([0-9a-f]\{7,\}\)$/\1/p')
+          if [ -n "$PREV_SHA" ] && git cat-file -e "$PREV_SHA" 2>/dev/null; then
+            git log --pretty='- %s' "$PREV_SHA..HEAD" > notes.md
+          else
+            git log -10 --pretty='- %s' > notes.md
+          fi
+          cat notes.md
+
+      - name: Publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "${{ steps.v.outputs.tag }}" dist/graj-club-*.zip \
+            --target "$(git rev-parse HEAD)" \
+            --title "${{ steps.v.outputs.tag }}" \
+            --notes-file notes.md \
+            --latest

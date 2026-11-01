@@ -113,6 +113,15 @@ return [
         'require_staff_2fa' => (bool) env('REQUIRE_STAFF_2FA', true),
     ],
 
+    // Оновлення з GitHub Releases (адмінка → «Оновлення», команда site:update). Реліз збирає .github/workflows/release.yml
+    'update' => [
+        'repo' => env('UPDATE_REPO', 'l2soongit/cms_annons_v2'),
+        // Потрібен лише для приватного репозиторію (fine-grained токен з правом Contents: read)
+        'token' => env('UPDATE_TOKEN'),
+        // Як часто автооновлення перевіряє новий реліз, хвилини
+        'check_minutes' => (int) env('UPDATE_CHECK_MINUTES', 60),
+    ],
+
     'privacy' => [
         // Хеші IP голосів старші за цей термін видаляються (ТЗ: не довше 90 днів)
         'vote_ip_retention_days' => 90,

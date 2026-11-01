@@ -55,8 +55,9 @@ class Stage2Test extends TestCase
     {
         $server = $this->server();
 
+        // Після голосу — стан «Дякуємо» на сторінці голосування
         $this->post(route('servers.vote.store', $server), ['nickname' => 'Hero'])
-            ->assertRedirect(route('servers.show', $server));
+            ->assertRedirect(route('servers.vote', $server));
         $this->assertSame(1, $server->votes()->where('status', 'counted')->count());
 
         $this->post(route('servers.vote.store', $server), ['nickname' => 'Hero'])

@@ -36,6 +36,10 @@ Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping(60);
 // «Пульс» планувальника: release:check перевіряє, що cron справді запускає schedule:run
 Schedule::call(fn () => Cache::forever('schedule:heartbeat', now()->getTimestamp()))->everyMinute()->name('schedule-heartbeat');
 
+// Оновлення сайту: завершити розпочате, виконати чергу з адмінки («Оновлення»), автооновлення з GitHub Releases.
+// Останнім: завантаження й заміна файлів довгі, решта задач хвилини не мають на них чекати
+Schedule::command('site:update --tick')->everyMinute()->withoutOverlapping(30);
+
 Artisan::command('rating:recalculate', function (RatingCalculator $rating) {
     $rating->recalculate();
     $this->info('Рейтинг перераховано');

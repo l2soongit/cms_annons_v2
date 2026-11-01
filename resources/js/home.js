@@ -64,6 +64,37 @@ const SCENES = {
       <svg class="cross" viewBox="0 0 40 40" stroke="#4fc3f7" stroke-width="2" aria-hidden="true"><path d="M20 0v14M20 26v14M0 20h14M26 20h14"/><circle cx="20" cy="20" r="1.5" fill="#4fc3f7"/></svg>
       <i class="blip" style="left:58%;top:30%"></i><i class="blip" style="left:41%;top:46%;animation-delay:-1.6s"></i>
     </div>`,
+  wow: () => `<div class="scene scene-wow">
+      <span class="stars"></span><span class="core"></span><span class="portal"></span>
+      <svg class="peaks" viewBox="0 0 400 140" preserveAspectRatio="none" aria-hidden="true">
+        <path fill="#1e1b4b" d="M0 140 V70 L40 40 L70 66 L110 18 L150 62 L180 44 L220 80 L260 30 L300 70 L340 46 L400 84 V140 Z"/>
+        <path fill="#0b0a24" d="M0 140 V100 L50 76 L90 98 L140 70 L190 104 L240 82 L290 106 L340 84 L400 108 V140 Z"/>
+      </svg>
+    </div>`,
+  pw: () => `<div class="scene scene-pw">
+      <span class="cloud" style="left:-10%"></span><span class="cloud" style="right:-12%;bottom:22%;animation-delay:-6s"></span>
+      <svg class="isle i1" viewBox="0 0 170 120" aria-hidden="true"><path fill="#134e4a" d="M10 70 H160 L120 118 H50 Z"/><path fill="#0f766e" d="M10 70 H160 V76 H10 Z"/>
+        <path fill="#042f2e" d="M62 70 V52 H108 V70 Z M54 52 L85 40 L116 52 Z M68 40 V28 H102 V40 Z M60 28 L85 14 L110 28 Z M80 14 L85 2 L90 14 Z"/>
+        <rect x="80" y="56" width="10" height="14" fill="#5eead4" opacity=".8"/></svg>
+      <svg class="isle i2" viewBox="0 0 70 40" aria-hidden="true"><path fill="#134e4a" d="M2 10 H68 L50 38 H20 Z"/><path fill="#0f766e" d="M2 10 H68 V14 H2 Z"/></svg>
+      <svg class="isle i3" viewBox="0 0 70 40" aria-hidden="true"><path fill="#134e4a" d="M2 10 H68 L50 38 H20 Z"/><path fill="#0f766e" d="M2 10 H68 V14 H2 Z"/></svg>
+    </div>`,
+  aion: () => `<div class="scene scene-aion">
+      <span class="halo"></span>
+      <svg class="wings" viewBox="0 0 240 130" fill="#ede9fe" aria-hidden="true">
+        <g class="wl" opacity=".9"><path d="M116 60 C90 20 50 6 4 10 C30 22 44 30 54 42 C34 40 20 44 8 54 C34 56 50 60 62 70 C46 72 34 80 26 92 C56 84 84 80 112 72 Z"/></g>
+        <g class="wr" opacity=".9"><path d="M124 60 C150 20 190 6 236 10 C210 22 196 30 186 42 C206 40 220 44 232 54 C206 56 190 60 178 70 C194 72 206 80 214 92 C184 84 156 80 128 72 Z"/></g>
+      </svg>
+      ${Array.from({ length: 7 }, () => `<i class="feather" style="left:${rnd(5, 90)}%;animation-delay:-${rnd(0, 7)}s;animation-duration:${rnd(6, 10)}s"></i>`).join('')}
+    </div>`,
+  mu: () => `<div class="scene scene-mu">
+      <span class="aura"></span>
+      <svg class="sword" viewBox="0 0 44 200" aria-hidden="true">
+        <path fill="#fecdd3" d="M22 0 L30 18 V132 H14 V18 Z"/><path fill="#ff4d5e" d="M22 8 V130" stroke="#ff4d5e" stroke-width="2"/>
+        <path fill="#7f1d1d" d="M0 132 H44 V142 H0 Z"/><path fill="#450a0a" d="M17 142 H27 V184 H17 Z"/><circle cx="22" cy="192" r="7" fill="#ff4d5e"/>
+      </svg>
+      ${Array.from({ length: 10 }, () => `<i class="ember" style="left:${rnd(10, 90)}%;bottom:${rnd(0, 30)}%;animation-delay:-${rnd(0, 5)}s;animation-duration:${rnd(3, 6)}s"></i>`).join('')}
+    </div>`,
   default: () => '<div class="scene scene-default"></div>',
 };
 const scene = (key, image) => image
@@ -356,6 +387,78 @@ $$('.world').forEach(tile => {
   });
   tile.addEventListener('pointerleave', () => { tile.style.transform = ''; });
 });
+
+// 8а. Слайдер ігор: стрілки, крапки-сторінки, автопрокрутка з паузою під курсором і при взаємодії
+(() => {
+  const root = $('#games-slider');
+  const track = root && $('#worlds', root);
+  if (!track) return;
+  const prev = $('.slider-btn.prev', root), next = $('.slider-btn.next', root), dotsBox = $('.slider-dots', root);
+  const cards = $$('.world', track);
+  let pages = 0, dots = [];
+
+  const step = () => (cards[1] ? cards[1].offsetLeft - cards[0].offsetLeft : track.clientWidth);
+  const perView = () => Math.max(1, Math.round(track.clientWidth / step()));
+  const maxScroll = () => track.scrollWidth - track.clientWidth;
+  const current = () => {
+    if (track.scrollLeft >= maxScroll() - 4) return pages - 1;
+    return Math.round(track.scrollLeft / (step() * perView()));
+  };
+  const goTo = page => {
+    const p = Math.max(0, Math.min(pages - 1, page));
+    track.scrollTo({ left: p === pages - 1 ? maxScroll() : p * perView() * step(), behavior: calm ? 'auto' : 'smooth' });
+  };
+
+  const update = () => {
+    const at = current();
+    dots.forEach((d, i) => d.setAttribute('aria-current', i === at ? 'true' : 'false'));
+    prev.disabled = track.scrollLeft <= 4;
+    next.disabled = track.scrollLeft >= maxScroll() - 4;
+  };
+
+  const build = () => {
+    pages = Math.max(1, Math.ceil(cards.length / perView()));
+    const fits = maxScroll() <= 4;
+    prev.hidden = next.hidden = fits;
+    dotsBox.textContent = '';
+    dots = fits ? [] : Array.from({ length: pages }, (_, i) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.setAttribute('aria-label', dotsBox.dataset.label.replace('#', i + 1));
+      b.addEventListener('click', () => { goTo(i); hold(); });
+      dotsBox.append(b);
+      return b;
+    });
+    update();
+  };
+
+  prev.addEventListener('click', () => { goTo(current() - 1); hold(); });
+  next.addEventListener('click', () => { goTo(current() + 1); hold(); });
+  track.addEventListener('keydown', e => {
+    if (e.key === 'ArrowRight') { e.preventDefault(); goTo(current() + 1); hold(); }
+    if (e.key === 'ArrowLeft') { e.preventDefault(); goTo(current() - 1); hold(); }
+  });
+  let raf = 0;
+  track.addEventListener('scroll', () => { cancelAnimationFrame(raf); raf = requestAnimationFrame(update); }, { passive: true });
+  let resizeT;
+  addEventListener('resize', () => { clearTimeout(resizeT); resizeT = setTimeout(build, 150); });
+
+  // Автопрокрутка: кожні 6 с, по колу; стоїть під курсором, у фокусі, поза екраном і у фоновій вкладці.
+  // Після ручного гортання — пауза на 15 с.
+  let hovered = false, visible = false, heldUntil = 0;
+  const hold = () => { heldUntil = Date.now() + 15000; };
+  root.addEventListener('pointerenter', () => { hovered = true; });
+  root.addEventListener('pointerleave', () => { hovered = false; });
+  track.addEventListener('touchstart', hold, { passive: true });
+  track.addEventListener('wheel', e => { if (Math.abs(e.deltaX) > Math.abs(e.deltaY)) hold(); }, { passive: true });
+  if ('IntersectionObserver' in window) new IntersectionObserver(([e]) => { visible = e.isIntersecting; }, { threshold: 0.5 }).observe(root);
+  if (!calm) setInterval(() => {
+    if (!visible || hovered || document.hidden || Date.now() < heldUntil || root.contains(document.activeElement) || pages < 2) return;
+    goTo(current() >= pages - 1 ? 0 : current() + 1);
+  }, 6000);
+
+  build();
+})();
 
 // 9. Іскри першого екрана: легкий canvas, пауза у фоновій вкладці та поза екраном
 (() => {

@@ -21,6 +21,10 @@ class Game extends Model
         'dayz' => 'Туманний ліс (DayZ)',
         'rust' => 'Іржа й вогонь (Rust)',
         'cs' => 'Тактичний радар (CS)',
+        'wow' => 'Арканний портал (World of Warcraft)',
+        'pw' => 'Летючі острови (Perfect World)',
+        'aion' => 'Крила (Aion)',
+        'mu' => 'Палаючий меч (MU Online)',
     ];
 
     /** Блоки сторінки гри, які адмін може вимкнути: ключ => назва в адмінці */
@@ -160,7 +164,10 @@ class Game extends Model
         return array_key_exists((string) $this->theme, self::THEMES) ? $this->theme : 'default';
     }
 
-    /** Коротка назва для вкладок і позначок: «Grand Theft Auto» → GTA, «Lineage 2» → L2, «Rust» → Rust */
+    /**
+     * Коротка назва для вкладок і позначок: «Grand Theft Auto» → GTA, «Lineage 2» → L2, «Rust» → Rust,
+     * «World of Warcraft» → WoW (службові слова лишаються малими), «MU Online» → MU (абревіатура на початку).
+     */
     public function shortName(): string
     {
         $words = preg_split('/[\s-]+/u', trim($this->name), -1, PREG_SPLIT_NO_EMPTY);
@@ -169,7 +176,11 @@ class Game extends Model
             return $this->name;
         }
 
-        return implode('', array_map(fn ($w) => mb_strtoupper(mb_substr($w, 0, 1)), $words));
+        if (preg_match('/^\p{Lu}{2,}$/u', $words[0])) {
+            return $words[0];
+        }
+
+        return implode('', array_map(fn ($w) => mb_substr($w, 0, 1), $words));
     }
 
     /** Назва в меню ігор: коротка назва лишається, довга скорочується («Grand Theft Auto» → GTA) */

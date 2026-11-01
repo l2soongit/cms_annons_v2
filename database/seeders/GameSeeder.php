@@ -7,11 +7,13 @@ use Illuminate\Database\Seeder;
 
 class GameSeeder extends Seeder
 {
-    private const THEMES = ['lineage2' => 'l2', 'gta' => 'gta', 'minecraft' => 'mc', 'dayz' => 'dayz', 'rust' => 'rust', 'counter-strike' => 'cs'];
+    private const THEMES = ['lineage2' => 'l2', 'gta' => 'gta', 'minecraft' => 'mc', 'dayz' => 'dayz', 'rust' => 'rust', 'counter-strike' => 'cs',
+        'world-of-warcraft' => 'wow', 'perfect-world' => 'pw', 'aion' => 'aion', 'mu-online' => 'mu'];
 
     /** Англійські підписи українських варіантів (та сама мапа — у міграції add_english_option_labels) */
     private const EN_LABELS = [
         'Гайдард' => 'Hardcore', 'Мультипрофа' => 'Multiclass',
+        'Офіційні' => 'Blizzlike', 'Без ресетів' => 'Non-Reset', 'Ресети' => 'Reset', 'Гранд-ресети' => 'Grand Reset',
         'Виживання' => 'Survival', 'Анархія' => 'Anarchy', 'Міні-ігри' => 'Minigames', 'Творчий' => 'Creative',
         'Ліцензія' => 'Licensed', 'Піратка' => 'Cracked',
         'Щотижня' => 'Weekly', 'Раз на 2 тижні' => 'Every 2 weeks', 'Щомісяця' => 'Monthly', 'Без ліміту' => 'No limit', 'Ванілла' => 'Vanilla',
@@ -19,7 +21,20 @@ class GameSeeder extends Seeder
 
     public function run(): void
     {
-        foreach ($this->games() as $sort => $data) {
+        $this->seedGames($this->games());
+    }
+
+    /** Лише ігри, яких ще немає в базі: для міграцій на робочих базах, змінене в адмінці не чіпаємо */
+    public function seedMissing(): void
+    {
+        $existing = Game::pluck('slug')->all();
+        $this->seedGames(array_filter($this->games(), fn ($g) => ! in_array($g['slug'], $existing, true)));
+    }
+
+    /** @param  array<int, array<string, mixed>>  $games  ключ масиву — порядок гри */
+    private function seedGames(array $games): void
+    {
+        foreach ($games as $sort => $data) {
             $fields = $data['fields'];
             unset($data['fields']);
 
@@ -134,6 +149,72 @@ class GameSeeder extends Seeder
                     $this->select('mode', ['uk' => 'Режим', 'en' => 'Mode'], ['Public', 'Deathmatch', 'Surf', 'Zombie', 'Retake', 'Jailbreak']),
                     // Сервер не повідомляє тикрейт у відповіді, тому його вказує власник; фільтр — пункт «128 tick» у меню закупівлі
                     ['is_required' => false, 'is_filterable' => false] + $this->select('tickrate', ['uk' => 'Тикрейт', 'en' => 'Tickrate'], ['64', '100', '128']),
+                ],
+            ],
+            // Приватні сервери MMORPG не відповідають на A2S чи інші запити онлайну:
+            // моніторинг перевіряє, чи відкритий порт сервера авторизації (онлайн/офлайн)
+            [
+                'slug' => 'world-of-warcraft',
+                'name' => ['uk' => 'World of Warcraft', 'en' => 'World of Warcraft'],
+                'eyebrow' => ['uk' => 'Фентезі MMORPG · приватні сервери', 'en' => 'Fantasy MMORPG · private servers'],
+                'description' => [
+                    'uk' => 'Від класики й Burning Crusade до Wrath of the Lich King і новіших доповнень. Обери доповнення й рейти — покажемо, де збираються рейди.',
+                    'en' => 'From Classic and The Burning Crusade to Wrath of the Lich King and newer expansions. Pick an expansion and rates — we will show where raids gather.',
+                ],
+                'query_driver' => 'tcp',
+                'default_port' => 3724,
+                'fields' => [
+                    $this->select('expansion', ['uk' => 'Доповнення', 'en' => 'Expansion'], ['Classic 1.12', 'TBC 2.4.3', 'WotLK 3.3.5a', 'Cataclysm 4.3.4', 'MoP 5.4.8', 'WoD 6.2.4', 'Legion 7.3.5', 'BfA 8.3.7', 'Retail'], inUrl: true),
+                    $this->select('rates', ['uk' => 'Рейти', 'en' => 'Rates'], ['x1', 'x3', 'x5', 'x10', 'x50', 'x100', 'x1000']),
+                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['PvE', 'PvP', 'RP', 'Fun', 'Офіційні']),
+                ],
+            ],
+            [
+                'slug' => 'perfect-world',
+                'name' => ['uk' => 'Perfect World', 'en' => 'Perfect World'],
+                'eyebrow' => ['uk' => 'Східне фентезі MMORPG · з 2005 року', 'en' => 'Eastern fantasy MMORPG · since 2005'],
+                'description' => [
+                    'uk' => 'Польоти, гільдійні війни за території й три раси. Обери версію й рейти — покажемо сервери, де вже воюють за землі.',
+                    'en' => 'Flying, guild territory wars and three races. Pick a version and rates — we will show servers where the land wars are already on.',
+                ],
+                'query_driver' => 'tcp',
+                'default_port' => 29000,
+                'fields' => [
+                    $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['1.3.6', '1.4.4', '1.4.6', '1.5.1', '1.5.3', '1.5.5', '1.7.x'], inUrl: true),
+                    $this->select('rates', ['uk' => 'Рейти', 'en' => 'Rates'], ['x1', 'x5', 'x10', 'x50', 'x100', 'x1000']),
+                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['PvP', 'PvE', 'Classic', 'Fun']),
+                ],
+            ],
+            [
+                'slug' => 'aion',
+                'name' => ['uk' => 'Aion', 'en' => 'Aion'],
+                'eyebrow' => ['uk' => 'MMORPG з крилами · Елійці проти Асмодіан', 'en' => 'MMORPG with wings · Elyos vs Asmodians'],
+                'description' => [
+                    'uk' => 'Повітряні бої, Безодня й облоги фортець. Обери версію й рейти — покажемо, де вирує війна рас.',
+                    'en' => 'Aerial combat, the Abyss and fortress sieges. Pick a version and rates — we will show where the race war rages.',
+                ],
+                'query_driver' => 'tcp',
+                'default_port' => 2106,
+                'fields' => [
+                    $this->select('version', ['uk' => 'Версія', 'en' => 'Version'], ['1.9', '2.7', '3.9', '4.6', '4.8', '5.8', '7.x', 'Classic'], inUrl: true),
+                    $this->select('rates', ['uk' => 'Рейти', 'en' => 'Rates'], ['x1', 'x3', 'x5', 'x10', 'x50', 'x100']),
+                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['PvP', 'PvE', 'Classic', 'Fun']),
+                ],
+            ],
+            [
+                'slug' => 'mu-online',
+                'name' => ['uk' => 'MU Online', 'en' => 'MU Online'],
+                'eyebrow' => ['uk' => 'Хардкорна MMORPG · ресети й сезони', 'en' => 'Hardcore MMORPG · resets and seasons'],
+                'description' => [
+                    'uk' => 'Ресети, Blood Castle і Castle Siege. Обери сезон і рейти досвіду — покажемо, де зараз найжвавіше.',
+                    'en' => 'Resets, Blood Castle and Castle Siege. Pick a season and experience rates — we will show where it is busiest right now.',
+                ],
+                'query_driver' => 'tcp',
+                'default_port' => 44405,
+                'fields' => [
+                    $this->select('season', ['uk' => 'Сезон', 'en' => 'Season'], ['Season 2', 'Season 4', 'Season 6', 'Season 9', 'Season 12', 'Season 15', 'Season 17', 'Season 19'], inUrl: true),
+                    $this->select('rates', ['uk' => 'Рейти', 'en' => 'Rates'], ['x10', 'x50', 'x100', 'x500', 'x1000', 'x9999']),
+                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['Без ресетів', 'Ресети', 'Гранд-ресети', 'PvP', 'Hard']),
                 ],
             ],
         ];

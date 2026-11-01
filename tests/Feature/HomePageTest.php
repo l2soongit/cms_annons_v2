@@ -48,6 +48,30 @@ class HomePageTest extends TestCase
         ]);
     }
 
+    public function test_games_slider_includes_new_mmorpg_games(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('id="games-slider"', false)
+            ->assertSee('slider-btn next', false)
+            ->assertSeeInOrder(['g-cs', 'g-wow', 'g-pw', 'g-aion', 'g-mu'], false)
+            ->assertSee('World of Warcraft')
+            ->assertSee('MU Online');
+
+        $this->assertSame('WoW', Game::where('slug', 'world-of-warcraft')->first()->shortName());
+        $this->assertSame('MU', Game::where('slug', 'mu-online')->first()->shortName());
+        $this->assertSame('GTA', Game::where('slug', 'gta')->first()->shortName());
+
+        // Сторінка нової гри — загальний шаблон із фільтрами гри, без сортувань інших тем
+        $this->get('/world-of-warcraft')->assertOk()->assertSee('WotLK 3.3.5a')->assertDontSee('ui.game.sort_');
+
+        // Повторний запуск для робочих баз не дублює й не перезаписує ігри
+        Game::where('slug', 'aion')->first()->update(['name' => ['uk' => 'Aion Classic']]);
+        (new GameSeeder)->seedMissing();
+        $this->assertSame(10, Game::count());
+        $this->assertSame('Aion Classic', Game::where('slug', 'aion')->first()->name);
+    }
+
     public function test_home_shows_games_ranking_and_counters(): void
     {
         $this->makeServer();

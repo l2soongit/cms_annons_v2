@@ -63,6 +63,34 @@ final class ContentTranslations
                 'pl' => 'Public, retake, DM czy surf — wybierz wersję, tryb i mapę. Ping, tickrate i liczba graczy na żywo od razu widoczne.',
             ],
         ],
+        'world-of-warcraft' => [
+            'eyebrow' => ['ru' => 'Фэнтези MMORPG · приватные серверы', 'pl' => 'Fantasy MMORPG · serwery prywatne'],
+            'description' => [
+                'ru' => 'От классики и Burning Crusade до Wrath of the Lich King и новых дополнений. Выбери дополнение и рейты — покажем, где собираются рейды.',
+                'pl' => 'Od Classic i The Burning Crusade po Wrath of the Lich King i nowsze dodatki. Wybierz dodatek i rate — pokażemy, gdzie zbierają się rajdy.',
+            ],
+        ],
+        'perfect-world' => [
+            'eyebrow' => ['ru' => 'Восточное фэнтези MMORPG · с 2005 года', 'pl' => 'Wschodnie fantasy MMORPG · od 2005 roku'],
+            'description' => [
+                'ru' => 'Полёты, гильдейские войны за территории и три расы. Выбери версию и рейты — покажем серверы, где уже воюют за земли.',
+                'pl' => 'Latanie, gildyjne wojny o terytoria i trzy rasy. Wybierz wersję i rate — pokażemy serwery, na których już toczą się wojny o ziemie.',
+            ],
+        ],
+        'aion' => [
+            'eyebrow' => ['ru' => 'MMORPG с крыльями · Элийцы против Асмодиан', 'pl' => 'MMORPG ze skrzydłami · Elyosi kontra Asmodianie'],
+            'description' => [
+                'ru' => 'Воздушные бои, Бездна и осады крепостей. Выбери версию и рейты — покажем, где кипит война рас.',
+                'pl' => 'Walki w powietrzu, Otchłań i oblężenia fortec. Wybierz wersję i rate — pokażemy, gdzie szaleje wojna ras.',
+            ],
+        ],
+        'mu-online' => [
+            'eyebrow' => ['ru' => 'Хардкорная MMORPG · ресеты и сезоны', 'pl' => 'Hardkorowe MMORPG · resety i sezony'],
+            'description' => [
+                'ru' => 'Ресеты, Blood Castle и Castle Siege. Выбери сезон и рейты опыта — покажем, где сейчас оживлённее всего.',
+                'pl' => 'Resety, Blood Castle i Castle Siege. Wybierz sezon i rate doświadczenia — pokażemy, gdzie jest teraz najwięcej ruchu.',
+            ],
+        ],
     ];
 
     /** сторінка => [заголовок, текст] за мовою */
@@ -91,6 +119,7 @@ final class ContentTranslations
         'Режим' => ['Режим', 'Tryb'], 'Видання' => ['Издание', 'Edycja'], 'Версія' => ['Версия', 'Wersja'], 'Ліцензія' => ['Лицензия', 'Licencja'],
         'Мапа' => ['Карта', 'Mapa'], 'Стиль' => ['Стиль', 'Styl'], 'Моди' => ['Моды', 'Mody'], 'Вайп' => ['Вайп', 'Wipe'], 'Група' => ['Группа', 'Grupa'],
         'Тикрейт' => ['Тикрейт', 'Tickrate'], 'Перспектива' => ['Перспектива', 'Perspektywa'], 'Розмір мапи' => ['Размер карты', 'Rozmiar mapy'],
+        'Доповнення' => ['Дополнение', 'Dodatek'], 'Сезон' => ['Сезон', 'Sezon'],
     ];
 
     /** український підпис варіанта => [ru, pl] (латинські назви — Interlude, PvP, x100 — однакові всіма мовами) */
@@ -100,6 +129,7 @@ final class ContentTranslations
         'Ліцензія' => ['Лицензия', 'Licencja'], 'Піратка' => ['Пиратка', 'Piracka'],
         'Щотижня' => ['Еженедельно', 'Co tydzień'], 'Раз на 2 тижні' => ['Раз в 2 недели', 'Co 2 tygodnie'], 'Щомісяця' => ['Ежемесячно', 'Co miesiąc'],
         'Без ліміту' => ['Без лимита', 'Bez limitu'], 'Ванілла' => ['Ванилла', 'Vanilla'],
+        'Офіційні' => ['Близлайк', 'Blizzlike'], 'Без ресетів' => ['Без ресетов', 'Bez resetów'], 'Ресети' => ['Ресеты', 'Resety'], 'Гранд-ресети' => ['Гранд-ресеты', 'Grand resety'],
     ];
 
     /** Шаблони назв тарифів: українська регулярка => [en, ru, pl] з $1 — числом */

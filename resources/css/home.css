@@ -390,6 +390,10 @@ tbody tr.in { opacity: 1; transform: none; }
 .g-dayz { --gc: #b8c48a; --gc2: #2f3a22; --gfont: 'Stalinist One', sans-serif; --gtrack: .02em; --gcase: uppercase; --gshadow: 0 2px 0 #0008; }
 .g-rust { --gc: #e2652f; --gc2: #5a2412; --gfont: 'Rubik Dirt', sans-serif; --gtrack: .01em; --gcase: uppercase; --gshadow: 0 0 14px #e2652f66; }
 .g-cs   { --gc: #4fc3f7; --gc2: #0b2a4a; --gfont: 'Exo 2', sans-serif;      --gtrack: .02em; --gcase: uppercase; --gshadow: 0 0 16px #4fc3f788; }
+.g-wow  { --gc: #7c9cff; --gc2: #1e1b4b; --gfont: 'Cinzel', serif;         --gtrack: .04em; --gcase: uppercase; --gshadow: 0 2px 0 #1e1b4b, 0 0 18px #7c9cff88; }
+.g-pw   { --gc: #2dd4bf; --gc2: #134e4a; --gfont: 'Marcellus SC', serif;   --gtrack: .05em; --gcase: none;      --gshadow: 0 0 16px #2dd4bf77; }
+.g-aion { --gc: #c4a7ff; --gc2: #3b1d6e; --gfont: 'Cinzel Decorative', serif; --gtrack: .03em; --gcase: none;   --gshadow: 0 0 20px #c4a7ffaa; }
+.g-mu   { --gc: #ff4d5e; --gc2: #4c0519; --gfont: 'Metamorphous', serif;   --gtrack: .03em; --gcase: uppercase; --gshadow: 0 0 16px #ff4d5e88, 0 2px 0 #4c0519; }
 .gtitle { font-family: var(--gfont) !important; letter-spacing: var(--gtrack) !important; text-transform: var(--gcase); text-shadow: var(--gshadow); }
 .g-mc .gtitle, .g-mc.gtitle { font-size: .72em; line-height: 1.5; }
 .g-cs .gtitle, .g-cs.gtitle { font-style: italic; }
@@ -484,8 +488,66 @@ tbody tr.in { opacity: 1; transform: none; }
 .runner .n.gtitle { font-size: 15px; }
 .runner.g-mc .n.gtitle { font-size: 10px; }
 
-@media (max-width: 1024px) { .worlds { grid-template-columns: 1fr 1fr; } }
-@media (max-width: 640px) { .worlds { grid-template-columns: 1fr; } .world { height: 220px; } }
+/* World of Warcraft: арканний портал між гір під зоряним небом */
+.scene-wow { background: radial-gradient(ellipse at 50% 35%, #312e81 0%, #12103a 55%, #07061a 100%); }
+.scene-wow .stars { position: absolute; inset: 0; background-image: radial-gradient(1px 1px at 12% 18%, #fff, transparent), radial-gradient(1px 1px at 78% 12%, #fff, transparent), radial-gradient(1.5px 1.5px at 64% 30%, #c7d2fe, transparent), radial-gradient(1px 1px at 30% 8%, #fff, transparent), radial-gradient(1px 1px at 90% 34%, #fff, transparent), radial-gradient(1px 1px at 8% 40%, #c7d2fe, transparent); animation: blink 4s ease-in-out infinite; }
+.scene-wow .portal { position: absolute; left: 50%; top: 36%; width: 150px; height: 150px; margin: -75px 0 0 -75px; border-radius: 50%; background: conic-gradient(from 0deg, #7c9cff, #a855f7, #22d3ee, #7c9cff); -webkit-mask: radial-gradient(circle, transparent 46%, #000 48% 70%, transparent 72%); mask: radial-gradient(circle, transparent 46%, #000 48% 70%, transparent 72%); filter: blur(1px) drop-shadow(0 0 18px #7c9cff); animation: rot 9s linear infinite; }
+.scene-wow .core { position: absolute; left: 50%; top: 36%; width: 92px; height: 92px; margin: -46px 0 0 -46px; border-radius: 50%; background: radial-gradient(circle, #e0e7ff 0%, #7c9cff55 40%, transparent 70%); animation: sun-pulse 4s ease-in-out infinite; }
+.scene-wow .peaks { position: absolute; bottom: 0; left: 0; width: 100%; height: 52%; }
+
+/* Perfect World: летючі острови й пагода в бірюзовому небі */
+.scene-pw { background: linear-gradient(180deg, #042f2e 0%, #115e59 50%, #5eead4 100%); }
+.scene-pw .isle { position: absolute; animation: bob 5s ease-in-out infinite; }
+.scene-pw .isle.i1 { left: 50%; top: 14%; width: 170px; margin-left: -85px; }
+.scene-pw .isle.i2 { left: 8%; top: 44%; width: 70px; animation-delay: -2s; animation-duration: 6s; opacity: .8; }
+.scene-pw .isle.i3 { right: 7%; top: 30%; width: 56px; animation-delay: -3.5s; animation-duration: 7s; opacity: .7; }
+.scene-pw .cloud { position: absolute; bottom: 30%; width: 160px; height: 34px; border-radius: 40px; background: #ccfbf1; opacity: .25; filter: blur(6px); animation: fog 12s ease-in-out infinite alternate; }
+
+/* Aion: світлі крила над хмарами, пір'я падає вниз */
+.scene-aion { background: radial-gradient(ellipse at 50% 30%, #6d28d9 0%, #2e1065 50%, #0f0524 100%); }
+.scene-aion .halo { position: absolute; left: 50%; top: 32%; width: 200px; height: 200px; margin: -100px 0 0 -100px; border-radius: 50%; background: radial-gradient(circle, #f5f3ff 0%, #c4a7ff66 22%, transparent 60%); animation: sun-pulse 5s ease-in-out infinite; }
+.scene-aion .wings { position: absolute; left: 50%; top: 10%; width: 240px; margin-left: -120px; filter: drop-shadow(0 0 14px #c4a7ff); }
+.scene-aion .wings .wl { transform-origin: 120px 60px; animation: flap-l 3.2s ease-in-out infinite; }
+.scene-aion .wings .wr { transform-origin: 120px 60px; animation: flap-r 3.2s ease-in-out infinite; }
+@keyframes flap-l { 50% { transform: rotate(-7deg); } }
+@keyframes flap-r { 50% { transform: rotate(7deg); } }
+.scene-aion .feather { position: absolute; top: -10px; width: 6px; height: 14px; border-radius: 50% 50% 50% 50% / 70% 70% 30% 30%; background: #ede9fe; opacity: 0; animation: feather 7s linear infinite; }
+@keyframes feather { from { transform: translate(0, 0) rotate(0); opacity: 0; } 15% { opacity: .8; } to { transform: translate(30px, 300px) rotate(220deg); opacity: 0; } }
+
+/* MU Online: палаючий меч у кривавій імлі */
+.scene-mu { background: radial-gradient(ellipse at 50% 40%, #7f1d1d 0%, #3b0a0f 50%, #12030a 100%); }
+.scene-mu .aura { position: absolute; left: 50%; top: 34%; width: 170px; height: 170px; margin: -85px 0 0 -85px; border-radius: 50%; background: radial-gradient(circle, #ff4d5e88 0%, #ff4d5e22 40%, transparent 70%); animation: flicker 2.4s ease-in-out infinite; }
+.scene-mu .sword { position: absolute; left: 50%; top: 4%; height: 74%; margin-left: -22px; filter: drop-shadow(0 0 10px #ff4d5e); animation: bob 4s ease-in-out infinite; }
+.scene-mu .ember { position: absolute; width: 3px; height: 3px; border-radius: 50%; background: #fda4af; box-shadow: 0 0 6px #ff4d5e; animation: rise-mote 5s linear infinite; }
+
+/* Слайдер ігор: горизонтальна стрічка з прилипанням карток.
+ * Відступи стрічки з від'ємними полями — щоб тінь і нахил картки при наведенні не обрізались. */
+.slider { --per: 3; --gap: 16px; position: relative; }
+.worlds { display: grid; grid-auto-flow: column; grid-template-columns: none; grid-auto-columns: calc((100% - (var(--per) - 1) * var(--gap)) / var(--per)); gap: var(--gap); overflow-x: auto; overscroll-behavior-x: contain; scroll-snap-type: x mandatory; scroll-behavior: smooth; scrollbar-width: none; padding: 12px 0 44px; margin: -12px 0 -44px; outline: none; }
+.worlds::-webkit-scrollbar { display: none; }
+.worlds:focus-visible { box-shadow: inset 0 0 0 2px #fbbf2480; border-radius: var(--r-lg); }
+.worlds > .world { scroll-snap-align: start; }
+.slider-btn { position: absolute; top: calc(50% - 32px); z-index: 3; width: 46px; height: 46px; display: grid; place-items: center; border-radius: 50%; color: var(--text); background: #18181be6; border: 1px solid var(--line-2); backdrop-filter: blur(8px); cursor: pointer; box-shadow: 0 10px 30px -10px #000; transition: transform .2s, border-color .2s, opacity .2s, background-color .2s; }
+.slider-btn:hover { border-color: #fbbf24aa; background: #27272ae6; transform: scale(1.06); }
+.slider-btn:focus-visible { outline: 2px solid #fbbf24; outline-offset: 2px; }
+.slider-btn:disabled { opacity: 0; pointer-events: none; }
+.slider-btn[hidden] { display: none; }
+.slider-btn.prev { left: -22px; }
+.slider-btn.next { right: -22px; }
+.slider-dots { display: flex; justify-content: center; gap: 8px; margin-top: 22px; }
+.slider-dots:empty { display: none; }
+.slider-dots button { width: 10px; height: 10px; padding: 0; border-radius: 99px; border: 0; background: var(--line-2); cursor: pointer; transition: width .3s, background-color .3s; }
+.slider-dots button[aria-current="true"] { width: 28px; background: var(--grad, #fbbf24); }
+.slider-dots button:focus-visible { outline: 2px solid #fbbf24; outline-offset: 3px; }
+
+@media (max-width: 1024px) { .slider { --per: 2; } }
+@media (max-width: 1100px) { .slider-btn.prev { left: 6px; } .slider-btn.next { right: 6px; } }
+@media (max-width: 640px) {
+  /* На телефоні видно край наступної картки — підказка, що стрічку можна гортати */
+  .slider { --per: 1.15; --gap: 12px; }
+  .world { height: 220px; }
+  .slider-btn { display: none; }
+}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation: none !important; transition: none !important; scroll-behavior: auto !important; }

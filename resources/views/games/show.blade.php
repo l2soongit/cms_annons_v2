@@ -25,7 +25,8 @@
     </div>
 
     <nav class="mt-8 flex flex-wrap gap-1 text-sm" aria-label="{{ __('ui.game.sort') }}">
-        @foreach (\App\Http\Controllers\GameController::SORTS as $option)
+        {{-- Пінг, стан і вайп мають лише сторінки CS, DayZ і Rust --}}
+        @foreach (['votes', 'online', 'new', 'opening'] as $option)
             <a href="{{ request()->fullUrlWithQuery(['sort' => $option, 'page' => null]) }}" @if ($sort === $option) aria-current="true" @endif
                @class(['rounded-md px-3 py-1.5', 'bg-slab-2 text-bone' => $sort === $option, 'text-moss hover:text-bone' => $sort !== $option])>{{ __("ui.game.sort_{$option}") }}</a>
         @endforeach

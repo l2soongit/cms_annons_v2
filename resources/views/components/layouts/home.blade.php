@@ -29,7 +29,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {{-- Шрифти ігор (усі з кирилицею) — лише для логотипів у картках, тому не блокують перший показ --}}
-<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
+<link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&family=Cinzel:wght@800&family=Marcellus+SC&family=Cinzel+Decorative:wght@700&family=Metamorphous&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
 @vite(['resources/css/home.css', 'resources/js/home.js'])
 <x-layouts.mobile-bar />
 </head>

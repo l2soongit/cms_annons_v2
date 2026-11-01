@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Analytics\Tracker;
 use App\Enums\ServerStatus;
 use App\Models\Report;
 use App\Models\Review;
@@ -38,6 +39,8 @@ class ReviewController extends Controller
         if ($review->wasRecentlyCreated && $review->status === 'published') {
             $server->owner?->notify(new NewReview($review));
         }
+
+        app(Tracker::class)->event($request, 'review', $server);
 
         return to_route('servers.show', $server)->withFragment('reviews')->with('status', __('reviews.saved'));
     }

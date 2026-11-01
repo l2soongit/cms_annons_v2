@@ -91,5 +91,6 @@
   </div>
 </footer>
 <x-cookie-notice />
+<x-analytics />
 </body>
 </html>

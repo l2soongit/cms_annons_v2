@@ -3,6 +3,7 @@
 use App\Http\Middleware\LocalizeFromUrl;
 use App\Http\Middleware\RememberUserLocale;
 use App\Http\Middleware\SecurityHeaders;
+use App\Http\Middleware\TrackPageView;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -17,13 +18,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         // Платіжна система повертає покупця POST-запитом зі свого домену; сторінка лише перенаправляє в кабінет
-        $middleware->validateCsrfTokens(except: ['billing/return']);
+        // Події аналітики надсилає navigator.sendBeacon — без CSRF-токена; приймаються лише відомі назви
+        $middleware->validateCsrfTokens(except: ['billing/return', 'a/e']);
         // Закрите повідомлення про cookies ставить JavaScript — без шифрування, щоб сервер міг його прочитати
         $middleware->encryptCookies(except: ['cookie_notice']);
         // Мова з адреси (/en/…) — до маршрутизації; мова користувача для листів — після сесії
         $middleware->prepend(LocalizeFromUrl::class);
         $middleware->append(SecurityHeaders::class);
-        $middleware->web(append: [RememberUserLocale::class]);
+        $middleware->web(append: [RememberUserLocale::class, TrackPageView::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Помилки йдуть у Sentry, лише якщо задано SENTRY_LARAVEL_DSN

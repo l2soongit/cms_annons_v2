@@ -20,6 +20,7 @@
     ];
     if ($navServer) {
         $items[] = ['cabinet.servers.show', __('cabinet.nav.server'), '<rect x="3" y="4" width="18" height="7" rx="2"/><rect x="3" y="13" width="18" height="7" rx="2"/><path d="M7 7.5h.01M7 16.5h.01"/>', route('cabinet.servers.show', $navServer), null];
+        $items[] = ['cabinet.servers.analytics', __('analytics.cabinet.nav'), '<path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/>', route('cabinet.servers.analytics', $navServer), null];
         $items[] = ['', __('cabinet.nav.promo'), '<path d="M12 3l2.6 5.4 5.9.8-4.3 4.1 1 5.8L12 16.4 6.8 19.1l1-5.8L3.5 9.2l5.9-.8z"/>', route('cabinet.servers.show', $navServer).'#s-promo', null];
     }
     $items = array_merge($items, [
@@ -110,5 +111,6 @@
     })();
 </script>
 {{ $scripts ?? '' }}
+<x-analytics />
 </body>
 </html>

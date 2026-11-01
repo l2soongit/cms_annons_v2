@@ -32,7 +32,10 @@
     <div class="mt-6 grid gap-4 lg:grid-cols-2 lg:items-start">
         {{-- Статистика --}}
         <section aria-labelledby="s-stats" class="c-card lg:col-span-2">
-            <h2 id="s-stats" class="font-display text-lg font-medium">{{ __('cabinet.stats.title') }}</h2>
+            <div class="flex flex-wrap items-baseline justify-between gap-2">
+                <h2 id="s-stats" class="font-display text-lg font-medium">{{ __('cabinet.stats.title') }}</h2>
+                <a class="c-more" href="{{ route('cabinet.servers.analytics', $server) }}">{{ __('analytics.cabinet.title') }} →</a>
+            </div>
             <dl class="mt-4 grid grid-cols-2 gap-6 border-y border-seam py-5 sm:grid-cols-4">
                 <div><dt class="text-sm text-moss">{{ __('cabinet.stats.rank') }}</dt><dd class="mt-1 font-display text-2xl">{{ $server->rank ? '#'.$server->rank : '—' }}</dd></div>
                 <div><dt class="text-sm text-moss">{{ __('cabinet.stats.votes') }}</dt><dd class="mt-1 font-display text-2xl tabular-nums">{{ number_format($server->votes_month, 0, ',', ' ') }}</dd></div>

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Analytics\Tracker;
 use App\Billing\Billing;
 use App\Billing\BillingException;
 use App\Enums\ServerStatus;
@@ -104,6 +105,7 @@ class AdsController extends Controller
         if ($banner->starts_at <= now() && $banner->ends_at > now()) {
             $banner->increment('clicks');
         }
+        app(Tracker::class)->event(request(), 'banner_click', label: $banner->placement.' #'.$banner->id);
 
         return redirect()->away($banner->url);
     }

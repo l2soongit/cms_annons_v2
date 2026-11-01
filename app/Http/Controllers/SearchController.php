@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Analytics\Tracker;
 use App\Models\Server;
 use Illuminate\Http\Request;
 use Illuminate\View\View;
@@ -26,6 +27,8 @@ class SearchController extends Controller
                 ->orderByDesc('score')
                 ->limit(50)
                 ->get();
+            // Що шукають на сайті — підказка, яких серверів чи ігор бракує (запит без результатів позначено «∅»)
+            app(Tracker::class)->event($request, 'search', label: mb_strtolower($q).($servers->isEmpty() ? ' ∅' : ''));
         }
 
         return view('search', compact('q', 'servers'));

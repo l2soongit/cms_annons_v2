@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AdsController;
+use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\BillingController;
 use App\Http\Controllers\CabinetController;
 use App\Http\Controllers\CoOwnerController;
@@ -46,6 +47,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/servers/create', ServerForm::class)->name('.servers.create');
         Route::get('/servers/{server}', [CabinetController::class, 'show'])->name('.servers.show');
         Route::get('/servers/{server}/edit', ServerForm::class)->name('.servers.edit');
+        Route::get('/servers/{server}/analytics', [CabinetController::class, 'analytics'])->name('.servers.analytics');
         Route::post('/servers/{server}/verify', [CabinetController::class, 'verify'])->middleware('throttle:6,1')->name('.servers.verify');
         Route::post('/servers/{server}/callback', [CabinetController::class, 'updateCallback'])->name('.servers.callback');
         Route::post('/servers/{server}/callback/test', [CabinetController::class, 'testCallback'])->middleware('throttle:6,1')->name('.servers.callback.test');
@@ -95,6 +97,9 @@ Route::get('/developers', [DevelopersController::class, 'index'])->name('develop
 Route::get('/developers/openapi.json', [DevelopersController::class, 'openapi'])->name('developers.openapi');
 Route::get('/widget/{server:id}/vote.svg', [WidgetController::class, 'vote'])->middleware('throttle:120,1')->name('widgets.vote');
 Route::get('/widget/{server:id}/status.svg', [WidgetController::class, 'status'])->middleware('throttle:120,1')->name('widgets.status');
+
+// Події аналітики з браузера (переходи на сайт сервера, копіювання IP…)
+Route::post('/a/e', [AnalyticsController::class, 'event'])->middleware('throttle:120,1')->name('analytics.event');
 
 // Перехід з рекламного банера (лічильник кліків)
 Route::get('/ad/{banner}', [AdsController::class, 'click'])->middleware('throttle:60,1')->name('ads.click');

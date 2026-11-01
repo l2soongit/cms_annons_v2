@@ -71,5 +71,6 @@
 
 <footer><div class="wrap"><span>© {{ date('Y') }} graj.club</span><span>{{ __('ui.footer.monitoring') }}</span></div></footer>
 <x-cookie-notice />
+<x-analytics />
 </body>
 </html>

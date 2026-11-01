@@ -131,6 +131,30 @@ class UpdaterTest extends TestCase
         $this->assertSame('rollback', $u->history()[0]['reason']);
     }
 
+    public function test_manual_upload_clears_cache_and_queues_migrations(): void
+    {
+        $this->file('bootstrap/cache/routes-v7.php', 'old routes');
+        $this->file('bootstrap/cache/filament/panels/admin.php', 'old pages');
+
+        // Перший запуск нового коду після заливання архіву
+        $this->assertTrue(Updater::adoptManualUpload($this->site));
+        $this->assertFileDoesNotExist($this->site.'/bootstrap/cache/routes-v7.php');
+        $this->assertFileDoesNotExist($this->site.'/bootstrap/cache/filament/panels/admin.php');
+        $u = $this->updater();
+        $this->assertSame(['to' => 'v1', 'reason' => 'upload'], array_intersect_key($u->pending(), ['to' => 1, 'reason' => 1]));
+
+        // Далі — нічого, поки версія та сама
+        $u->finalize();
+        $this->assertSame(['migrate', 'optimize:clear', 'optimize'], $this->ran);
+        $this->assertFalse(Updater::adoptManualUpload($this->site));
+        $this->assertNull($u->pending());
+
+        // Наступна версія, залита вручну
+        $this->file('VERSION', "v2\n");
+        $this->assertTrue(Updater::adoptManualUpload($this->site));
+        $this->assertSame(['from' => 'v1', 'to' => 'v2'], array_intersect_key($u->pending(), ['from' => 1, 'to' => 1]));
+    }
+
     public function test_bad_archives_and_git_checkout_are_refused(): void
     {
         $u = $this->updater();

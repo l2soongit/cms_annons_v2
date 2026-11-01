@@ -97,6 +97,41 @@ final class Updater
         $this->setState(['auto' => $on]);
     }
 
+    /**
+     * Архів залили на хостинг вручну (FTP, файловий менеджер) поверх старої версії: викликається з public/index.php
+     * до запуску Laravel. Якщо VERSION змінився — прибирає кеш конфігурації, маршрутів і сторінок Filament
+     * (інакше нові сторінки адмінки дають 404) і ставить завершення оновлення (міграції) в чергу для cron
+     * або сторінки «Оновлення». Без файлу VERSION (git-копія, розробка) нічого не робить.
+     */
+    public static function adoptManualUpload(string $base): bool
+    {
+        $version = is_file($base.'/VERSION') ? trim((string) file_get_contents($base.'/VERSION')) : '';
+        $marker = $base.'/bootstrap/cache/version.txt';
+        $seen = is_file($marker) ? trim((string) file_get_contents($marker)) : null;
+        if ($version === '' || $seen === $version || ! is_writable($base.'/bootstrap/cache')) {
+            return false;
+        }
+
+        foreach (glob($base.'/bootstrap/cache/*.php') ?: [] as $cached) {
+            @unlink($cached);
+        }
+        foreach (glob($base.'/bootstrap/cache/filament/{,*/}*', GLOB_BRACE) ?: [] as $item) {
+            is_file($item) && @unlink($item);
+        }
+        if (function_exists('opcache_reset')) {
+            @opcache_reset();
+        }
+
+        // Оновлення через адмінку саме записує pending — тоді лише кеш
+        $updater = new self($base);
+        if (! $updater->pending()) {
+            $updater->setState(['pending' => ['from' => $seen ?? 'невідомо', 'to' => $version, 'backup' => null, 'reason' => 'upload', 'at' => time()]]);
+        }
+        file_put_contents($marker, $version."\n", LOCK_EX);
+
+        return true;
+    }
+
     public function pending(): ?array
     {
         return $this->state()['pending'] ?? null;

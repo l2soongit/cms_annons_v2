@@ -2,11 +2,13 @@
 
 namespace App\Providers;
 
+use App\Analytics\Tracker;
 use App\Backup\BackupTarget;
 use App\Backup\SftpTarget;
 use App\Models\Game;
 use App\Support\Settings;
 use App\Support\Translations;
+use Illuminate\Auth\Events\Registered;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\Facades\Event;
 use Illuminate\Support\Facades\Gate;
@@ -42,6 +44,9 @@ class AppServiceProvider extends ServiceProvider
 
         // Тимчасові завантаження Livewire: за замовчуванням до 12 МБ, а архів оновлення важить ~25 МБ
         config(['livewire.temporary_file_upload.rules' => ['required', 'file', 'max:204800']]);
+
+        // Аналітика: реєстрація (email і соцмережі) — крок воронки «відвідувач → власник сервера»
+        Event::listen(Registered::class, fn () => app(Tracker::class)->event(request(), 'register'));
 
         // Основна мова сайту (без префікса в адресі); app.locale далі змінюється під мову запиту
         config(['app.locale_default' => config('app.locale_default', config('app.locale'))]);

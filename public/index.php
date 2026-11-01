@@ -1,5 +1,6 @@
 <?php
 
+use App\Update\Updater;
 use Illuminate\Foundation\Application;
 use Illuminate\Http\Request;
 
@@ -18,6 +19,9 @@ if (! file_exists(__DIR__.'/../.env') && file_exists(__DIR__.'/install.php')) {
 
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
+
+// Нову версію залили на хостинг вручну — прибрати старий кеш, міграції виконає cron або сторінка «Оновлення»
+Updater::adoptManualUpload(dirname(__DIR__));
 
 // Bootstrap Laravel and handle the request...
 /** @var Application $app */

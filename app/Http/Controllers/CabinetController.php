@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Analytics\Labels;
+use App\Analytics\Report;
 use App\Billing\Billing;
 use App\Cabinet\ServerOverview;
 use App\Enums\ServerStatus;
@@ -135,6 +137,22 @@ class CabinetController extends Controller
         $server->forceFill(['callback_secret' => Str::random(40)])->save();
 
         return back()->with('status', __('cabinet.api.regenerated'));
+    }
+
+    /** Аналітика сторінки сервера для власника: відвідувачі, джерела, країни, пристрої, дії, воронка до голосу */
+    public function analytics(Request $request, Server $server): View
+    {
+        $this->authorizeServer($request, $server);
+        $period = in_array($request->query('period'), ['7', '30', '90', '365'], true) ? $request->query('period') : '30';
+        $report = Report::period($period, server: $server->id);
+
+        return view('cabinet.analytics', [
+            'server' => $server->load('game'),
+            'period' => $period,
+            'report' => $report,
+            'prev' => $report->previous(),
+            'labels' => new Labels,
+        ]);
     }
 
     private function authorizeServer(Request $request, Server $server): void

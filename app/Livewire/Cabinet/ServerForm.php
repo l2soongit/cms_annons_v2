@@ -2,6 +2,7 @@
 
 namespace App\Livewire\Cabinet;
 
+use App\Analytics\Tracker;
 use App\Models\Game;
 use App\Models\Server;
 use App\Rules\PublicAddress;
@@ -184,6 +185,7 @@ class ServerForm extends Component
             $server = $this->server;
         } else {
             $server = $submission->create(auth()->user(), $attributes, $this->fields);
+            app(Tracker::class)->event(request(), 'server_add', $server);
             $needsReview = true;
         }
 

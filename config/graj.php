@@ -127,6 +127,19 @@ return [
         'vote_ip_retention_days' => 90,
     ],
 
+    // Власна аналітика відвідувань без cookies і сторонніх сервісів (адмінка → «Аналітика», кабінет → статистика сервера)
+    'analytics' => [
+        'enabled' => (bool) env('ANALYTICS_ENABLED', true),
+        // Сирі перегляди й події (для «зараз на сайті» та перерахунку); зведення по днях зберігаються назавжди
+        'raw_retention_days' => (int) env('ANALYTICS_RAW_DAYS', 90),
+        // Адміністратори й модератори не спотворюють статистику
+        'exclude_staff' => true,
+        // Браузери з «Do Not Track» не враховуються
+        'respect_dnt' => (bool) env('ANALYTICS_RESPECT_DNT', false),
+        // Новий візит — після такої паузи між переглядами
+        'session_minutes' => 30,
+    ],
+
     'reviews' => [
         'stop_words' => array_filter(explode(',', (string) env('REVIEW_STOP_WORDS', ''))),
     ],

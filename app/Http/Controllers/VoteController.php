@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Analytics\Tracker;
 use App\Enums\ServerStatus;
 use App\Models\Server;
 use App\Rules\Turnstile;
@@ -50,6 +51,8 @@ class VoteController extends Controller
                 ]),
             ]);
         }
+
+        app(Tracker::class)->event($request, 'vote', $server);
 
         return to_route('servers.vote', $server)->with('voted', ['nickname' => $data['nickname'] ?? null]);
     }

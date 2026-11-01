@@ -1,9 +1,11 @@
 <?php
 
+use App\Analytics\Rollup;
 use App\Billing\Billing;
 use App\Billing\ExchangeRates;
 use App\Rating\RatingCalculator;
 use App\Servers\ServerModeration;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Schedule;
@@ -31,6 +33,9 @@ Schedule::command('billing:remind')->dailyAt('10:00');
 // НБУ встановлює курс на наступний день близько 15:30; ранковий запуск — на випадок, якщо вечірній не вдався
 Schedule::command('billing:rates')->twiceDaily(6, 16)->withoutOverlapping();
 Schedule::command('queue:prune-failed --hours=168')->daily();
+// Аналітика: звіти оновлюються кожні 5 хвилин; раз на добу — видалення старих сирих даних
+Schedule::command('analytics:rollup')->everyFiveMinutes()->withoutOverlapping(10);
+Schedule::command('analytics:rollup --prune')->dailyAt('00:20')->withoutOverlapping(10);
 Schedule::command('db:backup')->dailyAt('03:30')->withoutOverlapping(60);
 
 // «Пульс» планувальника: release:check перевіряє, що cron справді запускає schedule:run
@@ -65,3 +70,16 @@ Artisan::command('billing:rates', function (ExchangeRates $rates) {
 Artisan::command('billing:remind', function (Billing $billing) {
     $this->info('Надіслано нагадувань: '.$billing->remindExpiring());
 })->purpose('Нагадати власникам про послуги, що скоро закінчаться');
+
+Artisan::command('analytics:rollup {--date= : День Y-m-d} {--days=1 : Скільки днів до нього перерахувати} {--prune}', function (Rollup $rollup) {
+    $end = $this->option('date') ? Carbon::parse($this->option('date')) : today();
+    // Одразу після півночі дораховуємо й учорашній день — останні хвилини доби
+    $days = max(1, (int) $this->option('days')) + (! $this->option('date') && now()->hour === 0 ? 1 : 0);
+    for ($i = $days - 1; $i >= 0; $i--) {
+        $day = $end->copy()->subDays($i);
+        $this->info($day->toDateString().': рядків '.$rollup->day($day));
+    }
+    if ($this->option('prune')) {
+        $this->info('Видалено старих записів: '.$rollup->prune());
+    }
+})->purpose('Звести перегляди й події аналітики по днях');

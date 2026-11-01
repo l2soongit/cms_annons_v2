@@ -35,21 +35,7 @@
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
             <a href="{{ route('home') }}" class="font-display text-xl font-bold tracking-tight">graj<span class="text-amber">.</span>club</a>
 
-            <nav aria-label="{{ __('ui.nav.games') }}" class="order-3 -mx-4 w-full overflow-x-auto px-4 [scrollbar-width:none] sm:mx-0 sm:px-0 xl:order-none xl:w-auto">
-                <ul class="flex gap-1 whitespace-nowrap text-sm">
-                    @foreach ($navGames as $navGame)
-                        <li>
-                            <a href="{{ route('games.show', $navGame) }}"
-                               @class([
-                                   'block rounded-md px-3 py-2 transition-colors',
-                                   'bg-slab-2 text-bone' => request()->route('game')?->is($navGame),
-                                   'text-moss hover:text-bone' => ! request()->route('game')?->is($navGame),
-                               ])
-                               @if (request()->route('game')?->is($navGame)) aria-current="page" @endif>{{ $navGame->navName() }}</a>
-                        </li>
-                    @endforeach
-                </ul>
-            </nav>
+            <x-game-switcher />
 
             <div class="ml-auto flex items-center gap-0.5 text-sm sm:gap-2">
                 <a href="{{ route('search') }}" class="rounded-md px-2 py-2 text-moss hover:text-bone sm:px-3" aria-label="{{ __('ui.search.title') }}">

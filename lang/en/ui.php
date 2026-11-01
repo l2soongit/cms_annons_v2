@@ -431,4 +431,12 @@ return [
         'status' => 'Status',
         'uptime' => 'Uptime, 30 days',
     ],
+    // Перемикач ігор у шапці
+    'switcher' => [
+        'label' => 'Games',
+        'more' => 'More',
+        'all' => 'All games',
+        'online' => ':n online',
+        'servers' => ':n server|:n servers',
+    ],
 ];

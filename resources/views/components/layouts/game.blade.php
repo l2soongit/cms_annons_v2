@@ -44,21 +44,8 @@
   <div class="wrap">
     <div class="bar">
       <a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a>
-      <nav class="games-nav" aria-label="{{ __('ui.nav.games') }}">
-        @foreach ($navGames as $navGame)
-          <a href="{{ route('games.show', $navGame) }}" @if ($navGame->is($game)) aria-current="page" @endif>{{ $navGame->navName() }}</a>
-        @endforeach
-      </nav>
-      <div class="actions">
-        <x-locale-switcher />
-        @auth
-          <x-notification-bell />
-          <a class="btn btn-ghost btn-sm" href="{{ route('cabinet') }}" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>
-        @else
-          <a class="btn btn-ghost btn-sm" href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>
-        @endauth
-        <span class="header-cta">{{ $headerCta }}</span>
-      </div>
+      <x-game-switcher :current="$game" />
+      @auth<div class="actions"><x-notification-bell /></div>@endauth
     </div>
   </div>
 </header>
@@ -69,7 +56,8 @@
   {{ $slot }}
 </main>
 
-<footer><div class="wrap"><span>© {{ date('Y') }} graj.club</span><span>{{ __('ui.footer.monitoring') }}</span></div></footer>
+<footer><div class="wrap"><span>© {{ date('Y') }} graj.club</span><span>{{ __('ui.footer.monitoring') }}</span>
+  <span class="foot-tools"><x-locale-switcher />@auth<a href="{{ route('cabinet') }}">{{ __('cabinet.title') }}</a>@else<a href="{{ route('login') }}">{{ __('ui.nav.login') }}</a>@endauth</span></div></footer>
 <x-cookie-notice />
 <x-analytics />
 </body>

@@ -43,7 +43,9 @@
       <a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a>
       <nav aria-label="{{ __('ui.home.nav.aria') }}">
         @foreach ($sections as $key => $href)
-          @if (HomeContent::shows($key))<a href="{{ $href }}">{{ __("ui.home.nav.{$key}") }}</a>@endif
+          @if ($key === 'games')
+            <x-game-switcher mode="menu" :href="$href" :label="__('ui.home.nav.games')" />
+          @elseif (HomeContent::shows($key))<a href="{{ $href }}">{{ __("ui.home.nav.{$key}") }}</a>@endif
         @endforeach
       </nav>
       <div class="actions">

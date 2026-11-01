@@ -1,0 +1,15 @@
+# Для хостингу, де кореневу теку сайту не можна вказати на public/ (архів розпаковано прямо в public_html).
+# Усі запити йдуть у public/; .env, vendor, storage та інші теки ззовні недоступні.
+# Якщо document root уже вказує на public/, цей файл не використовується.
+<IfModule mod_rewrite.c>
+    RewriteEngine On
+    RewriteRule ^(.*)$ public/$1 [L]
+</IfModule>
+
+<IfModule !mod_rewrite.c>
+    Require all denied
+</IfModule>
+
+<FilesMatch "^\.">
+    Require all denied
+</FilesMatch>

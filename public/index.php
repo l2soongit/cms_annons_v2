@@ -10,6 +10,12 @@ if (file_exists($maintenance = __DIR__.'/../storage/framework/maintenance.php'))
     require $maintenance;
 }
 
+// Сайт ще не встановлено (немає .env) — на інсталятор
+if (! file_exists(__DIR__.'/../.env') && file_exists(__DIR__.'/install.php')) {
+    header('Location: /install.php', true, 302);
+    exit;
+}
+
 // Register the Composer autoloader...
 require __DIR__.'/../vendor/autoload.php';
 

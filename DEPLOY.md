@@ -11,6 +11,8 @@
 
 ## Перше встановлення
 
+**Без SSH:** зберіть архів `php tools/build-release.php` (з'явиться в `dist/`), залийте на хостинг і відкрийте `/install.php` — покроково в [INSTALL.md](INSTALL.md). Нижче — ручний спосіб через SSH.
+
 1. Створіть базу MySQL і користувача в панелі хостингу.
 2. Вкажіть document root домену `graj.club` → `<тека проєкту>/public`.
    Якщо панель цього не дозволяє: покладіть проєкт поза `public_html`, а вміст `public/` — у `public_html`, і виправте шляхи в `public_html/index.php`.

@@ -24,6 +24,7 @@ final class Settings
         'monitoring.archive_after_offline_days',
         'reviews.stop_words',
         'locales',
+        'default_locale',
     ];
 
     /** Сторінка «Головна сторінка» */

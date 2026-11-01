@@ -63,6 +63,12 @@ class AppServiceProvider extends ServiceProvider
             // БД ще недоступна (встановлення, збірка) — працюємо зі значеннями config/graj.php
         }
 
+        // Головна мова, вибрана в адмінці («Налаштування → Мови сайту»), — якщо вона є в списку мов
+        $main = config('graj.default_locale');
+        if (is_string($main) && array_key_exists($main, (array) config('graj.locales'))) {
+            config(['app.locale_default' => $main, 'app.locale' => $main]);
+        }
+
         // Адміністратор має всі дозволи: керування ролями не можна втратити, змінивши їх
         Gate::before(fn ($user) => $user->hasRole('admin') ? true : null);
 

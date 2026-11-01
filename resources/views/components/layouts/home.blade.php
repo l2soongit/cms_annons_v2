@@ -49,7 +49,7 @@
         @endforeach
       </nav>
       <div class="actions">
-        <x-locale-switcher />
+        <x-locale-switcher dropdown />
         @auth
           <x-notification-bell />
           <a class="btn btn-ghost btn-sm login" href="{{ route('cabinet') }}" title="{{ auth()->user()->name }}">{{ __('cabinet.title') }}</a>

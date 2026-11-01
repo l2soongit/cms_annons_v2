@@ -8,11 +8,13 @@ use App\Support\Settings as SettingsStore;
 use BackedEnum;
 use Closure;
 use Filament\Forms\Components\KeyValue;
+use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
+use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Arr;
@@ -51,6 +53,7 @@ class Settings extends Page
             Arr::set($values, $key, config("graj.{$key}"));
         }
 
+        $values['default_locale'] = Locales::default();
         $this->form->fill($values);
     }
 
@@ -77,6 +80,13 @@ class Settings extends Page
             Section::make('Мови сайту')
                 ->description('Основна мова — без префікса в адресі; решта відкриваються за /<код>/… (напр. /en/lineage2). Тексти нової мови перекладаються в розділі «Переклади»; поки перекладу немає, показується англійський.')
                 ->schema([
+                    Select::make('default_locale')->label('Головна мова сайту')
+                        ->options(fn (Get $get) => collect((array) $get('locales'))
+                            ->mapWithKeys(fn ($row, $code) => is_array($row) ? [trim((string) ($row['key'] ?? '')) => trim((string) ($row['value'] ?? ''))] : [$code => $row])
+                            ->filter(fn ($name, $code) => preg_match('/^[a-z]{2}$/', (string) $code))
+                            ->map(fn ($name, $code) => ($name ?: strtoupper($code)).' ('.$code.')')->all())
+                        ->required()->native(false)->live()
+                        ->helperText('Нею сайт відкривається без префікса в адресі (graj.club/…); інші мови — graj.club/<код>/…. Після зміни сторінки колишньої головної мови отримають префікс.'),
                     KeyValue::make('locales')->label('Мови')->keyLabel('Код (2 літери)')->valueLabel('Назва в перемикачі')
                         ->addActionLabel('Додати мову')
                         ->rules([fn () => function (string $attribute, $value, Closure $fail) {
@@ -87,8 +97,9 @@ class Settings extends Page
                                     $fail("Код мови «{$code}» має складатися з двох латинських літер (uk, en, pl).");
                                 }
                             }
-                            if (! array_key_exists(Locales::default(), (array) $value)) {
-                                $fail('Основну мову ('.Locales::default().') прибрати не можна.');
+                            $main = $this->data['default_locale'] ?? Locales::default();
+                            if (! array_key_exists($main, (array) $value)) {
+                                $fail("Головну мову ({$main}) прибрати не можна — спершу виберіть іншу головну.");
                             }
                         }]),
                 ]),
@@ -108,6 +119,7 @@ class Settings extends Page
             $value = Arr::get($state, $key);
             $values[$key] = match (true) {
                 $key === 'reviews.stop_words' => array_values(array_filter(array_map(fn ($w) => mb_strtolower(trim($w)), (array) $value))),
+                $key === 'default_locale' => (string) $value,
                 $key === 'locales' => collect((array) $value)->mapWithKeys(fn ($name, $code) => [strtolower(trim((string) $code)) => trim((string) $name)])->all(),
                 (float) $value == (int) $value => (int) $value,
                 default => (float) $value,

@@ -10,7 +10,9 @@ use App\Models\Game;
 use App\Models\Server;
 use App\Models\Tariff;
 use App\Models\User;
+use App\Providers\AppServiceProvider;
 use App\Support\ContentTranslations;
+use App\Support\Locales;
 use App\Support\Translations;
 use Database\Seeders\GameSeeder;
 use Database\Seeders\RoleSeeder;
@@ -149,6 +151,34 @@ class LocalizationTest extends TestCase
             ->set('data.locales', [['key' => 'en', 'value' => 'English'], ['key' => 'polish', 'value' => 'Polski']])
             ->call('save')
             ->assertHasErrors('data.locales');
+    }
+
+    public function test_admin_chooses_main_language(): void
+    {
+        $this->actingAs(User::factory()->create()->assignRole('admin'));
+
+        Livewire::test(SettingsPage::class)
+            ->assertSet('data.default_locale', 'uk')
+            ->set('data.default_locale', 'en')
+            ->call('save')
+            ->assertHasNoErrors();
+        $this->assertSame('en', config('graj.default_locale'));
+
+        // Головну мову не можна прибрати зі списку
+        Livewire::test(SettingsPage::class)
+            ->set('data.default_locale', 'pl')
+            ->set('data.locales', [['key' => 'uk', 'value' => 'Українська'], ['key' => 'en', 'value' => 'English']])
+            ->call('save')
+            ->assertHasErrors('data.locales');
+
+        // Застосування при старті: головна мова — без префікса, решта — з префіксом
+        (new AppServiceProvider($this->app))->boot();
+        $this->assertSame('en', Locales::default());
+        $this->assertEqualsCanonicalizing(['uk', 'ru', 'pl'], Locales::prefixed());
+        $this->get('/search')->assertOk()->assertSee('<html lang="en"', false);
+        $this->get('/uk/search')->assertOk()->assertSee('<html lang="uk"', false);
+        // Меню мов на головній — випадне
+        $this->get('/')->assertOk()->assertSee('data-lang-dd', false);
     }
 
     public function test_every_language_file_has_the_same_keys_as_ukrainian(): void

@@ -59,6 +59,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'password' => 'hashed',
             'balance' => 'decimal:2',
             'banned_until' => 'datetime',
+            // Сторінка «Безпека» показує дату ввімкнення 2FA
+            'two_factor_confirmed_at' => 'datetime',
             'notification_prefs' => 'array',
             'discord_webhook' => 'encrypted',
         ];

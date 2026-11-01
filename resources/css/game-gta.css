@@ -383,3 +383,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   .stars, .sun, .city .win, .cover .win, .palm, .road::before, .soon-item::before, .gcard.vip::before, .gcard.vip::after { animation: none; }
   .car, .cstreak { display: none; }
 }
+
+/* Десять і більше ігор у меню: назви не переносяться, що не влазить — гортається */
+.bar nav.games-nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bar nav.games-nav::-webkit-scrollbar { display: none; }
+.bar nav.games-nav a { flex: none; white-space: nowrap; }

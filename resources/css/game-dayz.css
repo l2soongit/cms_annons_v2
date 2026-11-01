@@ -326,3 +326,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wr
   /* Дощ і ліхтарик вимикає скрипт; тут — лише світильник без мерехтіння */
   .mast .lamp, .wave i { animation: none; }
 }
+
+/* Десять і більше ігор у меню: назви не переносяться, що не влазить — гортається */
+.bar nav.games-nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bar nav.games-nav::-webkit-scrollbar { display: none; }
+.bar nav.games-nav a { flex: none; white-space: nowrap; }

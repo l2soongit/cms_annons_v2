@@ -13,7 +13,7 @@ class GameSeeder extends Seeder
     /** Англійські підписи українських варіантів (та сама мапа — у міграції add_english_option_labels) */
     private const EN_LABELS = [
         'Гайдард' => 'Hardcore', 'Мультипрофа' => 'Multiclass',
-        'Офіційні' => 'Blizzlike', 'Без ресетів' => 'Non-Reset', 'Ресети' => 'Reset', 'Гранд-ресети' => 'Grand Reset',
+        'Трохи кастому' => 'Some custom', 'Багато кастому' => 'Heavy custom', 'Без донату' => 'No donations', 'Косметика' => 'Cosmetic only', 'Впливає на гру' => 'Pay-to-win', 'Без ресетів' => 'Non-Reset', 'Ресети' => 'Reset', 'Гранд-ресети' => 'Grand Reset',
         'Виживання' => 'Survival', 'Анархія' => 'Anarchy', 'Міні-ігри' => 'Minigames', 'Творчий' => 'Creative',
         'Ліцензія' => 'Licensed', 'Піратка' => 'Cracked',
         'Щотижня' => 'Weekly', 'Раз на 2 тижні' => 'Every 2 weeks', 'Щомісяця' => 'Monthly', 'Без ліміту' => 'No limit', 'Ванілла' => 'Vanilla',
@@ -166,7 +166,10 @@ class GameSeeder extends Seeder
                 'fields' => [
                     $this->select('expansion', ['uk' => 'Доповнення', 'en' => 'Expansion'], ['Classic 1.12', 'TBC 2.4.3', 'WotLK 3.3.5a', 'Cataclysm 4.3.4', 'MoP 5.4.8', 'WoD 6.2.4', 'Legion 7.3.5', 'BfA 8.3.7', 'Retail'], inUrl: true),
                     $this->select('rates', ['uk' => 'Рейти', 'en' => 'Rates'], ['x1', 'x3', 'x5', 'x10', 'x50', 'x100', 'x1000']),
-                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['PvE', 'PvP', 'RP', 'Fun', 'Офіційні']),
+                    $this->select('type', ['uk' => 'Тип', 'en' => 'Type'], ['PvP', 'PvE', 'RP', 'RP-PvP', 'FFA-PvP']),
+                    // Головне, на що зважають гравці приватних серверів: наскільки сервер схожий на оригінал і чи можна купити перевагу
+                    ['is_required' => false] + $this->select('content', ['uk' => 'Контент', 'en' => 'Content'], ['Blizzlike', 'Трохи кастому', 'Багато кастому']),
+                    ['is_required' => false] + $this->select('donate', ['uk' => 'Донат', 'en' => 'Donations'], ['Без донату', 'Косметика', 'Впливає на гру']),
                 ],
             ],
             [

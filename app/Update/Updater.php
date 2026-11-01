@@ -2,6 +2,7 @@
 
 namespace App\Update;
 
+use Closure;
 use FilesystemIterator;
 use Illuminate\Http\Client\PendingRequest;
 use Illuminate\Support\Facades\Artisan;
@@ -37,9 +38,13 @@ final class Updater
 
     private readonly string $base;
 
-    public function __construct(?string $base = null)
+    /** Виконавець команд завершення: (команда, параметри) → [код, вивід]. У тестах — фейк, щоб не чіпати кеш робочого проєкту */
+    private readonly Closure $artisan;
+
+    public function __construct(?string $base = null, ?Closure $artisan = null)
     {
         $this->base = rtrim(str_replace('\\', '/', $base ?? base_path()), '/');
+        $this->artisan = $artisan ?? fn (string $command, array $params) => [Artisan::call($command, $params), Artisan::output()];
     }
 
     // ── Стан ──
@@ -307,10 +312,10 @@ final class Updater
         $message = '';
         foreach ([['migrate', ['--force' => true]], ['optimize:clear', []], ['optimize', []]] as [$command, $params]) {
             try {
-                $code = Artisan::call($command, $params);
+                [$code, $output] = ($this->artisan)($command, $params);
                 $log[] = "{$command}: ".($code === 0 ? 'гаразд' : "код {$code}");
                 if ($code !== 0) {
-                    throw new RuntimeException(trim(Artisan::output()));
+                    throw new RuntimeException(trim((string) $output));
                 }
             } catch (Throwable $e) {
                 $ok = false;

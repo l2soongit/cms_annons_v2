@@ -8,6 +8,7 @@ use App\Models\Server;
 use App\Models\Vote;
 use App\Support\GameUrl;
 use App\Support\RustWipes;
+use App\Support\WowFactions;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Http\RedirectResponse;
@@ -24,11 +25,11 @@ class GameController extends Controller
     /** Швидкі фільтри (меню закупівлі на сторінці CS): ?vac=1&lowping=1 */
     public const CS_PERKS = ['notempty', 'free', 'tick128', 'vac', 'lowping', 'big'];
 
-    /** Усі швидкі фільтри: меню закупівлі CS і «свіжий вайп» / «ванілла» на сторінці Rust */
-    public const PERKS = [...self::CS_PERKS, 'fresh', 'vanilla'];
+    /** Усі швидкі фільтри: меню закупівлі CS, «свіжий вайп» / «ванілла» (Rust), «рівні фракції» (WoW) */
+    public const PERKS = [...self::CS_PERKS, 'fresh', 'vanilla', 'balanced'];
 
     /** Поле блоку популярності за замовчуванням для стилю (Rust — група: «де зараз грають» Solo / Duo / …) */
-    private const POPULAR_DEFAULT = ['rust' => 'group'];
+    private const POPULAR_DEFAULT = ['rust' => 'group', 'wow' => 'expansion'];
 
     private const LOW_PING_MS = 50;
 
@@ -145,6 +146,7 @@ class GameController extends Controller
             'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
             'wipes' => $game->themeKey() === 'rust' ? RustWipes::week($game) : collect(),
             'forcedWipe' => $game->themeKey() === 'rust' ? RustWipes::forced() : null,
+            'war' => $game->themeKey() === 'wow' ? WowFactions::summary($game) : null,
         ]);
     }
 
@@ -172,6 +174,10 @@ class GameController extends Controller
             // Rust: вайп за останню добу; без плагінів (моди невідомі — теж вважаємо ваніллою)
             'fresh' => $query->where('last_wiped_at', '>=', now()->subDay()),
             'vanilla' => $query->where(fn ($q) => $q->whereNull('modded')->orWhere('modded', false)),
+            // WoW: жодна фракція не має більше 60% гравців (лише реалми, що надсилають баланс)
+            'balanced' => $query->whereNotNull('alliance')->whereNotNull('horde')->whereRaw('alliance + horde > 0')
+                ->whereRaw('alliance * 100 >= ? * (alliance + horde)', [WowFactions::BALANCED_MIN])
+                ->whereRaw('horde * 100 >= ? * (alliance + horde)', [WowFactions::BALANCED_MIN]),
             // Сюди потрапляють лише значення з self::PERKS
             default => throw new InvalidArgumentException("Unknown quick filter: {$perk}"),
         };

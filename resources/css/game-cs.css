@@ -348,3 +348,8 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
   @keyframes roll-in { from { transform: translateY(70%); opacity: 0; } }
   @keyframes roll-out { to { transform: translateY(-70%); opacity: 0; } }  .ghero::before, .chev.g1, .pm:first-child .mtag { animation: none; }
 }
+
+/* Десять і більше ігор у меню: назви не переносяться, що не влазить — гортається */
+.bar nav.games-nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
+.bar nav.games-nav::-webkit-scrollbar { display: none; }
+.bar nav.games-nav a { flex: none; white-space: nowrap; }

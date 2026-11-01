@@ -26,6 +26,7 @@ return [
     'online' => [
         'title' => 'Przesyłanie online',
         'lead' => 'Lineage 2 i gry bez protokołu query przesyłają online samodzielnie — co kilka minut. Bez tego portal widzi tylko, czy port jest otwarty.',
+        'factions' => 'Serwery World of Warcraft mogą dodać online według frakcji (alliance, horde) — wtedy strona gry pokazuje balans realmu i „Wojnę frakcji”.',
     ],
     'widgets' => [
         'title' => 'Widżety na stronę',

@@ -83,6 +83,9 @@ class ServerApiController extends Controller
             'online' => ['required', 'boolean'],
             'players' => ['required', 'integer', 'min:0', 'max:100000'],
             'max_players' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            // Онлайн за фракціями (WoW): «Війна фракцій» і баланс на сторінці гри
+            'alliance' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'horde' => ['nullable', 'integer', 'min:0', 'max:100000'],
         ]);
 
         $monitor->record($server, new QueryResult(
@@ -90,6 +93,10 @@ class ServerApiController extends Controller
             (int) $data['players'],
             (int) ($data['max_players'] ?? $server->max_players),
         ));
+
+        if (isset($data['alliance'], $data['horde'])) {
+            $server->forceFill(['alliance' => $data['alliance'], 'horde' => $data['horde']])->save();
+        }
 
         return response()->json(['ok' => true]);
     }

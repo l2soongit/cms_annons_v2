@@ -81,6 +81,8 @@ http_response_code(200);</code></pre>
             <pre class="{{ $codeClass }}"><code>curl -X POST -H "Authorization: Bearer {{ __('developers.key_placeholder') }}" -H "Content-Type: application/json" \
   -d '{"online": true, "players": 312, "max_players": 1000}' \
   {{ $base }}/servers/42/online</code></pre>
+            <p class="mt-3 text-moss">{{ __('developers.online.factions') }}</p>
+            <pre class="{{ $codeClass }}"><code>-d '{"online": true, "players": 3000, "max_players": 5000, "alliance": 1410, "horde": 1590}'</code></pre>
         </section>
 
         <section id="widgets" aria-labelledby="h-widgets">

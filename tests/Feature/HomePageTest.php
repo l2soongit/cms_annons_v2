@@ -63,7 +63,9 @@ class HomePageTest extends TestCase
         $this->assertSame('GTA', Game::where('slug', 'gta')->first()->shortName());
 
         // Сторінка нової гри — загальний шаблон із фільтрами гри, без сортувань інших тем
-        $this->get('/world-of-warcraft')->assertOk()->assertSee('WotLK 3.3.5a')->assertDontSee('ui.game.sort_');
+        // WoW має власну тему (WowPageTest); решта нових ігор — загальний шаблон без сортувань інших тем
+        $this->get('/world-of-warcraft')->assertOk()->assertSee('game-wow', false);
+        $this->get('/aion')->assertOk()->assertSee('Classic')->assertDontSee('ui.game.sort_');
 
         // Повторний запуск для робочих баз не дублює й не перезаписує ігри
         Game::where('slug', 'aion')->first()->update(['name' => ['uk' => 'Aion Classic']]);

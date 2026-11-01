@@ -7,7 +7,6 @@ use App\Update\Updater;
 use Database\Seeders\RoleSeeder;
 use FilesystemIterator;
 use Illuminate\Foundation\Testing\RefreshDatabase;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Http;
 use RecursiveDirectoryIterator;
 use RecursiveIteratorIterator;
@@ -80,15 +79,22 @@ class UpdaterTest extends TestCase
         return $file;
     }
 
-    private function fakeArtisan(): void
+    /** @var list<string> команди завершення, які виконав би сайт */
+    private array $ran = [];
+
+    /** Updater із фейковим виконавцем: справжні migrate/optimize записали б кеш тестової конфігурації в робочий проєкт */
+    private function updater(): Updater
     {
-        Artisan::shouldReceive('call')->andReturn(0);
-        Artisan::shouldReceive('output')->andReturn('');
+        return new Updater($this->site, function (string $command) {
+            $this->ran[] = $command;
+
+            return [0, ''];
+        });
     }
 
     public function test_stage_replaces_code_but_keeps_env_storage_and_installer_out(): void
     {
-        $u = new Updater($this->site);
+        $u = $this->updater();
 
         $this->assertSame('v2', $u->stage($this->release(), 'manual'));
 
@@ -109,11 +115,11 @@ class UpdaterTest extends TestCase
 
     public function test_finalize_records_history_and_rollback_restores_previous_code(): void
     {
-        $this->fakeArtisan();
-        $u = new Updater($this->site);
+        $u = $this->updater();
         $u->stage($this->release(), 'manual');
 
         $this->assertNotEmpty($u->finalize());
+        $this->assertSame(['migrate', 'optimize:clear', 'optimize'], $this->ran);
         $this->assertNull($u->pending());
         $this->assertSame(['from' => 'v1', 'to' => 'v2', 'ok' => true], array_intersect_key($u->history()[0], ['from' => 1, 'to' => 1, 'ok' => 1]));
 
@@ -127,7 +133,7 @@ class UpdaterTest extends TestCase
 
     public function test_bad_archives_and_git_checkout_are_refused(): void
     {
-        $u = new Updater($this->site);
+        $u = $this->updater();
 
         $bad = sys_get_temp_dir().'/graj-bad-'.uniqid().'.zip';
         file_put_contents($bad, 'not a zip');
@@ -166,8 +172,7 @@ class UpdaterTest extends TestCase
             ]),
             'github.com/dl/graj.zip' => Http::response(file_get_contents($zip)),
         ]);
-        $this->fakeArtisan();
-        $u = new Updater($this->site);
+        $u = $this->updater();
 
         $latest = $u->latest();
         $this->assertSame('v2026.11.02-abc1234', $latest['tag']);
@@ -180,7 +185,7 @@ class UpdaterTest extends TestCase
 
     public function test_cron_tick_runs_queued_upload_and_auto_update(): void
     {
-        $u = new Updater($this->site);
+        $u = $this->updater();
         $this->app->instance(Updater::class, $u);
         config(['graj.update.check_minutes' => 60]);
 
@@ -194,6 +199,11 @@ class UpdaterTest extends TestCase
         $this->artisan('site:update --tick')->assertSuccessful();
         $this->assertSame('v5', $u->currentVersion());
         $this->assertArrayNotHasKey('queued', $u->state());
+
+        // Наступний запуск cron (вже з новим кодом) завершує оновлення: міграції й кеш
+        $this->artisan('site:update --tick')->assertSuccessful();
+        $this->assertNull($u->pending());
+        $this->assertSame(['to' => 'v5', 'reason' => 'upload', 'ok' => true], array_intersect_key($u->history()[0], ['to' => 1, 'reason' => 1, 'ok' => 1]));
 
         // Автооновлення перевіряє GitHub не частіше за check_minutes
         $u->setAuto(true);

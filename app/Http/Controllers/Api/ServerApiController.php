@@ -83,10 +83,14 @@ class ServerApiController extends Controller
             'online' => ['required', 'boolean'],
             'players' => ['required', 'integer', 'min:0', 'max:100000'],
             'max_players' => ['nullable', 'integer', 'min:0', 'max:100000'],
-            // Онлайн за фракціями (WoW): «Війна фракцій» і баланс на сторінці гри
+            // Онлайн за фракціями: WoW — alliance / horde, Aion — elyos / asmodians (ті самі колонки)
             'alliance' => ['nullable', 'integer', 'min:0', 'max:100000'],
             'horde' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'elyos' => ['nullable', 'integer', 'min:0', 'max:100000'],
+            'asmodians' => ['nullable', 'integer', 'min:0', 'max:100000'],
         ]);
+        $data['alliance'] ??= $data['elyos'] ?? null;
+        $data['horde'] ??= $data['asmodians'] ?? null;
 
         $monitor->record($server, new QueryResult(
             (bool) $data['online'],

@@ -26,7 +26,7 @@ return [
     'online' => [
         'title' => 'Online push',
         'lead' => 'Lineage 2 and games without a query protocol push their online themselves — every few minutes. Without it the portal only sees whether the port is open.',
-        'factions' => 'World of Warcraft servers can add online by faction (alliance, horde) — the game page then shows the realm balance and the “Faction war”.',
+        'factions' => 'World of Warcraft servers can add online by faction (alliance, horde) — the game page then shows the realm balance and the “Faction war”. Aion servers send online by race the same way: elyos and asmodians — the game page then shows the “Race balance”.',
     ],
     'widgets' => [
         'title' => 'Website widgets',

@@ -29,7 +29,7 @@ class GameController extends Controller
     public const PERKS = [...self::CS_PERKS, 'fresh', 'vanilla', 'balanced'];
 
     /** Поле блоку популярності за замовчуванням для стилю (Rust — група: «де зараз грають» Solo / Duo / …) */
-    private const POPULAR_DEFAULT = ['rust' => 'group', 'wow' => 'expansion'];
+    private const POPULAR_DEFAULT = ['rust' => 'group', 'wow' => 'expansion', 'aion' => 'version'];
 
     private const LOW_PING_MS = 50;
 
@@ -146,7 +146,12 @@ class GameController extends Controller
             'maps' => $game->themeKey() === 'cs' ? $this->mapShares($game) : [],
             'wipes' => $game->themeKey() === 'rust' ? RustWipes::week($game) : collect(),
             'forcedWipe' => $game->themeKey() === 'rust' ? RustWipes::forced() : null,
-            'war' => $game->themeKey() === 'wow' ? WowFactions::summary($game) : null,
+            // Баланс двох сторін: WoW — Альянс / Орда за доповненням, Aion — Елійці / Асмодіанці за версією
+            'war' => match ($game->themeKey()) {
+                'wow' => WowFactions::summary($game),
+                'aion' => WowFactions::summary($game, 'version'),
+                default => null,
+            },
         ]);
     }
 

@@ -420,6 +420,7 @@ return [
         'pick_asmo' => 'Gram Asmodianami',
         'season' => 'Serwer miesiąca wyłoni finał sezonu — głosuj na swój serwer!',
         'war_eyebrow' => 'Atreia podzielona',
+        'races' => 'Rasy',
         'war' => 'Balans ras',
         'war_lead' => 'Gracze online według ras na :n serwerze, który przesyła balans.|Gracze online według ras na :n serwerach, które przesyłają balans.|Gracze online według ras na :n serwerach, które przesyłają balans.',
         'war_none' => 'Żaden serwer nie przesyła jeszcze balansu ras. Gdy serwery zaczną wysyłać online Elyosów i Asmodian, zobaczysz tu, kto dominuje w Atrei.',

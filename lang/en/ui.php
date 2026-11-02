@@ -419,6 +419,7 @@ return [
         'pick_asmo' => 'I play Asmodians',
         'season' => 'The server of the month is decided at the season finale — vote for your server!',
         'war_eyebrow' => 'Atreia is split',
+        'races' => 'Races',
         'war' => 'Race balance',
         'war_lead' => 'Players online by race on :n server that reports the balance.|Players online by race on :n servers that report the balance.',
         'war_none' => 'No server reports the race balance yet. As soon as servers send Elyos and Asmodian online, you will see who dominates Atreia.',

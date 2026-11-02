@@ -4,10 +4,8 @@
     $fmt = fn ($n) => number_format((float) $n, 0, ',', "\u{00A0}");
     // Посилання з усіма поточними фільтрами, де змінено лише передане
     $url = fn (array $changes) => GameUrl::to($game, [...$active, 'sort' => $sort !== 'votes' ? $sort : null, 'q' => $search ?: null, ...$changes]);
-    $versionField = $filters->firstWhere('key', 'version');
-    $chipFields = $filters->reject(fn ($f) => $f->key === 'version');
     $perks = ['balanced' => __('ui.aion.balanced'), 'notempty' => __('ui.aion.notempty')];
-    $champ = $fame->first();
+    $units = __('ui.game.units');
     // Баланс рас: Елійці — колонка alliance, Асмодіанці — horde (див. WowFactions і API elyos / asmodians)
     $sides = ['asmo' => $war['horde'], 'ely' => $war['alliance']];
     $client = [
@@ -15,185 +13,171 @@
         'seasonEnd' => $stats['season_end'],
         'feed' => ['url' => route('home.live'), 'after' => (int) \App\Models\Vote::where('created_at', '<', now()->subMinutes(10))->max('id'), 'enabled' => config('graj.home.live_feed') && $game->showsBlock('live')],
         'locale' => app()->getLocale(),
-        't' => ['votes' => __('ui.server.votes'), 'untilStart' => __('ui.game.until_start'), 'copied' => __('ui.aion.copied'), 'voted' => __('ui.aion.toast_vote'), 'anon' => __('ui.aion.toast_anon')],
+        't' => ['votes' => __('ui.server.votes'), 'untilStart' => __('ui.game.until_start'), 'voted' => __('ui.aion.toast_vote'), 'anon' => __('ui.aion.toast_anon')],
     ];
 @endphp
 
 <x-layouts.game :game="$game" :assets="['resources/css/game-aion.css', 'resources/js/game-aion.js']" fonts="family=Cormorant+SC:wght@600;700">
   <x-slot:headerCta><a class="btn sm" href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a></x-slot:headerCta>
 
-  <!-- Банер: дві раси дивляться одна на одну через розлом. Клік по стороні — обрати расу -->
-  <section class="ahero bleed" id="ahero" style="--art:url('{{ asset('images/games/aion/faces.webp') }}')" aria-labelledby="game-h">
-    <h1 class="sr" id="game-h">{{ trim($game->hero_title ?: __('ui.aion.title_sr')) }}</h1>
-    @foreach ($sides as $side => $count)
-      <button class="side {{ $side }}" type="button" aria-pressed="false" data-f="{{ $side }}" aria-label="{{ __("ui.aion.pick_{$side}") }}">
-        <span class="eyebrow">{{ __("ui.aion.{$side}_land") }}</span>
-        <span class="fname">{{ __("ui.aion.{$side}") }}</span>
-        <span class="fabout">{{ __("ui.aion.{$side}_about") }}</span>
-        @if ($war['realms'])
-          <span class="fnum num" data-count="{{ $count }}">0</span>
-          <span class="fsub">{{ __('ui.aion.on_servers') }}</span>
-        @endif
-        <span class="fpick">{{ __("ui.aion.pick_{$side}") }}</span>
-      </button>
-    @endforeach
-  </section>
-
-  <!-- Смуга-дашборд: сервери, онлайн, голоси (як на сторінках інших ігор) і відлік до фіналу сезону -->
-  <div class="band bleed">
-    <div class="wrap">
+  <!-- Банер-картка як у Lineage 2: арт двох рас, опис, цифри, відлік сезону й кнопка. Перемикачі рас — у кутах -->
+  <section class="ghero" id="ahero" style="--art:url('{{ asset('images/games/aion/faces.webp') }}')" aria-labelledby="game-h">
+    <div class="races">
+      @foreach ($sides as $side => $count)
+        <button class="rpick {{ $side }}" type="button" aria-pressed="false" data-f="{{ $side }}" title="{{ __("ui.aion.pick_{$side}") }}">
+          <i aria-hidden="true"></i><span>{{ __("ui.aion.{$side}") }}</span>@if ($war['realms'])<b class="num" data-count="{{ $count }}">0</b>@endif
+        </button>
+      @endforeach
+    </div>
+    <div class="info">
+      <span class="eyebrow">{{ $game->eyebrow ?: __('ui.aion.eyebrow') }}</span>
+      <h1 class="sr" id="game-h">{{ trim($game->hero_title ?: __('ui.aion.title_sr')) }}</h1>
+      <p class="tagline">{{ $game->description ?: __('ui.aion.lead') }}</p>
       <dl class="gstats">
         <div><dd class="num" data-count="{{ $stats['servers'] }}">0</dd><dt>{{ trans_choice('ui.game.stat_servers', $stats['servers']) }}</dt></div>
         <div><dd class="num ely" id="g-online" data-count="{{ $stats['online'] }}">0</dd><dt>{{ __('ui.home.kpi_online') }}</dt></div>
         <div><dd class="num asmo" id="g-votes" data-count="{{ $stats['votes'] }}">0</dd><dt>{{ __('ui.home.kpi_votes') }}</dt></div>
       </dl>
+    </div>
+    <div class="hero-cta">
       @if ($game->showsBlock('season'))
-        <div class="season">
-          <div class="msg">{{ $game->pageText('aion.season') }}</div>
-          <div class="clock" id="clock" data-end="{{ $stats['season_end'] }}" aria-label="{{ __('ui.home.season_left') }}">
+        <div class="season">{{ __('ui.home.season_left') }}
+          <div class="clock" id="clock" data-end="{{ $stats['season_end'] }}" title="{{ $game->pageText('aion.season') }}">
             @foreach (['d', 'h', 'm', 's'] as $u)
               <div><b class="num" data-u="{{ $u }}">00</b><small>{{ __("ui.aion.u_{$u}") }}</small></div>
             @endforeach
           </div>
         </div>
       @endif
+      <a class="btn gold" href="{{ route('cabinet.servers.create', ['game' => $game->slug]) }}">{{ __('ui.game.add_own', ['game' => $game->shortName()]) }}</a>
     </div>
-  </div>
+  </section>
   <x-ad-banner placement="game" :game="$game" gap="20px auto 0" />
 
-  <!-- Баланс рас і сервер місяця -->
-  <section class="duo" aria-labelledby="war-h">
-    <div class="panel" data-reveal>
-      <span class="eyebrow">{{ __('ui.aion.war_eyebrow') }}</span>
-      <h2 class="h2" id="war-h">{{ $game->pageText('aion.war') }}</h2>
-      @if ($war['realms'])
-        <p class="muted">{{ trans_choice('ui.aion.war_lead', $war['realms'], ['n' => $war['realms']]) }}</p>
-        <div class="balbar" style="--split:{{ $war['alliance_pct'] }}%">
-          <span class="e">{{ __('ui.aion.ely') }} {{ number_format($war['alliance_pct'], 1, ',', '') }}%</span>
-          <span class="a">{{ __('ui.aion.asmo') }} {{ number_format(100 - $war['alliance_pct'], 1, ',', '') }}%</span>
+  <!-- Дашборд як у Lineage 2: ліворуч фільтри й список серверів, праворуч бічна колонка -->
+  <div class="layout">
+    <div>
+      <section class="filters" aria-label="{{ __('ui.game.filters') }}" data-reveal>
+        @foreach ($filters as $field)
+          <div class="frow"><span>{{ $field->label }}</span><div class="chips">
+            <a class="chip" href="{{ $url([$field->key => null]) }}" aria-current="{{ isset($active[$field->key]) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.game.any') }}</a>
+            @foreach ($field->options as $option)
+              @php $n = $counts[$field->id][$option['value']] ?? 0; $on = ($active[$field->key] ?? null) === $option['value']; @endphp
+              @if ($n || $on)
+                <a class="chip" href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
+              @endif
+            @endforeach
+          </div></div>
+        @endforeach
+        <div class="frow"><span>{{ __('ui.aion.races') }}</span><div class="chips">
+          @foreach ($perks as $perk => $label)
+            <a class="chip" href="{{ $url([$perk => isset($active[$perk]) ? null : '1']) }}" aria-current="{{ isset($active[$perk]) ? 'true' : 'false' }}" data-filter-link>{{ $label }}</a>
+          @endforeach
+        </div></div>
+        <div class="ftools">
+          <form class="fsearch" method="get" action="{{ GameUrl::to($game, array_intersect_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all())) }}" role="search" id="search-form">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            <label class="sr" for="q">{{ __('ui.aion.search_label') }}</label>
+            <input id="q" name="q" type="search" maxlength="64" value="{{ $search }}" placeholder="{{ __('ui.aion.search_ph') }}">
+            @foreach (array_diff_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all()) as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
+            @if ($sort !== 'votes')<input type="hidden" name="sort" value="{{ $sort }}">@endif
+            <button>{{ __('ui.search.submit') }}</button>
+          </form>
+          <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
+            @foreach (['votes', 'online', 'new', 'opening'] as $s)
+              <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.game.sort_short_{$s}") }}</a>
+            @endforeach
+          </div>
         </div>
-        @if (count($war['rows']) > 1)
-          <div class="vrows">
-            @foreach ($war['rows'] as $row)
-              <div><b>{{ $row['label'] }}</b><i style="--e:{{ $row['pct'] }}%"></i><span class="num">{{ round($row['pct']) }} / {{ round(100 - $row['pct']) }}</span></div>
-            @endforeach
-          </div>
-        @endif
-      @else
-        <p class="muted">{{ __('ui.aion.war_none') }}</p>
-        <p class="note"><a href="{{ route('developers') }}#online">{{ __('ui.aion.war_how') }}</a></p>
-      @endif
-    </div>
-    <div class="champ" style="--champ:url('{{ asset('images/games/aion/drakan.webp') }}')" data-reveal>
-      @if ($champ)
-        <span class="eyebrow">{{ __('ui.aion.champ', ['month' => $champ->month->translatedFormat('F')]) }}</span>
-        <h3>@if ($champ->server)<a href="{{ route('servers.show', $champ->server) }}">{{ $champ->server_name }}</a>@else{{ $champ->server_name }}@endif</h3>
-        <p><b class="num">{{ $fmt($champ->votes) }}</b> {{ trans_choice('ui.server.votes', $champ->votes) }}</p>
-      @else
-        <span class="eyebrow">{{ __('ui.aion.champ_none_eyebrow') }}</span>
-        <h3>{{ __('ui.aion.champ_none') }}</h3>
-        <p>{{ __('ui.aion.champ_none_hint') }}</p>
-      @endif
-    </div>
-  </section>
+      </section>
 
-  <!-- Сервери: вкладки версій, фільтри, список -->
-  <section class="servers" id="servers" aria-labelledby="servers-h">
-    <div class="head" data-reveal>
-      <div><span class="eyebrow">{{ __('ui.aion.servers_eyebrow') }}</span><h2 class="h2 big" id="servers-h">{{ $game->pageText('aion.servers') }}</h2></div>
-      <p class="muted">{{ __('ui.aion.servers_lead') }}</p>
-    </div>
-
-    @if ($versionField)
-      <nav class="tabs" aria-label="{{ $versionField->label }}" data-swap="f-version">
-        <a href="{{ $url(['version' => null]) }}" aria-current="{{ isset($active['version']) ? 'false' : 'true' }}" data-filter-link>{{ __('ui.aion.all_versions') }}</a>
-        @foreach ($versionField->options as $option)
-          @php $n = $counts[$versionField->id][$option['value']] ?? 0; $on = ($active['version'] ?? null) === $option['value']; @endphp
-          @if ($n || $on)
-            <a href="{{ $url(['version' => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $n }}</small></a>
-          @endif
-        @endforeach
-      </nav>
-    @endif
-
-    <div class="filters" data-swap="f-chips">
-      @foreach ($chipFields as $field)
-        @php $shown = collect($field->options)->filter(fn ($o) => ($counts[$field->id][$o['value']] ?? 0) || ($active[$field->key] ?? null) === $o['value']); @endphp
-        @if ($shown->isNotEmpty())
-          <div class="fgroup"><span>{{ $field->label }}</span>
-            @foreach ($shown as $option)
-              @php $on = ($active[$field->key] ?? null) === $option['value']; @endphp
-              <a href="{{ $url([$field->key => $on ? null : $option['value']]) }}" aria-current="{{ $on ? 'true' : 'false' }}" data-filter-link>{{ $option['label'] }}<small class="num">{{ $counts[$field->id][$option['value']] ?? 0 }}</small></a>
-            @endforeach
-          </div>
-        @endif
-      @endforeach
-      <div class="fgroup">
-        @foreach ($perks as $perk => $label)
-          <a href="{{ $url([$perk => isset($active[$perk]) ? null : '1']) }}" aria-current="{{ isset($active[$perk]) ? 'true' : 'false' }}" data-filter-link>{{ $label }}</a>
-        @endforeach
-      </div>
-      <form class="search" method="get" action="{{ GameUrl::to($game, array_intersect_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all())) }}" role="search" id="search-form">
-        <label class="sr" for="q">{{ __('ui.aion.search_label') }}</label>
-        <input id="q" name="q" type="search" maxlength="64" value="{{ $search }}" placeholder="{{ __('ui.aion.search_ph') }}">
-        @foreach (array_diff_key($active, GameUrl::pathFields($game)->pluck('key')->flip()->all()) as $key => $value)<input type="hidden" name="{{ $key }}" value="{{ $value }}">@endforeach
-        @if ($sort !== 'votes')<input type="hidden" name="sort" value="{{ $sort }}">@endif
-      </form>
-    </div>
-
-    <div class="list-head">
-      <span class="total" data-swap="total">{{ __('ui.aion.found') }} <b class="num">{{ $fmt($servers->total()) }}</b></span>
-      <div class="sorts" role="group" aria-label="{{ __('ui.game.sort') }}">
-        @foreach (['votes', 'online', 'new', 'uptime'] as $s)
-          <a href="{{ $url(['sort' => $s !== 'votes' ? $s : null]) }}" aria-current="{{ $sort === $s ? 'true' : 'false' }}" data-filter-link>{{ __("ui.aion.sort_{$s}") }}</a>
-        @endforeach
+      <div id="results" aria-live="polite">
+        @include('games.themes.aion-list')
       </div>
     </div>
-    <div id="results" aria-live="polite">
-      @include('games.themes.aion-list')
-    </div>
-  </section>
 
-  @if ($game->showsBlock('soon') && $comingSoon->isNotEmpty())
-    <section class="soon bleed" aria-labelledby="soon-h">
-      <div class="wrap">
-        <div class="head" data-reveal><div><span class="eyebrow">{{ __('ui.aion.soon_eyebrow') }}</span><h2 class="h2 big" id="soon-h">{{ $game->pageText('aion.soon') }}</h2></div></div>
-        <div class="soon-grid">
-          @foreach ($comingSoon as $i => $server)
-            <article class="soon-card" style="--g1:{{ ['#f3c96955', '#8f6bff66', '#4fd18b44'][$i % 3] }}" data-reveal>
-              <span class="eyebrow">{{ $server->fieldLabels() }}</span>
-              <h3><a href="{{ route('servers.show', $server) }}">{{ $server->name }}</a></h3>
-              <div class="when">
-                <div class="cd" data-opens="{{ $server->opens_at->toIso8601String() }}">
-                  @foreach (['d', 'h', 'm', 's'] as $u)<span class="tile" data-u="{{ $u }}"><span class="val">00</span><small>{{ __("ui.aion.u_{$u}") }}</small></span>@endforeach
+    <aside class="side">
+      {{-- Окреме платне місце; сайдбар серверів сюди не потрапляє --}}
+      <x-ad-banner placement="game_side" :game="$game" gap="0 auto 20px" promo />
+
+      @if ($game->showsBlock('soon'))
+        <section class="panel" data-reveal>
+          <h2>{{ $game->pageText('aion.soon') }}</h2>
+          <div id="soon">
+            @forelse ($comingSoon as $s)
+              @php $opens = $s->opens_at->copy()->startOfDay(); @endphp
+              <div class="soon-item">
+                <a href="{{ route('servers.show', $s) }}" aria-label="{{ $s->name }}"></a>
+                <div class="t"><b>{{ $s->name }}</b></div><small>{{ $s->fieldLabels() }}</small>
+                <div class="cd" data-opens="{{ $opens->toIso8601String() }}" role="timer">
+                  @foreach (['d', 'h', 'm', 's'] as $i => $u)
+                    <div class="unit"><div class="tile" data-u="{{ $u }}"><span class="val">00</span></div><span class="lbl">{{ $units[$i] }}</span></div>
+                  @endforeach
                 </div>
-                <a class="btn sm" href="{{ route('servers.show', $server) }}">{{ __('ui.aion.details') }}</a>
+                <div class="soon-meta">
+                  <span>{!! __('ui.game.opens', ['date' => '<time datetime="'.$opens->toDateString().'">'.e($opens->translatedFormat('j F')).'</time>']) !!}</span>
+                  <a class="remind" href="{{ route('servers.show', $s) }}">{{ __('ui.aion.details') }}</a>
+                </div>
               </div>
-            </article>
-          @endforeach
-        </div>
-      </div>
-    </section>
-  @endif
-
-  @if ($game->showsBlock('fame'))
-    <section class="fame-sec" aria-labelledby="fame-h">
-      <div class="head" data-reveal><div><span class="eyebrow">{{ __('ui.aion.fame_eyebrow') }}</span><h2 class="h2 big" id="fame-h">{{ $game->pageText('aion.fame') }}</h2></div></div>
-      @if ($fame->isNotEmpty())
-        <div class="fame" data-reveal>
-          @foreach ($fame as $winner)
-            <div>
-              <small>{{ \Illuminate\Support\Str::ucfirst($winner->month->translatedFormat('F Y')) }}</small>
-              <b>@if ($winner->server)<a href="{{ route('servers.show', $winner->server) }}">{{ $winner->server_name }}</a>@else{{ $winner->server_name }}@endif</b>
-              <span>{{ $fmt($winner->votes) }} {{ trans_choice('ui.server.votes', $winner->votes) }}</span>
-            </div>
-          @endforeach
-        </div>
-      @else
-        <p class="muted">{{ __('ui.aion.fame_empty') }}</p>
+            @empty
+              <p class="muted">{{ __('ui.game.soon_empty') }}</p>
+            @endforelse
+          </div>
+        </section>
       @endif
-    </section>
-  @endif
+
+      <!-- Баланс рас: з серверів, що передають онлайн Елійців і Асмодіанців -->
+      <section class="panel" data-reveal>
+        <h2>{{ $game->pageText('aion.war') }}</h2>
+        @if ($war['realms'])
+          <div class="balbar" style="--split:{{ $war['alliance_pct'] }}%">
+            <span class="e">{{ number_format($war['alliance_pct'], 1, ',', '') }}%</span>
+            <span class="a">{{ number_format(100 - $war['alliance_pct'], 1, ',', '') }}%</span>
+          </div>
+          <div class="ballbl"><span class="e">{{ __('ui.aion.ely') }}</span><span class="a">{{ __('ui.aion.asmo') }}</span></div>
+          @if (count($war['rows']) > 1)
+            <div class="vrows">
+              @foreach ($war['rows'] as $row)
+                <div><b>{{ $row['label'] }}</b><i style="--e:{{ $row['pct'] }}%"></i><span class="num">{{ round($row['pct']) }}/{{ round(100 - $row['pct']) }}</span></div>
+              @endforeach
+            </div>
+          @endif
+        @else
+          <p class="muted">{{ __('ui.aion.war_none') }}</p>
+          <p class="note"><a href="{{ route('developers') }}#online">{{ __('ui.aion.war_how') }}</a></p>
+        @endif
+      </section>
+
+      @if ($game->showsBlock('fame'))
+        <section class="panel fame champ" style="--champ:url('{{ asset('images/games/aion/drakan.webp') }}')" data-reveal>
+          <h2>{{ $game->pageText('aion.fame') }}</h2>
+          @if ($fame->isNotEmpty())
+            <ul id="fame">
+              @foreach ($fame as $i => $winner)
+                <li><svg class="m" width="18" height="18" viewBox="0 0 24 24" fill="{{ $i === 0 ? '#f3c969' : '#71717a' }}" aria-hidden="true"><path d="M3 7l4.5 4L12 4l4.5 7L21 7l-2 12H5z"/></svg>
+                  <span>@if ($winner->server)<a href="{{ route('servers.show', $winner->server) }}"><b>{{ $winner->server_name }}</b></a>@else<b>{{ $winner->server_name }}</b>@endif<span class="mon">{{ \Illuminate\Support\Str::ucfirst($winner->month->translatedFormat('F')) }}</span></span>
+                  <span class="num" style="color:var(--muted)">{{ $fmt($winner->votes) }}</span></li>
+              @endforeach
+            </ul>
+          @else
+            <p class="champ-title">{{ __('ui.aion.champ_none') }}</p>
+            <p class="muted">{{ __('ui.aion.champ_none_hint') }}</p>
+          @endif
+        </section>
+      @endif
+
+      @if ($shares && $game->showsBlock('popular'))
+        <section class="panel" data-reveal>
+          <h2>{{ __('ui.game.popular_by')[$popularField->key] ?? __('ui.game.popular', ['field' => mb_strtolower($popularField->label)]) }}</h2>
+          <div class="chron-bars">
+            @foreach ($shares as $share)
+              <div class="cb"><div class="l"><b>{{ $share['label'] }}</b><span class="num">{{ $share['percent'] }}%</span></div><div class="track"><i data-w="{{ $share['width'] }}"></i></div></div>
+            @endforeach
+          </div>
+        </section>
+      @endif
+    </aside>
+  </div>
 
   <script type="application/json" id="game-data">@json($client)</script>
 </x-layouts.game>

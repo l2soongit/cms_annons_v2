@@ -1,7 +1,7 @@
 /*
  * Сторінка гри Aion (design/game/aion-a.html): спільна логіка + вибір раси в банері
  * (перефарбовує сторінку й показує в кожному сервері «твою» частку; запам'ятовується), відлік до фіналу сезону,
- * копіювання адреси сервера, живі голоси.
+ * живі голоси. Фільтри, список і таймери — спільні (game-page).
  */
 import { $, $$, esc, setToastRenderer } from './game-page';
 
@@ -27,10 +27,10 @@ const paintShares = () => $$('.srv[data-ely]').forEach(row => {
 const applyRace = () => {
   document.body.dataset.faction = race;
   hero?.classList.toggle('picked', !!race);
-  $$('.side').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === race)));
+  $$('#ahero .rpick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === race)));
   paintShares();
 };
-$$('.side').forEach(b => b.addEventListener('click', () => {
+$$('#ahero .rpick').forEach(b => b.addEventListener('click', () => {
   race = race === b.dataset.f ? '' : b.dataset.f;
   store.set('aion-race', race);
   applyRace();
@@ -52,20 +52,6 @@ if (results) new MutationObserver(paintShares).observe(results, { childList: tru
   };
   tick(); setInterval(tick, 1000);
 })();
-
-// ── Копіювання адреси сервера ──
-document.addEventListener('click', e => {
-  const btn = e.target.closest('.copy[data-ip]');
-  if (!btn) return;
-  const text = btn.dataset.ip, label = btn.textContent;
-  (navigator.clipboard?.writeText(text) ?? Promise.reject()).catch(() => {
-    // Без HTTPS clipboard недоступний — виділяємо рядок, щоб скопіювати вручну
-    const code = btn.previousElementSibling;
-    if (code) { const r = document.createRange(); r.selectNodeContents(code); getSelection().removeAllRanges(); getSelection().addRange(r); }
-  });
-  btn.textContent = T.copied; btn.classList.add('done');
-  setTimeout(() => { btn.textContent = label; btn.classList.remove('done'); }, 1600);
-});
 
 // ── Голоси наживо ──
 setToastRenderer(v => {

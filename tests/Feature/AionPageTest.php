@@ -55,7 +55,7 @@ class AionPageTest extends TestCase
 
     public function test_page_shows_races_dashboard_versions_and_rows(): void
     {
-        $this->server('Atreia Legacy', ['alliance' => 460, 'horde' => 540, 'votes_month' => 50, 'score' => 50, 'port' => 7777], ['version' => '4.8', 'rates' => 'x5', 'type' => 'PvP']);
+        $this->server('Atreia Legacy', ['alliance' => 460, 'horde' => 540, 'votes_month' => 50, 'score' => 50], ['version' => '4.8', 'rates' => 'x5', 'type' => 'PvP']);
         $this->server('Kaisinel Classic', ['alliance' => 520, 'horde' => 480], ['version' => 'Classic', 'rates' => 'x1']);
         $this->server('Silent Realm', [], ['version' => '2.7']);
 
@@ -65,13 +65,12 @@ class AionPageTest extends TestCase
             // Банер: Асмодіанці (horde) і Елійці (alliance) лише з серверів, що передають баланс
             ->assertSee('data-f="asmo"', false)->assertSee('data-count="1020"', false)->assertSee('data-count="980"', false)
             ->assertSee('--split:49%', false)
-            // Дашборд, як на сторінках інших ігор
+            // Дашборд як у L2: цифри, фільтри рядками, бічна колонка з балансом рас і популярними версіями
             ->assertSee('id="g-online"', false)->assertSee('id="g-votes"', false)
-            // Рядки: нестандартний порт — з портом, стандартний — без; частка Елійців; без балансу — підпис
-            ->assertSee('atreia-legacy.example.net:7777')
-            ->assertSee('<code>kaisinel-classic.example.net</code>', false)
-            ->assertSee('data-ely="46"', false)
-            ->assertSee('Баланс рас не передається');
+            ->assertSee('class="frow"', false)->assertSee('aside class="side"', false)->assertSee('class="chron-bars"', false)
+            // Рядки: частка Елійців лише в серверів, що передають баланс
+            ->assertSee('data-ely="46"', false)->assertSee('data-ely="52"', false)
+            ->assertSee('Silent Realm');
     }
 
     public function test_api_accepts_race_online(): void

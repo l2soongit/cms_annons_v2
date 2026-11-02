@@ -29,7 +29,7 @@ class GameController extends Controller
     public const PERKS = [...self::CS_PERKS, 'fresh', 'vanilla', 'balanced'];
 
     /** Поле блоку популярності за замовчуванням для стилю (Rust — група: «де зараз грають» Solo / Duo / …) */
-    private const POPULAR_DEFAULT = ['rust' => 'group', 'wow' => 'expansion', 'aion' => 'version'];
+    private const POPULAR_DEFAULT = ['rust' => 'group', 'wow' => 'expansion', 'aion' => 'version', 'pw' => 'version'];
 
     private const LOW_PING_MS = 50;
 

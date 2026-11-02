@@ -22,7 +22,7 @@ class Game extends Model
         'rust' => 'Іржа й вогонь (Rust)',
         'cs' => 'Тактичний радар (CS)',
         'wow' => 'Небо Азерота (World of Warcraft)',
-        'pw' => 'Летючі острови (Perfect World)',
+        'pw' => 'Резонанс душі (Perfect World)',
         'aion' => 'Світло і Тьма (Aion)',
         'mu' => 'Палаючий меч (MU Online)',
     ];
@@ -99,6 +99,14 @@ class Game extends Model
             'wow.fame' => 'Заголовок залу слави',
             'wow.empty' => 'Порожній список',
             'wow.empty_hint' => 'Підказка до порожнього списку',
+        ],
+        'pw' => [
+            'home.season_left' => 'Підпис таймера сезону',
+            'game.add_own' => 'Кнопка в банері (:game — назва гри)',
+            'home.coming_soon' => 'Заголовок «Скоро відкриття»',
+            'game.fame' => 'Заголовок залу слави',
+            'game.empty' => 'Порожній список',
+            'game.empty_hint' => 'Підказка до порожнього списку',
         ],
         'aion' => [
             'aion.season' => 'Підказка до таймера сезону',

@@ -31,6 +31,8 @@ final class HomePageData
         foreach (array_keys(Locales::all()) as $locale) {
             Cache::forget("home.data.{$locale}");
         }
+
+        PageCache::flush();
     }
 
     private function build(): array

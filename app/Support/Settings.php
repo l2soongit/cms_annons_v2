@@ -25,6 +25,8 @@ final class Settings
         'reviews.stop_words',
         'locales',
         'default_locale',
+        'page_cache.enabled',
+        'page_cache.ttl',
     ];
 
     /** Сторінка «Головна сторінка» */
@@ -94,5 +96,6 @@ final class Settings
 
         Cache::forget('graj.settings');
         self::apply();
+        PageCache::flush();
     }
 }

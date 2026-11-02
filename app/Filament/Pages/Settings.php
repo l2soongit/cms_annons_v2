@@ -4,13 +4,16 @@ namespace App\Filament\Pages;
 
 use App\Models\ModerationLog;
 use App\Support\Locales;
+use App\Support\PageCache;
 use App\Support\Settings as SettingsStore;
 use BackedEnum;
 use Closure;
+use Filament\Actions\Action;
 use Filament\Forms\Components\KeyValue;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TagsInput;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Notifications\Notification;
 use Filament\Pages\Page;
 use Filament\Schemas\Components\Section;
@@ -103,11 +106,29 @@ class Settings extends Page
                             }
                         }]),
                 ]),
+            Section::make('Швидкість сайту')
+                ->description('Головна, сторінки ігор, серверів і статичні сторінки для гостей віддаються готовими, без запитів до бази. Залогінені користувачі завжди бачать сторінку наживо. Кеш скидається сам після змін в адмінці чи кабінеті.')
+                ->columns(2)->schema([
+                    Toggle::make('page_cache.enabled')->label('Кешувати сторінки для гостей')->inline(false),
+                    TextInput::make('page_cache.ttl')->label('Скільки тримати сторінку, секунд')->numeric()->minValue(10)->maxValue(3600)->required()
+                        ->helperText('Онлайн і голоси на закешованій сторінці оновлюються не рідше. 60–300 — оптимально.'),
+                ]),
             Section::make('Відгуки')->schema([
                 TagsInput::make('reviews.stop_words')->label('Стоп-слова')
                     ->helperText('Відгуки з цими словами йдуть на премодерацію. Регістр не важливий.'),
             ]),
         ]);
+    }
+
+    protected function getHeaderActions(): array
+    {
+        return [
+            Action::make('flushPageCache')->label('Очистити кеш сторінок')->icon(Heroicon::OutlinedArrowPath)->color('gray')
+                ->action(function () {
+                    PageCache::flush();
+                    Notification::make()->title('Кеш сторінок очищено')->body('Наступні відвідувачі побачать свіжі сторінки.')->success()->send();
+                }),
+        ];
     }
 
     public function save(): void
@@ -120,6 +141,7 @@ class Settings extends Page
             $values[$key] = match (true) {
                 $key === 'reviews.stop_words' => array_values(array_filter(array_map(fn ($w) => mb_strtolower(trim($w)), (array) $value))),
                 $key === 'default_locale' => (string) $value,
+                $key === 'page_cache.enabled' => (bool) $value,
                 $key === 'locales' => collect((array) $value)->mapWithKeys(fn ($name, $code) => [strtolower(trim((string) $code)) => trim((string) $name)])->all(),
                 (float) $value == (int) $value => (int) $value,
                 default => (float) $value,

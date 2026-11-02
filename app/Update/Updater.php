@@ -2,6 +2,7 @@
 
 namespace App\Update;
 
+use App\Support\PageCache;
 use Closure;
 use FilesystemIterator;
 use Illuminate\Http\Client\PendingRequest;
@@ -117,6 +118,13 @@ final class Updater
         }
         foreach (glob($base.'/bootstrap/cache/filament/{,*/}*', GLOB_BRACE) ?: [] as $item) {
             is_file($item) && @unlink($item);
+        }
+        // Готові сторінки для гостей зібрані старими шаблонами
+        if (is_dir($pages = $base.'/storage/framework/cache/pages')) {
+            $files = new RecursiveIteratorIterator(new RecursiveDirectoryIterator($pages, FilesystemIterator::SKIP_DOTS));
+            foreach ($files as $file) {
+                $file->isFile() && $file->getFilename() !== '.gitignore' && @unlink($file->getPathname());
+            }
         }
         if (function_exists('opcache_reset')) {
             @opcache_reset();
@@ -359,6 +367,8 @@ final class Updater
                 break;
             }
         }
+
+        PageCache::flush();
 
         $history = $this->history();
         array_unshift($history, ['from' => $pending['from'], 'to' => $pending['to'], 'reason' => $pending['reason'] ?? 'manual', 'at' => time(), 'ok' => $ok, 'message' => $message, 'backup' => $pending['backup'] ?? null]);

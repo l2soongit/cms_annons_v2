@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\CachePublicPages;
 use App\Http\Middleware\LocalizeFromUrl;
 use App\Http\Middleware\RememberUserLocale;
 use App\Http\Middleware\SecurityHeaders;
@@ -26,6 +27,8 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->prepend(LocalizeFromUrl::class);
         $middleware->append(SecurityHeaders::class);
         $middleware->web(append: [RememberUserLocale::class, TrackPageView::class]);
+        // Готові сторінки для гостей (головна, ігри, сервери) — App\Support\PageCache
+        $middleware->alias(['page.cache' => CachePublicPages::class]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         // Помилки йдуть у Sentry, лише якщо задано SENTRY_LARAVEL_DSN

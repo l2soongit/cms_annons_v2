@@ -24,12 +24,12 @@ use App\Http\Controllers\WidgetController;
 use App\Livewire\Cabinet\ServerForm;
 use Illuminate\Support\Facades\Route;
 
-Route::get('/', HomeController::class)->name('home');
+Route::get('/', HomeController::class)->middleware('page.cache')->name('home');
 Route::get('/live/feed', [HomeController::class, 'live'])->middleware('throttle:30,1')->name('home.live');
 Route::get('/search', SearchController::class)->middleware('throttle:30,1')->name('search');
 Route::get('/auth/{provider}/redirect', [SocialAuthController::class, 'redirect'])->middleware('guest')->name('social.redirect');
 Route::get('/auth/{provider}/callback', [SocialAuthController::class, 'callback'])->middleware('guest')->name('social.callback');
-Route::get('/server/{server}', [ServerController::class, 'show'])->name('servers.show');
+Route::get('/server/{server}', [ServerController::class, 'show'])->middleware('page.cache')->name('servers.show');
 Route::get('/server/{server}/vote', [VoteController::class, 'create'])->name('servers.vote');
 Route::post('/server/{server}/vote', [VoteController::class, 'store'])
     ->middleware('throttle:10,1')
@@ -90,7 +90,7 @@ Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap
 Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 
 // Статичні сторінки: правила, FAQ, контакти
-Route::get('/page/{page}', [PageController::class, 'show'])->name('pages.show');
+Route::get('/page/{page}', [PageController::class, 'show'])->middleware('page.cache')->name('pages.show');
 
 // Документація API і віджети для сайтів серверів (ТЗ 7.2–7.3)
 Route::get('/developers', [DevelopersController::class, 'index'])->name('developers');
@@ -113,6 +113,7 @@ Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware(
 // Останнім, бо slug гри перехоплює будь-який сегмент першого рівня
 // ЧПУ фільтрів: /lineage2/interlude/x100 — сегменти після slug гри (поля з позначкою «У URL»)
 Route::get('/{game}/{filters?}', [GameController::class, 'show'])
+    ->middleware('page.cache')
     // Зарезервовані перші сегменти інших розділів — цілим словом, щоб не відрізати ігри зі схожим початком (ad → adventure)
     ->where('game', '(?!(?:admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|page|search|server|ad|sitemap|robots|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor|en)$)[a-z0-9-]+')
     ->where('filters', '[a-z0-9-]+(?:/[a-z0-9-]+){0,3}')

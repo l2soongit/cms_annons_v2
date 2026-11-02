@@ -72,6 +72,7 @@ final class Translations implements Loader
         }
 
         Cache::forget("translations.{$locale}");
+        PageCache::flush();
         // Переклади кешуються перекладачем на час запиту — скидаємо, щоб зміна була видна одразу
         app('translator')->setLoaded([]);
     }

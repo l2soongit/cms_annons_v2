@@ -52,6 +52,13 @@ return [
             'lock_path' => storage_path('framework/cache/data'),
         ],
 
+        // Готові сторінки для гостей (App\Support\PageCache): окрема тека, щоб очищення не зачіпало решту кешу
+        'pages' => [
+            'driver' => 'file',
+            'path' => storage_path('framework/cache/pages'),
+            'lock_path' => storage_path('framework/cache/pages'),
+        ],
+
         'memcached' => [
             'driver' => 'memcached',
             'persistent_id' => env('MEMCACHED_PERSISTENT_ID'),

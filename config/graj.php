@@ -143,6 +143,14 @@ return [
         'session_minutes' => 30,
     ],
 
+    // Кеш сторінок для гостей: головна, сторінки ігор і серверів віддаються готовим HTML без запитів до бази.
+    // Скидається сам після змін в адмінці чи кабінеті; онлайн і голоси оновлюються не пізніше ніж за ttl секунд
+    'page_cache' => [
+        'enabled' => (bool) env('PAGE_CACHE', true),
+        'ttl' => (int) env('PAGE_CACHE_TTL', 120),
+        'store' => env('PAGE_CACHE_STORE', 'pages'),
+    ],
+
     'reviews' => [
         'stop_words' => array_filter(explode(',', (string) env('REVIEW_STOP_WORDS', ''))),
     ],

@@ -5,7 +5,18 @@ namespace App\Providers;
 use App\Analytics\Tracker;
 use App\Backup\BackupTarget;
 use App\Backup\SftpTarget;
+use App\Models\Banner;
 use App\Models\Game;
+use App\Models\GameField;
+use App\Models\MonthlyWinner;
+use App\Models\Order;
+use App\Models\Page;
+use App\Models\Review;
+use App\Models\Server;
+use App\Models\ServerFieldValue;
+use App\Models\ServerMedia;
+use App\Models\Tariff;
+use App\Support\PageCache;
 use App\Support\Settings;
 use App\Support\Translations;
 use Illuminate\Auth\Events\Registered;
@@ -47,6 +58,13 @@ class AppServiceProvider extends ServiceProvider
 
         // Аналітика: реєстрація (email і соцмережі) — крок воронки «відвідувач → власник сервера»
         Event::listen(Registered::class, fn () => app(Tracker::class)->event(request(), 'register'));
+
+        // Кеш сторінок для гостей скидається після будь-якої зміни вмісту (адмінка, кабінет, модерація).
+        // Онлайн і рейтинг пишуться без подій (saveQuietly) — вони оновлюються за ttl кешу
+        foreach ([Game::class, GameField::class, Server::class, ServerFieldValue::class, ServerMedia::class, Review::class, Banner::class, Page::class, Order::class, Tariff::class, MonthlyWinner::class] as $model) {
+            $model::saved(fn () => PageCache::flush());
+            $model::deleted(fn () => PageCache::flush());
+        }
 
         // Основна мова сайту (без префікса в адресі); app.locale далі змінюється під мову запиту
         config(['app.locale_default' => config('app.locale_default', config('app.locale'))]);

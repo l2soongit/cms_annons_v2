@@ -110,7 +110,7 @@ class ServerResource extends Resource
             ->groups([
                 Group::make('status')->label('Статус')->collapsible()
                     ->getTitleFromRecordUsing(fn (Server $s) => $s->status->label())
-                    ->orderQueryUsing(fn (Builder $q, string $direction) => $q->orderByRaw("CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 WHEN 'hidden' THEN 2 WHEN 'draft' THEN 3 WHEN 'rejected' THEN 4 WHEN 'blocked' THEN 5 ELSE 6 END")),
+                    ->orderQueryUsing(fn (Builder $query, string $direction) => $query->orderByRaw("CASE status WHEN 'pending' THEN 0 WHEN 'published' THEN 1 WHEN 'hidden' THEN 2 WHEN 'draft' THEN 3 WHEN 'rejected' THEN 4 WHEN 'blocked' THEN 5 ELSE 6 END")),
                 Group::make('game.slug')->label('Гра')->collapsible(),
             ])
             ->defaultGroup('status')

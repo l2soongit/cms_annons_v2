@@ -1,0 +1,255 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сервери MU Online — Темний лорд | GRAJ.CLUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@500;600;700;800&family=Unbounded:wght@700&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо сторінки MU Online, варіант «Темний лорд».
+ * Офіційний арт Webzen: темний лорд із блакитними блискавками. Фіолетово-синя палітра, холодне світло.
+ * Структура — як на сторінці Lineage 2: картка-банер з цифрами, таймером і кнопкою, фільтри рядками, список серверів, бічна колонка.
+ * Замість фракцій — таймери івентів (Blood Castle, Devil Square, Chaos Castle) і облога замку. Арт — офіційні промоматеріали Webzen.
+ */
+:root {
+  --bg: #0b0912; --card: #14111f; --card-2: #1b172b; --line: #2a2440; --line-2: #3d3560;
+  --text: #f1eef0; --muted: #b3a9ae; --faint: #7d7378; --ok: #4fd18b;
+  --accent: #8f7bff; --accent-ink: #0d0820; --sage: #7cd4ff; --demon: #ff5a7a; --tint: var(--accent);
+  --head: 'Cinzel', serif; --ui: 'Manrope', system-ui, sans-serif; --num: 'Unbounded', var(--ui);
+}
+body[data-path="sage"] { --tint: var(--sage); } body[data-path="demon"] { --tint: var(--demon); }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 500 15px/1.55 var(--ui); overflow-x: hidden; }
+a { color: inherit; text-decoration: none; } button { font: inherit; color: inherit; cursor: pointer; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
+.bar { display: flex; align-items: center; gap: 22px; padding: 8px 8px 8px 16px; border-radius: 12px; background: #0b0912e6; backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px #ffffff10, 0 6px 24px -10px #000; }
+.bar img { height: 36px; display: block; }
+.bar nav { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.bar nav a { padding: 6px 11px; border-radius: 999px; font-weight: 700; font-size: 13px; color: #ddd6da; white-space: nowrap; }
+.bar nav a[aria-current] { background: var(--accent); color: var(--accent-ink); }
+.crumbs { margin-top: 12px; font-size: 13px; color: var(--faint); }
+
+.ghero { position: relative; isolation: isolate; overflow: hidden; margin-top: 14px; border-radius: 24px; min-height: 430px; padding: 40px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 32px;
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent); background: url('img/mu/lord.webp') 70% center / cover no-repeat padding-box; background-clip: padding-box; }
+.ghero .isles { position: absolute; inset: 0; width: 100%; height: 100%; z-index: -2; }
+.ghero::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(90deg, #0b0912f2 0%, #0b091299 40%, transparent 68%), linear-gradient(180deg, transparent 55%, #0b0912 100%); }
+.eyebrow { display: inline-flex; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.ghero h1 { margin-top: 14px; font: 700 clamp(42px, 6.4vw, 78px)/.95 var(--head); letter-spacing: .04em; text-shadow: 0 3px 3px #000a, 0 0 40px color-mix(in srgb, var(--accent) 45%, transparent); }
+.ghero h1 small { display: block; font-size: .32em; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); }
+.tagline { margin-top: 12px; max-width: 44ch; color: #ece4e8; font-size: 17px; text-shadow: 0 2px 10px #000c; }
+.gstats { display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; }
+.gstats dd { font: 700 28px var(--num); } .gstats dd.s { color: var(--sage); } .gstats dd.d { color: var(--demon); }
+.gstats dt { color: var(--muted); font-size: 13px; }
+.paths { position: absolute; inset: 20px 24px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.ppick { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid currentColor; background: #000a; backdrop-filter: blur(6px); font-weight: 800; font-size: 13px; }
+.ppick.sage { color: var(--sage); } .ppick.demon { color: var(--demon); }
+.ppick i { font-style: normal; }
+.ppick[aria-pressed="true"] { background: currentColor; } .ppick[aria-pressed="true"] span, .ppick[aria-pressed="true"] i { color: #140a0a; }
+.hero-cta { display: grid; gap: 12px; justify-items: end; }
+.season { display: grid; justify-items: end; gap: 6px; font-size: 13px; color: var(--muted); text-shadow: 0 2px 8px #000c; }
+.clock { display: flex; gap: 6px; }
+.clock div { min-width: 52px; padding: 5px 6px; border-radius: 10px; background: #000a; border: 1px solid #ffffff1a; text-align: center; }
+.clock span { display: block; font: 700 19px/1.2 var(--num); color: var(--accent); }
+.clock small { font: 800 9px var(--ui); letter-spacing: .1em; color: var(--faint); text-transform: uppercase; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; border-radius: 12px; border: 0; font-weight: 800; font-size: 14px; background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 30px -12px var(--accent); }
+.btn.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.btn.sm { padding: 8px 14px; font-size: 13px; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; margin-top: 32px; align-items: start; }
+.filters { padding: 20px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.frow { display: grid; grid-template-columns: 96px minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 0; }
+.frow + .frow { border-top: 1px solid var(--line); }
+.frow > span { font-size: 13px; font-weight: 700; color: var(--faint); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line-2); background: none; border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.chip:hover { color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--tint); border-color: transparent; color: var(--accent-ink); }
+.ftools { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.fsearch { flex: 1; min-width: 200px; padding: 9px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); color: var(--text); font: inherit; }
+.sorts { display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: var(--bg); }
+.sorts button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.sorts button[aria-pressed="true"] { background: var(--card-2); color: var(--tint); }
+.result-line { margin: 24px 0 12px; font-size: 14px; color: var(--muted); } .result-line b { color: var(--text); }
+.list { display: grid; gap: 8px; }
+.srv { display: grid; grid-template-columns: 44px 52px minmax(0, 1fr) 150px 76px auto; gap: 14px; align-items: center; min-height: 84px; padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); transition: transform .2s, box-shadow .2s, border-color .2s; }
+.srv:hover { transform: translateX(4px); border-color: var(--line-2); box-shadow: -8px 0 0 -4px var(--tint); }
+.srv.vip { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 9%, var(--card)), var(--card) 45%); }
+.rank { font: 700 22px var(--num); text-align: center; color: var(--faint); }
+.rank.m1 { color: var(--accent); font-size: 28px; } .rank.m2 { color: #d4d4d8; font-size: 25px; } .rank.m3 { color: #c2410c; font-size: 24px; }
+.crest { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font: 700 24px var(--head); color: #fff; background: radial-gradient(circle at 30% 25%, var(--c), color-mix(in srgb, var(--c) 25%, #000)); box-shadow: 0 6px 20px -8px var(--c); }
+.sname { min-width: 0; } .sname .top { display: flex; align-items: center; gap: 8px; }
+.sname b { font: 700 18px var(--head); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.badge { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+.tags { margin-top: 6px; display: flex; gap: 5px; }
+.tag { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #ffffff08; border: 1px solid var(--line); color: var(--muted); }
+.tag.ver { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.tag.rate { color: var(--sage); }
+.online { font-size: 12px; color: var(--muted); } .online b { color: var(--text); }
+.meter { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; height: 8px; margin-bottom: 5px; }
+.meter i { background: var(--line); border-radius: 1px; } .meter i.on { background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent); }
+.votes { text-align: right; } .votes b { display: block; font: 700 19px var(--num); } .votes small { font-size: 12px; color: var(--faint); }
+
+aside { display: grid; gap: 16px; position: sticky; top: 88px; }
+.panel { position: relative; overflow: hidden; isolation: isolate; padding: 20px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.panel h2 { font: 700 15px var(--num); margin-bottom: 12px; }
+.ad { padding: 22px; border-radius: 16px; border: 1px dashed var(--line-2); text-align: center; font-size: 12px; color: var(--muted); } .ad b { display: block; color: var(--text); font-size: 13px; }
+.tw { display: grid; gap: 6px; }
+.tw .ev { display: flex; justify-content: space-between; align-items: center; gap: 8px; padding: 8px 10px; border-radius: 10px; background: var(--bg); font-size: 13px; }
+.tw .ev b { font-weight: 700; } .tw .ev .t { font: 700 13px var(--num); color: var(--accent); white-space: nowrap; }
+.tw .ev:last-child { border: 1px solid color-mix(in srgb, var(--demon) 45%, transparent); } .tw .ev:last-child b { color: var(--demon); }
+.panel .note { margin-top: 8px; font-size: 12px; color: var(--faint); }
+.tw .day { display: grid; grid-template-columns: 34px minmax(0, 1fr); gap: 8px; align-items: start; padding: 7px 10px; border-radius: 10px; background: var(--bg); font-size: 12px; }
+.tw .day b { font-weight: 800; color: var(--faint); } .tw .day.has b { color: var(--accent); }
+.tw .day span { display: block; color: var(--text); } .tw .day span i { font-style: normal; font-weight: 800; color: var(--tint); margin-right: 6px; }
+.tw .day .none { color: var(--faint); }
+.soon-item { padding: 14px; border-radius: 14px; border: 1px solid var(--line); background: radial-gradient(120% 80% at 90% 0%, color-mix(in srgb, var(--accent) 22%, transparent), transparent 60%), var(--card-2); }
+.soon-item + .soon-item { margin-top: 10px; }
+.soon-item b { display: block; font: 700 17px var(--head); } .soon-item small { font-size: 12px; color: var(--muted); }
+.cd { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; }
+.cd div { padding: 5px 4px; border-radius: 10px; background: #000a; border: 1px solid #ffffff1a; text-align: center; }
+.cd span { display: block; font: 700 18px/1.2 var(--num); color: var(--accent); } .cd small { font: 800 9px var(--ui); color: var(--faint); text-transform: uppercase; }
+.champ { min-height: 210px; display: flex; flex-direction: column; justify-content: flex-end; }
+.champ::before { content: ''; position: absolute; inset: 0; z-index: -1; opacity: .8; background: linear-gradient(180deg, transparent 20%, var(--card) 92%), url('img/mu/knight.webp') 75% center / cover; }
+.champ h2 { position: absolute; top: 18px; left: 20px; color: var(--accent); }
+.champ h3 { font: 700 26px var(--head); } .champ p { font-size: 13px; color: var(--muted); }
+.bars { display: grid; gap: 10px; }
+.bars .l { display: flex; justify-content: space-between; font-size: 13px; } .bars .l span { color: var(--muted); }
+.bars .track { margin-top: 4px; height: 6px; border-radius: 999px; background: var(--bg); overflow: hidden; } .bars .track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--tint)); }
+footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 30px 0 44px; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } aside { position: static; grid-template-columns: 1fr 1fr; } .srv { grid-template-columns: 40px 48px minmax(0, 1fr) 76px auto; } .srv .online { display: none; } }
+@media (max-width: 640px) {
+  .ghero { grid-template-columns: 1fr; padding: 80px 20px 24px; min-height: 0; } .hero-cta, .season { justify-items: start; }
+  aside { grid-template-columns: 1fr; } .frow { grid-template-columns: 1fr; gap: 6px; }
+  .srv { grid-template-columns: 32px minmax(0, 1fr) auto; } .srv .crest, .srv .votes { display: none; }
+}
+</style>
+</head>
+<body data-path="">
+<header><div class="wrap bar"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB">
+  <nav><a href="#">L2</a><a href="#">GTA</a><a href="#">Minecraft</a><a href="#">DayZ</a><a href="#">Rust</a><a href="#">CS</a><a href="#">WoW</a><a href="#">PW</a><a href="#">Aion</a><a href="#" aria-current="page">MU</a></nav></div></header>
+<main class="wrap">
+  <div class="crumbs">Головна / MU Online</div>
+
+  <section class="ghero">
+    
+    <div>
+      <span class="eyebrow">Хардкорна MMORPG · ресети, івенти й облоги з 2001 року</span>
+      <h1><small>MU</small>Online</h1>
+      <p class="tagline">Від Season 2 до Season 19. Ресети, Blood Castle й облоги замку — обери сезон і рейти, покажемо, де зараз найжвавіше.</p>
+      <dl class="gstats">
+        <div><dd>14</dd><dt>серверів</dt></div>
+        <div><dd class="s">8 230</dd><dt>гравців онлайн</dt></div>
+        <div><dd class="d">2 140</dd><dt>голосів цього місяця</dt></div>
+      </dl>
+    </div>
+    <div class="hero-cta">
+      <div class="season">Фінал сезону через
+        <div class="clock" data-to="28.4"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div>
+      </div>
+      <a class="btn" href="#">Додати свій сервер MU</a>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div>
+      <section class="filters">
+        <div class="frow"><span>Сезон</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">Season 2</button><button class="chip" aria-pressed="false">Season 4</button><button class="chip" aria-pressed="false">Season 6</button><button class="chip" aria-pressed="false">Season 12</button><button class="chip" aria-pressed="false">Season 17</button><button class="chip" aria-pressed="false">Season 19</button></div></div><div class="frow"><span>Рейти</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">x10</button><button class="chip" aria-pressed="false">x50</button><button class="chip" aria-pressed="false">x100</button><button class="chip" aria-pressed="false">x500</button><button class="chip" aria-pressed="false">x1000</button></div></div><div class="frow"><span>Тип</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">Без ресетів</button><button class="chip" aria-pressed="false">Ресети</button><button class="chip" aria-pressed="false">Гранд-ресети</button><button class="chip" aria-pressed="false">PvP</button><button class="chip" aria-pressed="false">Hard</button></div></div>
+        <div class="ftools"><input class="fsearch" placeholder="Назва сервера…"><div class="sorts"><button aria-pressed="true">Голоси</button><button aria-pressed="false">Онлайн</button><button aria-pressed="false">Нові</button><button aria-pressed="false">Відкриття</button></div></div>
+      </section>
+      <div class="result-line">Знайдено <b>14</b> серверів</div>
+      <div class="list">
+      <article class="srv vip">
+        <span class="rank m1">1</span>
+        <span class="crest" style="--c:#f6c86b">L</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Lorencia Legacy</b><span class="badge">VIP</span></div>
+          <div class="tags"><span class="tag ver">Season 6</span><span class="tag rate">x100</span><span class="tag">Ресети</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i></div><b>2 860</b> / 3 000</div>
+        <div class="votes"><b>1924</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      <article class="srv vip">
+        <span class="rank m2">2</span>
+        <span class="crest" style="--c:#5fd3a0">D</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Devias Hard</b><span class="badge">VIP</span></div>
+          <div class="tags"><span class="tag ver">Season 2</span><span class="tag rate">x10</span><span class="tag">Hard</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>1 940</b> / 3 000</div>
+        <div class="votes"><b>1517</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      <article class="srv">
+        <span class="rank m3">3</span>
+        <span class="crest" style="--c:#7aa8ff">N</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Noria Classic</b></div>
+          <div class="tags"><span class="tag ver">Season 4</span><span class="tag rate">x50</span><span class="tag">Без ресетів</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>1 420</b> / 3 000</div>
+        <div class="votes"><b>1221</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      <article class="srv">
+        <span class="rank">4</span>
+        <span class="crest" style="--c:#c38bff">K</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Kalima Reset</b></div>
+          <div class="tags"><span class="tag ver">Season 17</span><span class="tag rate">x1000</span><span class="tag">Гранд-ресети</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>1 110</b> / 3 000</div>
+        <div class="votes"><b>999</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      <article class="srv">
+        <span class="rank">5</span>
+        <span class="crest" style="--c:#ff9b5a">I</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Icarus PvP</b></div>
+          <div class="tags"><span class="tag ver">Season 12</span><span class="tag rate">x500</span><span class="tag">PvP</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>640</b> / 3 000</div>
+        <div class="votes"><b>703</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      <article class="srv">
+        <span class="rank">6</span>
+        <span class="crest" style="--c:#ff5a4e">A</span>
+        <div class="sname"><div class="top"><i class="dot"></i><b>Aida UA</b></div>
+          <div class="tags"><span class="tag ver">Season 19</span><span class="tag rate">x100</span><span class="tag">Ресети</span></div></div>
+        <div class="online"><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>260</b> / 3 000</div>
+        <div class="votes"><b>296</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+      </article>
+      </div>
+    </div>
+    <aside>
+      <div class="ad"><b>Тут може бути ваша реклама</b>Банер 300×250 на сторінці гри</div>
+      <section class="panel"><h2>Івенти на топ-сервері</h2><div class="tw"><div class="ev"><b>Blood Castle</b><span class="t" data-to="0.012"><span class="d">00</span>д <span class="h">00</span>:<span class="m">00</span>:<span class="s">00</span></span></div><div class="ev"><b>Devil Square</b><span class="t" data-to="0.021"><span class="d">00</span>д <span class="h">00</span>:<span class="m">00</span>:<span class="s">00</span></span></div><div class="ev"><b>Chaos Castle</b><span class="t" data-to="0.034"><span class="d">00</span>д <span class="h">00</span>:<span class="m">00</span>:<span class="s">00</span></span></div><div class="ev"><b>Golden Invasion</b><span class="t" data-to="0.05"><span class="d">00</span>д <span class="h">00</span>:<span class="m">00</span>:<span class="s">00</span></span></div><div class="ev"><b>Castle Siege</b><span class="t" data-to="3.3"><span class="d">00</span>д <span class="h">00</span>:<span class="m">00</span>:<span class="s">00</span></span></div></div><p class="note">Lorencia Legacy · час київський</p></section>
+      <section class="panel"><h2>Скоро відкриття</h2>
+        <div class="soon-item"><b>Lorencia Fresh</b><small>Season 6 · x100 · Ресети</small><div class="cd" data-to="2.4"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div></div>
+        <div class="soon-item"><b>Arka War</b><small>Season 19 · x500 · PvP</small><div class="cd" data-to="6.1"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div></div>
+      </section>
+      <section class="panel champ"><h2>Зал слави</h2><h3>Трон вільний</h3><p>Переможець визначиться у фіналі сезону — за голосами гравців.</p></section>
+      <section class="panel"><h2>Популярні сезони</h2>
+        <div class="bars"><div><div class="l"><b>Season 6</b><span>41%</span></div><div class="track"><i style="width:100%"></i></div></div><div><div class="l"><b>Season 2</b><span>22%</span></div><div class="track"><i style="width:63%"></i></div></div><div><div class="l"><b>Season 17</b><span>16%</span></div><div class="track"><i style="width:47%"></i></div></div><div><div class="l"><b>Season 19</b><span>11%</span></div><div class="track"><i style="width:32%"></i></div></div></div>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer><div class="wrap"><span>© 2026 GRAJ.CLUB · Демо: MU Online, «Темний лорд»</span><span>MU Online — торгова марка Webzen. Арт — офіційні промоматеріали Webzen.</span></div></footer>
+<script>
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+$$('.chip, .sorts button').forEach(c => c.addEventListener('click', () => {
+  const g = c.parentElement;
+  if (g.classList.contains('sorts') || c.textContent === 'Усі') $$('button', g).forEach(x => x.setAttribute('aria-pressed', 'false'));
+  else if (g.querySelector('button')?.textContent === 'Усі') g.querySelector('button').setAttribute('aria-pressed', 'false');
+  c.setAttribute('aria-pressed', g.classList.contains('sorts') || c.getAttribute('aria-pressed') !== 'true');
+}));
+const now = Date.now(), pad = n => String(n).padStart(2, '0');
+const timers = $$('[data-to]').map(el => ({ el, to: now + el.dataset.to * 864e5 }));
+const tick = () => timers.forEach(({ el, to }) => {
+  const s = Math.max(0, (to - Date.now()) / 1000 | 0), v = { d: s / 86400 | 0, h: s / 3600 % 24 | 0, m: s / 60 % 60 | 0, s: s % 60 };
+  for (const k in v) { const e = el.querySelector('.' + k); if (e) e.textContent = pad(v[k]); }
+});
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

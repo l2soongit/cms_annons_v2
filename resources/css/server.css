@@ -15,6 +15,10 @@
 .g-dayz { --gc: #b8c48a; --gc2: #2f3a22; --gink: #12160c; --gfont: 'Stalinist One', sans-serif; --gtrack: .02em; --gcase: uppercase; --gshadow: 0 3px 0 #0008; --gsize: .78; }
 .g-rust { --gc: #e2652f; --gc2: #5a2412; --gink: #1f0b03; --gfont: 'Rubik Dirt', sans-serif; --gtrack: .01em; --gcase: uppercase; --gshadow: 0 0 22px #e2652f66; --gsize: 1; }
 .g-cs   { --gc: #4fc3f7; --gc2: #0b2a4a; --gink: #04121d; --gfont: 'Exo 2', sans-serif; --gtrack: .02em; --gcase: uppercase; --gshadow: 0 0 22px #4fc3f788; --gsize: 1; }
+.g-wow  { --gc: #e5c06a; --gc2: #1d5a86; --gink: #1b1405; --gfont: 'Marcellus', serif; --gtrack: .02em; --gcase: none; --gshadow: 0 2px 2px #000a, 0 0 26px #e5c06a55; --gsize: 1.1; }
+.g-pw   { --gc: #7dd3fc; --gc2: #1e3a8a; --gink: #04121d; --gfont: 'Unbounded', sans-serif; --gtrack: -0.01em; --gcase: none; --gshadow: 0 0 24px #7dd3fc66; --gsize: .9; }
+.g-aion { --gc: #c9b8ff; --gc2: #4b2fa8; --gink: #140f25; --gfont: 'Cormorant SC', serif; --gtrack: .04em; --gcase: none; --gshadow: 0 0 28px #8f6bff88; --gsize: 1.15; }
+.g-mu   { --gc: #f87171; --gc2: #7f1d1d; --gink: #1f0606; --gfont: 'Cinzel', serif; --gtrack: .04em; --gcase: uppercase; --gshadow: 0 0 24px #f8717166; --gsize: 1; }
 body { --grad: linear-gradient(90deg, color-mix(in srgb, var(--gc) 70%, #fff), var(--gc) 50%, color-mix(in srgb, var(--gc) 60%, var(--gc2))); }
 .gtitle { font-family: var(--gfont); letter-spacing: var(--gtrack); text-transform: var(--gcase); text-shadow: var(--gshadow); }
 .g-cs .gtitle { font-style: italic; }
@@ -324,6 +328,10 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 /* Нова гра без стилю в адмінці — нейтральне оформлення в кольорах порталу */
 .g-default { --gc: #fbbf24; --gc2: #7c2d12; --gink: #1c1003; --gfont: 'Unbounded', sans-serif; --gtrack: -0.01em; --gcase: none; --gshadow: 0 0 22px #fbbf2455; --gsize: .9; }
 .scene-default { background: radial-gradient(circle at 70% 30%, #fbbf2440, transparent 45%), linear-gradient(160deg, #27272a, #09090b); }
+.scene-wow { background: radial-gradient(ellipse at 30% 20%, #ffb37a66, transparent 60%), linear-gradient(180deg, #5a4fa8, #b06aa8 35%, #3a4f9c 70%, #1e2c66); }
+.scene-pw { background: radial-gradient(ellipse at 70% 30%, #7dd3fc55, transparent 55%), linear-gradient(160deg, #1e3a8a, #0b1530); }
+.scene-aion { background: radial-gradient(ellipse at 25% 30%, #f3c96940, transparent 50%), radial-gradient(ellipse at 75% 30%, #8f6bff55, transparent 50%), linear-gradient(160deg, #1a1440, #0b0820); }
+.scene-mu { background: radial-gradient(ellipse at 70% 30%, #f8717155, transparent 55%), linear-gradient(160deg, #3b0a0a, #0d0303); }
 .logo img { height: 40px; width: auto; max-width: 300px; object-fit: contain; display: block; }
 .bar .actions form { display: contents; }
 /* Банер і логотип від власника */

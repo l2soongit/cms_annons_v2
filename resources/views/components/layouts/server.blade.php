@@ -5,7 +5,7 @@
 
     $theme = $game->themeKey();
     // Шрифт заголовків гри (усі з кирилицею)
-    $fonts = ['l2' => 'family=Cormorant:wght@700', 'gta' => 'family=Russo+One', 'mc' => 'family=Press+Start+2P', 'dayz' => 'family=Stalinist+One', 'rust' => 'family=Rubik+Dirt', 'cs' => 'family=Exo+2:ital,wght@1,800'][$theme] ?? null;
+    $fonts = ['l2' => 'family=Cormorant:wght@700', 'gta' => 'family=Russo+One', 'mc' => 'family=Press+Start+2P', 'dayz' => 'family=Stalinist+One', 'rust' => 'family=Rubik+Dirt', 'cs' => 'family=Exo+2:ital,wght@1,800', 'wow' => 'family=Marcellus', 'aion' => 'family=Cormorant+SC:wght@700', 'mu' => 'family=Cinzel:wght@700'][$theme] ?? null;
     $logo = HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg');
     $og = $image ?? HomePageData::url($game->cover) ?? HomePageData::url(config('graj.home.og_image'));
 @endphp

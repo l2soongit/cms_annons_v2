@@ -10,6 +10,11 @@ class EditGame extends EditRecord
 {
     protected static string $resource = GameResource::class;
 
+    public function getTitle(): string
+    {
+        return 'Гра: '.$this->getRecord()->name;
+    }
+
     /** Гра без налаштованих блоків показує всі — і перемикачі у формі мають бути увімкнені */
     protected function mutateFormDataBeforeFill(array $data): array
     {

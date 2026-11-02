@@ -43,7 +43,7 @@
 <header>
   <div class="wrap">
     <div class="bar">
-      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="40" style="height:clamp(28px,8vw,40px);width:auto"></a>
+      <a class="logo" href="{{ route('home') }}"><picture>@if ($logo === asset('images/brand/logo.svg'))<source media="(max-width: 480px)" srcset="{{ asset('images/brand/icon.svg') }}">@endif<img src="{{ $logo }}" alt="GRAJ.CLUB" height="40" style="height:clamp(28px,8vw,40px);width:auto"></picture></a>
       <x-game-switcher :current="$game" />
       @auth<div class="actions"><x-notification-bell /></div>@endauth
     </div>

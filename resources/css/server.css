@@ -445,3 +445,5 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 @media (prefers-reduced-motion: reduce) { .check circle, .check path { stroke-dashoffset: 0; } }
 @media (max-width: 768px), (hover: none) and (pointer: coarse) { .btn-xl.pulse, .clock .hand { animation: none; } }
 @media (max-width: 480px) { .vhead, .vbody { padding: 18px; } .vcard .vlogo { width: 54px; height: 54px; font-size: 24px; } }
+/* Градієнт кнопок і фішок з прозорою рамкою — від краю рамки: інакше він повторюється під рамкою й з боків видно смужки іншого кольору */
+.btn, .chip, .remind { background-origin: border-box; }

@@ -296,3 +296,6 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 .bar nav.games-nav { min-width: 0; overflow-x: auto; scrollbar-width: none; }
 .bar nav.games-nav::-webkit-scrollbar { display: none; }
 .bar nav.games-nav a { flex: none; white-space: nowrap; }
+
+/* Градієнт кнопок і фішок з прозорою рамкою — від краю рамки: інакше він повторюється під рамкою й з боків видно смужки іншого кольору */
+.btn, .chip, .remind { background-origin: border-box; }

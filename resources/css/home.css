@@ -681,3 +681,5 @@ tbody tr.in { opacity: 1; transform: none; }
   .chaser { grid-template-columns: 24px minmax(0, 1fr) auto; }
   .chaser .gap-bar { display: none; }
 }
+/* Градієнт кнопок і фішок з прозорою рамкою — від краю рамки: інакше він повторюється під рамкою й з боків видно смужки іншого кольору */
+.btn, .chip, .remind { background-origin: border-box; }

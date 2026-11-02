@@ -34,7 +34,7 @@
 
     <header class="border-b border-seam">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
-            <a href="{{ route('home') }}" class="shrink-0"><img src="{{ \App\Support\HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg') }}" alt="GRAJ.CLUB" class="block h-8 w-auto max-w-[240px] object-contain"></a>
+            <a href="{{ route('home') }}" class="shrink-0"><img src="{{ \App\Support\HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg') }}" alt="GRAJ.CLUB" class="block w-auto max-w-[300px] object-contain" style="height:clamp(28px,8vw,40px)"></a>
 
             <x-game-switcher />
 

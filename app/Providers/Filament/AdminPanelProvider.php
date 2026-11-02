@@ -30,7 +30,7 @@ class AdminPanelProvider extends PanelProvider
             ->login()
             ->brandName('GRAJ.CLUB')
             ->brandLogo(asset('images/brand/logo.svg'))
-            ->brandLogoHeight('2rem')
+            ->brandLogoHeight('2.5rem')
             ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Amber,

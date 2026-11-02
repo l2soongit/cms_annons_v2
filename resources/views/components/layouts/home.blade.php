@@ -40,7 +40,7 @@
 <header>
   <div class="wrap">
     <div class="bar">
-      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="32"></a>
+      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="40" style="height:clamp(28px,8vw,40px);width:auto"></a>
       <nav aria-label="{{ __('ui.home.nav.aria') }}">
         @foreach ($sections as $key => $href)
           @if ($key === 'games')
@@ -70,7 +70,7 @@
 <footer>
   <div class="wrap">
     <div class="fgrid">
-      <div><a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="32"></a><p>{{ __('ui.footer.tagline') }}</p></div>
+      <div><a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="40" style="height:clamp(28px,8vw,40px);width:auto"></a><p>{{ __('ui.footer.tagline') }}</p></div>
       <div><h2>{{ __('ui.nav.games') }}</h2><ul>
         @foreach ($navGames as $navGame)
           <li><a href="{{ route('games.show', $navGame) }}">{{ $navGame->name }}</a></li>

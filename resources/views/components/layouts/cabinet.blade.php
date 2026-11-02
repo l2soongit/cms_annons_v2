@@ -54,7 +54,7 @@
 <a href="#main" class="c-skip">{{ __('ui.skip') }}</a>
 <div class="c-app">
     <aside class="c-side" id="c-side" aria-label="{{ __('cabinet.title') }}">
-        <a class="c-logo" href="{{ route('home') }}"><img src="{{ \App\Support\HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg') }}" alt="GRAJ.CLUB" height="30"></a>
+        <a class="c-logo" href="{{ route('home') }}"><img src="{{ \App\Support\HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg') }}" alt="GRAJ.CLUB" height="36"></a>
         @foreach ($items as [$route, $label, $path, $url, $badge])
             @php($active = $route !== '' && request()->routeIs($route))
             <a href="{{ $url ?? route($route) }}" @if ($active) aria-current="page" @endif>{!! $icon($path) !!}<span>{{ $label }}</span>@if ($badge)<span class="c-badge">{{ $badge > 99 ? '99+' : $badge }}</span>@endif</a>

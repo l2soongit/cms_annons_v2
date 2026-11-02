@@ -41,7 +41,7 @@
 <header>
   <div class="wrap">
     <div class="bar">
-      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="32"></a>
+      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="40" style="height:clamp(28px,8vw,40px);width:auto"></a>
       <x-game-switcher :current="$game" />
       @auth<div class="actions"><x-notification-bell /></div>@endauth
     </div>

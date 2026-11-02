@@ -51,8 +51,8 @@ header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
 
 /* ── Банер-картка як у Lineage 2 ── */
 .ghero { position: relative; isolation: isolate; overflow: hidden; margin-top: 16px; border-radius: 24px; min-height: 420px; padding: 40px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 32px;
-  border: 1px solid #8f6bff44; background: var(--art) center 32% / cover no-repeat, var(--bg); }
-.ghero::after { content: ''; position: absolute; inset: 0; z-index: -1; pointer-events: none; background: linear-gradient(180deg, #0d122066 0%, transparent 30%, transparent 45%, #0d1220e6 100%), linear-gradient(90deg, #0d1220b3 0%, transparent 38%, transparent 62%, #0d1220b3 100%); }
+  border: 1px solid #2f2a52; background: var(--art) center 32% / cover no-repeat padding-box, var(--bg); background-clip: padding-box; }
+.ghero::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; pointer-events: none; background: linear-gradient(180deg, #0d122066 0%, transparent 30%, transparent 45%, #0d1220e6 92%, #0d1220 100%), linear-gradient(90deg, #0d1220b3 0%, transparent 38%, transparent 62%, #0d1220b3 100%); }
 .ghero .eyebrow { display: inline-flex; padding: 4px 12px; border-radius: 999px; font: 700 13px var(--ui); letter-spacing: 0; text-transform: none; color: var(--ely); background: #f3c9691a; border: 1px solid #f3c96944; }
 .ghero .tagline { margin-top: 12px; max-width: 34ch; color: #dfe4f3; font-size: 17px; text-shadow: 0 2px 10px #000c; }
 .gstats { display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; }

@@ -170,7 +170,7 @@ return [
         'fame' => 'Hall of fame',
         'fame_empty' => 'Winners appear after the first completed month.',
         'popular' => 'Popularity: :field',
-        'popular_by' => ['chronicle' => 'Popular chronicles', 'platform' => 'Popular platforms', 'edition' => 'Popular editions', 'map' => 'Popular maps', 'version' => 'Popular versions', 'mode' => 'Popular modes', 'style' => 'Popular styles', 'wipe' => 'Popular wipes'],
+        'popular_by' => ['chronicle' => 'Popular chronicles', 'platform' => 'Popular platforms', 'edition' => 'Popular editions', 'map' => 'Popular maps', 'version' => 'Popular versions', 'mode' => 'Popular modes', 'style' => 'Popular styles', 'wipe' => 'Popular wipes', 'season' => 'Popular seasons'],
         'soon_title_gta' => ':accent opening',
         'soon_accent' => 'Soon',
         'wanted' => 'Wanted level :n',

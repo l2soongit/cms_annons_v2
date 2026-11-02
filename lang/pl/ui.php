@@ -171,7 +171,7 @@ return [
         'fame_empty' => 'Zwycięzcy pojawią się po pierwszym zakończonym miesiącu.',
         // Заголовок блоку популярності за ключем першого фільтра гри; інакше — загальний варіант
         'popular' => 'Popularność: :field',
-        'popular_by' => ['chronicle' => 'Popularne kroniki', 'platform' => 'Popularne platformy', 'edition' => 'Popularne edycje', 'map' => 'Popularne mapy', 'version' => 'Popularne wersje', 'mode' => 'Popularne tryby', 'style' => 'Popularne style', 'wipe' => 'Popularne wipe’y'],
+        'popular_by' => ['chronicle' => 'Popularne kroniki', 'platform' => 'Popularne platformy', 'edition' => 'Popularne edycje', 'map' => 'Popularne mapy', 'version' => 'Popularne wersje', 'mode' => 'Popularne tryby', 'style' => 'Popularne style', 'wipe' => 'Popularne wipe’y', 'season' => 'Popularne sezony'],
         'soon_title_gta' => ':accent otwarcie',
         'soon_accent' => 'Wkrótce',
         'wanted' => 'Poziom poszukiwania :n',

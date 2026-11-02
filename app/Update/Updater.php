@@ -255,6 +255,11 @@ final class Updater
                 @unlink($cached);
             }
         }
+        // …як і кеш сторінок адмінки Filament: інакше меню знає про нові сторінки, а маршрутів до них ще немає
+        // («Route [filament.admin.pages.…] not defined»), поки finalize не збере кеш заново
+        foreach (glob($this->base.'/bootstrap/cache/filament/{,*/}*', GLOB_BRACE) ?: [] as $item) {
+            is_file($item) && @unlink($item);
+        }
         if (function_exists('opcache_reset')) {
             @opcache_reset();
         }

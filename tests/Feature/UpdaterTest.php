@@ -37,6 +37,7 @@ class UpdaterTest extends TestCase
         $this->file('.env', 'APP_KEY=secret');
         $this->file('storage/app/public/logo.png', 'logo');
         $this->file('bootstrap/cache/config.php', 'stale cache');
+        $this->file('bootstrap/cache/filament/panels/admin.php', 'old pages');
     }
 
     protected function tearDown(): void
@@ -105,6 +106,8 @@ class UpdaterTest extends TestCase
         $this->assertStringEqualsFile($this->site.'/storage/app/public/logo.png', 'logo');
         $this->assertFileDoesNotExist($this->site.'/public/install.php');
         $this->assertFileDoesNotExist($this->site.'/bootstrap/cache/config.php');
+        // Кеш сторінок адмінки теж скинуто — інакше «Route [filament.admin.pages.…] not defined»
+        $this->assertFileDoesNotExist($this->site.'/bootstrap/cache/filament/panels/admin.php');
         $this->assertSame(['from' => 'v1', 'to' => 'v2'], array_intersect_key($u->pending(), ['from' => 1, 'to' => 1]));
         $this->assertFileExists($u->dir().'/'.$u->pending()['backup']);
 

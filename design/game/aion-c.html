@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сервери Aion — знайди свої крила | GRAJ.CLUB</title>
+<meta name="description" content="Рейтинг приватних серверів Aion: від 1.x до Classic, рейти, тип, донат і живий онлайн.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,600;0,700;1,600&family=Manrope:wght@500;600;700;800&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо сторінки гри: Aion, варіант C «Крила».
+ * Світлий, повітряний: небо над Атреєю, великі напівпрозорі крила за назвою, скляні картки.
+ * Головний навігатор — «Шлях версій»: стрічка-таймлайн від 1.x до 7.x і Classic, клік відфільтровує сервери.
+ * Рядки серверів — легкі скляні картки з пір'ям-рейтингом (зірки голосів). Арт: офіційне промо NCSOFT (design/game/img/aion).
+ */
+:root {
+  --sky: #eef3ff; --sky-2: #f8f4ff; --glass: #ffffffb8; --glass-2: #ffffffe0; --line: #dfe4f5; --line-2: #c9d1ee;
+  --ink: #1b1d3a; --muted: #5d6283; --faint: #8d92b0;
+  --gold: #c8962f; --gold-2: #f3d27a; --violet: #7b5cf0; --violet-2: #b7a6ff; --teal: #2bb3c0;
+  --ok: #1f9d63;
+  --head: 'Cormorant Garamond', serif; --ui: 'Manrope', system-ui, sans-serif;
+  --r: 20px;
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: linear-gradient(180deg, var(--sky), var(--sky-2) 50%, #fff); color: var(--ink); font: 500 15px/1.55 var(--ui); overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 20px; }
+.eyebrow { display: block; font: 800 11px var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--violet); }
+
+/* шапка */
+header { position: absolute; inset: 0 0 auto; z-index: 20; }
+.topbar { display: flex; align-items: center; gap: 18px; padding: 16px 0; }
+.logo { padding: 6px 10px; border-radius: 12px; background: #1b1d3a; }
+.logo img { display: block; height: 30px; width: auto; }
+.games { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-left: auto; padding: 4px; border-radius: 999px; background: var(--glass); backdrop-filter: blur(10px); box-shadow: 0 6px 20px -10px #7b5cf044; }
+.games a { padding: 6px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.games a:hover { color: var(--ink); }
+.games a[aria-current] { background: var(--ink); color: #fff; }
+
+/* герой з крилами */
+.hero { position: relative; overflow: hidden; padding: 150px 0 120px; text-align: center; isolation: isolate; }
+.hero .sky { position: absolute; inset: 0; z-index: -3; background: url('img/aion/sky-wide.webp') center / cover; opacity: .55; filter: saturate(1.2) brightness(1.6); mix-blend-mode: luminosity; }
+.hero::before { content: ''; position: absolute; inset: 0; z-index: -2; background: radial-gradient(60% 60% at 50% 45%, #ffffffee, #ffffff00 70%), linear-gradient(180deg, #e7ecffcc, #f8f4ff00 40%, var(--sky-2)); }
+.wings { position: absolute; left: 50%; top: 40px; width: min(1100px, 130vw); transform: translateX(-50%); z-index: -1; opacity: .9; animation: flap 6s ease-in-out infinite; transform-origin: 50% 40%; }
+@keyframes flap { 50% { transform: translateX(-50%) scaleY(.96); } }
+.hero h1 { font: 700 clamp(64px, 12vw, 150px)/.85 var(--head); letter-spacing: .08em; background: linear-gradient(180deg, #2a2463, #7b5cf0 70%, #c8962f); -webkit-background-clip: text; background-clip: text; color: transparent; }
+.hero .tag { margin-top: 10px; font: italic 600 clamp(20px, 2.6vw, 28px) var(--head); color: var(--muted); }
+.hero p.lead { max-width: 560px; margin: 18px auto 0; color: var(--muted); }
+.cta { display: flex; gap: 10px; justify-content: center; margin-top: 26px; flex-wrap: wrap; }
+.btn { display: inline-flex; padding: 13px 22px; border-radius: 999px; font-weight: 800; font-size: 14px; border: 0; cursor: pointer; }
+.btn.main { background: var(--ink); color: #fff; box-shadow: 0 12px 30px -12px #1b1d3a; }
+.btn.ghost { background: var(--glass-2); box-shadow: inset 0 0 0 1px var(--line-2); }
+.stats { display: flex; justify-content: center; gap: 14px; margin-top: 40px; flex-wrap: wrap; }
+.stat { min-width: 160px; padding: 14px 18px; border-radius: 16px; background: var(--glass); backdrop-filter: blur(10px); box-shadow: 0 10px 30px -18px #7b5cf088, inset 0 0 0 1px #fff; }
+.stat b { display: block; font: 800 26px var(--ui); letter-spacing: -.02em; }
+.stat span { font-size: 12px; color: var(--muted); font-weight: 700; }
+
+/* шлях версій */
+section.block { padding: 64px 0; }
+.head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.head h2 { font: 700 clamp(30px, 4vw, 46px)/1.05 var(--head); }
+.head p { color: var(--muted); max-width: 420px; }
+.path { position: relative; display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 10px; padding-top: 34px; }
+.path::before { content: ''; position: absolute; left: 4%; right: 4%; top: 15px; height: 2px; background: linear-gradient(90deg, var(--gold-2), var(--violet-2), var(--teal)); }
+.ver { position: relative; padding: 16px 12px 14px; border-radius: 16px; background: var(--glass); border: 1px solid #fff; box-shadow: 0 10px 30px -20px #1b1d3a66; text-align: center; cursor: pointer; transition: transform .2s, box-shadow .2s; }
+.ver::before { content: ''; position: absolute; top: -25px; left: 50%; width: 12px; height: 12px; margin-left: -6px; border-radius: 50%; background: #fff; border: 3px solid var(--violet-2); }
+.ver:hover { transform: translateY(-3px); }
+.ver[aria-pressed="true"] { background: var(--ink); color: #fff; }
+.ver[aria-pressed="true"]::before { border-color: var(--gold); background: var(--gold-2); }
+.ver b { display: block; font: 800 22px var(--ui); letter-spacing: -.02em; }
+.ver span { display: block; font-size: 12px; color: var(--muted); font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.ver small { display: block; font-size: 11px; color: var(--faint); font-weight: 700; }
+.ver[aria-pressed="true"] span, .ver[aria-pressed="true"] small { color: #c9cbe8; }
+
+/* фільтри + список */
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin: 26px 0 16px; }
+.chip { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-2); background: var(--glass-2); font-weight: 700; font-size: 13px; color: var(--muted); cursor: pointer; }
+.chip[aria-pressed="true"] { background: var(--violet); border-color: var(--violet); color: #fff; }
+.search { flex: 1; min-width: 200px; padding: 10px 16px; border-radius: 999px; border: 1px solid var(--line-2); background: #fff; color: var(--ink); font: inherit; }
+.list { display: grid; gap: 12px; }
+.srv { display: grid; grid-template-columns: 44px 1fr 200px 140px; gap: 18px; align-items: center; padding: 18px 22px; border-radius: var(--r); background: var(--glass); border: 1px solid #fff; box-shadow: 0 16px 40px -28px #1b1d3a88; backdrop-filter: blur(8px); }
+.srv:hover { background: #fff; }
+.srv .n { font: 800 22px var(--ui); color: var(--faint); text-align: center; }
+.srv:nth-child(-n+3) .n { color: var(--gold); }
+.srv h3 { font: 700 24px/1.1 var(--head); font-variant-numeric: lining-nums; }
+.chips { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.chips span { padding: 2px 9px; border-radius: 999px; font-size: 12px; font-weight: 700; background: #eef0fb; color: var(--muted); }
+.chips .v { background: var(--ink); color: #fff; }
+.srv p { margin-top: 6px; font-size: 13px; color: var(--muted); }
+.feathers { display: flex; gap: 3px; }
+.feathers svg { width: 16px; height: 16px; }
+.votes { font-size: 12px; color: var(--muted); margin-top: 4px; font-weight: 700; }
+.on { text-align: right; }
+.on b { display: block; font: 800 24px var(--ui); letter-spacing: -.02em; }
+.on small { color: var(--ok); font-weight: 800; font-size: 12px; }
+.on a { display: inline-block; margin-top: 6px; padding: 8px 14px; border-radius: 999px; background: var(--ink); color: #fff; font-weight: 800; font-size: 12px; }
+
+/* сервер місяця + скоро */
+.duo { display: grid; grid-template-columns: 1.1fr .9fr; gap: 16px; }
+.champ { position: relative; overflow: hidden; border-radius: var(--r); min-height: 340px; padding: 30px; display: flex; flex-direction: column; justify-content: flex-end; color: #fff; background: #140d10; isolation: isolate; }
+.champ::before { content: ''; position: absolute; inset: 0 0 0 auto; width: 65%; z-index: -1; background: url('img/aion/drakan.webp') right center / cover no-repeat; -webkit-mask-image: linear-gradient(90deg, transparent, #000 45%); mask-image: linear-gradient(90deg, transparent, #000 45%); }
+.champ .eyebrow { color: var(--gold-2); }
+.champ h3 { font: 700 40px/1.05 var(--head); }
+.champ p { color: #d9dbf0; margin-top: 6px; max-width: 320px; }
+.soon { border-radius: var(--r); padding: 26px; background: var(--glass); border: 1px solid #fff; box-shadow: 0 16px 40px -28px #1b1d3a88; }
+.soon h3 { font: 700 30px var(--head); margin: 4px 0 14px; }
+.soon li { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 12px 0; border-top: 1px solid var(--line); flex-wrap: wrap; }
+.soon ul { padding: 0; }
+.soon li b { font: 700 19px var(--head); }
+.soon li small { display: block; color: var(--muted); font-size: 12px; font-weight: 700; }
+.soon li span { font: 800 14px var(--ui); color: var(--violet); font-variant-numeric: tabular-nums; }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .path { grid-template-columns: repeat(7, 120px); overflow-x: auto; padding-bottom: 6px; }
+  .duo { grid-template-columns: 1fr; }
+  .srv { grid-template-columns: 34px 1fr; }
+  .srv .rate, .srv .on { grid-column: 2; text-align: left; }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap topbar">
+    <a class="logo" href="#"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB"></a>
+    <nav class="games" aria-label="Ігри"><a href="#">L2</a><a href="#">WoW</a><a href="#">MU</a><a href="#" aria-current="page">Aion</a><a href="#">PW</a><a href="#">Minecraft</a><a href="#">CS</a></nav>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="game-h">
+  <div class="sky" aria-hidden="true"></div>
+  <svg class="wings" viewBox="0 0 1100 420" aria-hidden="true">
+    <defs>
+      <linearGradient id="wl" x1="1" x2="0"><stop offset="0" stop-color="#f3d27a"/><stop offset="1" stop-color="#b7a6ff" stop-opacity=".1"/></linearGradient>
+      <linearGradient id="wr" x1="0" x2="1"><stop offset="0" stop-color="#f3d27a"/><stop offset="1" stop-color="#b7a6ff" stop-opacity=".1"/></linearGradient>
+    </defs>
+    <g fill="url(#wl)" opacity=".55">
+      <path d="M520 200 C440 120 330 60 160 40 C260 80 330 120 380 170 C300 130 200 110 70 120 C190 140 290 170 350 210 C270 190 170 190 40 220 C170 225 280 240 340 260 C260 260 170 280 80 320 C200 300 300 290 400 290 Z"/>
+    </g>
+    <g fill="url(#wr)" opacity=".55">
+      <path d="M580 200 C660 120 770 60 940 40 C840 80 770 120 720 170 C800 130 900 110 1030 120 C910 140 810 170 750 210 C830 190 930 190 1060 220 C930 225 820 240 760 260 C840 260 930 280 1020 320 C900 300 800 290 700 290 Z"/>
+    </g>
+  </svg>
+  <div class="wrap">
+    <span class="eyebrow">Фентезі MMORPG · приватні сервери</span>
+    <h1 id="game-h">AION</h1>
+    <div class="tag">Знайди свої крила</div>
+    <p class="lead">Сервери Aion від класичних 1.x до сучасних 7.x і Classic. Обери версію на шляху нижче — покажемо, де найживіша Безодня.</p>
+    <div class="cta"><a class="btn main" href="#path">Обрати версію</a><a class="btn ghost" href="#">Додати свій сервер</a></div>
+    <div class="stats">
+      <div class="stat"><b>6 060</b><span>гравців онлайн</span></div>
+      <div class="stat"><b>14</b><span>серверів у рейтингу</span></div>
+      <div class="stat"><b>3</b><span>старти цього тижня</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" id="path" aria-labelledby="path-h">
+  <div class="wrap">
+    <div class="head"><div><span class="eyebrow">Шлях версій</span><h2 id="path-h">Яку Атрею обираєш?</h2></div><p>Кожна епоха Aion — своя гра. Натисни версію, щоб побачити її сервери.</p></div>
+    <div class="path" id="path-list"></div>
+    <div class="filters">
+      <button class="chip" aria-pressed="false">x1</button><button class="chip" aria-pressed="false">x3–x5</button><button class="chip" aria-pressed="false">x10+</button>
+      <button class="chip" aria-pressed="false">PvP</button><button class="chip" aria-pressed="false">PvE</button>
+      <button class="chip" aria-pressed="false">Без донату</button><button class="chip" aria-pressed="false">Рівні раси</button>
+      <input class="search" placeholder="Назва сервера або IP">
+    </div>
+    <div class="list" id="list"></div>
+  </div>
+</section>
+
+<section class="block" style="padding-top:10px">
+  <div class="wrap duo">
+    <article class="champ"><span class="eyebrow">Сервер місяця</span><h3>Трон вільний</h3><p>Переможець визначиться у фіналі сезону — за голосами гравців.</p></article>
+    <article class="soon"><span class="eyebrow">Скоро відкриття</span><h3>Нові світи</h3>
+      <ul>
+        <li><div><b>Elysea Rising</b><small>4.8 · x5 · PvP</small></div><span data-to="1.4">—</span></li>
+        <li><div><b>Asmodae Classic</b><small>Classic · x1</small></div><span data-to="4.2">—</span></li>
+        <li><div><b>Balaur Wrath</b><small>2.7 · x10 · кастом</small></div><span data-to="9.7">—</span></li>
+      </ul>
+    </article>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>© 2026 GRAJ.CLUB · Демо: Aion, варіант C «Крила»</span><span>Aion — торгова марка NCSOFT. Арт — офіційні промоматеріали NCSOFT.</span></div></footer>
+
+<script>
+const vers = [['1.9', 'Перші крила', 1], ['2.7', 'Темна Пошта', 3], ['3.9', 'Гелісія', 1], ['4.8', 'Каталам', 4], ['5.8', 'Тобі', 2], ['7.x', 'Сучасна', 2], ['Classic', 'Як у 2009', 3]];
+document.getElementById('path-list').innerHTML = vers.map(v => `<button class="ver" aria-pressed="false"><b>${v[0]}</b><span>${v[1]}</span><small>${v[2]} серв.</small></button>`).join('');
+const servers = [
+  ['Atreia Legacy', '4.8', 'x5', 'PvP', 1840, 4.8, 1284, 'Облоги щосуботи, легіонні війни, без вайпів з 2024.'],
+  ['Abyss Eternal', '5.8', 'x10', 'PvP', 1320, 4.5, 1105, 'Нові локації 5.x, крафт без шопу, турніри арени.'],
+  ['Kaisinel Classic', 'Classic', 'x1', 'PvE', 1105, 4.6, 932, 'Чистий Classic: повільна прокачка, живий ринок.'],
+  ['Marchutan 2.7', '2.7', 'x3', 'PvP', 960, 4.2, 811, 'Легендарна 2.7: Темна Пошта, Безодня, Дредгіон.'],
+  ['Tiamat Realm', '4.6', 'x50', 'Кастом', 640, 3.6, 604, 'Швидкий старт, кастомні інстанси, івенти щодня.'],
+  ['Beritra Dawn', '7.2', 'x3', 'PvP', 512, 4.0, 296, 'Сучасний клієнт, оптимізація, українська спільнота.'],
+];
+const feather = on => `<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 3C12 4 6 9 4 20l2 1c1-3 3-6 5-8-1 3-1 5 0 7 6-2 9-8 9-17z" fill="${on ? '#c8962f' : '#dfe4f5'}"/></svg>`;
+document.getElementById('list').innerHTML = servers.map((s, i) => `
+  <article class="srv">
+    <div class="n">${i + 1}</div>
+    <div><h3>${s[0]}</h3><div class="chips"><span class="v">${s[1]}</span><span>${s[2]}</span><span>${s[3]}</span></div><p>${s[7]}</p></div>
+    <div class="rate"><div class="feathers" title="Оцінка ${s[5]}">${[1, 2, 3, 4, 5].map(k => feather(k <= Math.round(s[5]))).join('')}</div><div class="votes">${s[5].toFixed(1)} · ${s[6].toLocaleString('uk')} голосів</div></div>
+    <div class="on"><small>● онлайн</small><b>${s[4].toLocaleString('uk')}</b><a href="#">Голосувати</a></div>
+  </article>`).join('');
+
+document.getElementById('path-list').addEventListener('click', e => {
+  const b = e.target.closest('.ver'); if (!b) return;
+  const on = b.getAttribute('aria-pressed') !== 'true';
+  document.querySelectorAll('.ver').forEach(x => x.setAttribute('aria-pressed', x === b && on));
+});
+document.querySelectorAll('.chip').forEach(c => c.addEventListener('click', () => c.setAttribute('aria-pressed', c.getAttribute('aria-pressed') !== 'true')));
+const now = Date.now();
+const pad = n => String(n).padStart(2, '0');
+const timers = [...document.querySelectorAll('[data-to]')].map(el => ({ el, to: now + el.dataset.to * 864e5 }));
+function tick() {
+  for (const { el, to } of timers) {
+    const s = Math.max(0, (to - Date.now()) / 1000 | 0);
+    el.textContent = `${s / 86400 | 0} д ${pad(s / 3600 % 24 | 0)}:${pad(s / 60 % 60 | 0)}:${pad(s % 60)}`;
+  }
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сервери Aion — Безодня, облоги фортець | GRAJ.CLUB</title>
+<meta name="description" content="Рейтинг приватних серверів Aion: облоги фортець у Безодні, баланс трьох сил, версія, рейти й живий онлайн.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Forum&family=Manrope:wght@500;600;700;800&family=JetBrains+Mono:wght@500;700&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо сторінки гри: Aion, варіант B «Безодня».
+ * Космос розколотої Атреї: уламки світу, фіолетово-бірюзове сяйво, фортеці, що висять у порожнечі.
+ * Головна механіка Aion — облоги фортець у Безодні, тому сторінка побудована навколо них:
+ * «Тижневий розклад облог» (хто з серверів коли б'ється), баланс трьох сил (Елійці, Асмодіанці, Балаури),
+ * сервери як «фортеці» з власником Безодні. Арт: офіційне промо NCSOFT (design/game/img/aion).
+ */
+:root {
+  --void: #070816; --void-2: #0d1026; --glass: #12163acc; --card: #141a3d; --line: #262d63; --line-2: #3a4390;
+  --text: #eef0ff; --muted: #a7abd6; --faint: #6f74a8;
+  --abyss: #9b5cff; --abyss-2: #d6b8ff; --cyan: #3fe0ff; --ely: #ffd37a; --asmo: #b38bff; --balaur: #ff6a4d;
+  --ok: #46e39a;
+  --head: 'Forum', serif; --ui: 'Manrope', system-ui, sans-serif; --mono: 'JetBrains Mono', monospace;
+  --r: 16px;
+}
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--void); color: var(--text); font: 500 15px/1.55 var(--ui); overflow-x: hidden; }
+a { color: inherit; text-decoration: none; }
+button { font: inherit; color: inherit; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+.eyebrow { display: block; font: 800 11px var(--ui); letter-spacing: .2em; text-transform: uppercase; color: var(--cyan); }
+
+/* шапка */
+header { position: sticky; top: 0; z-index: 30; backdrop-filter: blur(12px); background: #070816b3; border-bottom: 1px solid #ffffff0f; }
+.topbar { display: flex; align-items: center; gap: 18px; padding: 12px 0; }
+.logo img { display: block; height: 34px; width: auto; }
+.games { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; margin-left: auto; }
+.games a { padding: 7px 12px; border-radius: 10px; font-size: 13px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.games a:hover { color: #fff; }
+.games a[aria-current] { color: #fff; background: linear-gradient(135deg, #9b5cff66, #3fe0ff33); box-shadow: inset 0 0 0 1px #9b5cff88; }
+
+/* герой */
+.hero { position: relative; min-height: 640px; display: grid; align-items: center; overflow: hidden; isolation: isolate; }
+.hero .bg { position: absolute; inset: 0; z-index: -2; background: url('img/aion/atreia.webp') center 30% / cover; animation: drift 40s ease-in-out infinite alternate; }
+.hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: radial-gradient(60% 80% at 75% 40%, transparent, #070816 85%), linear-gradient(180deg, transparent 60%, var(--void)); }
+@keyframes drift { to { transform: scale(1.08) translate(-1%, 1%); } }
+.shards { position: absolute; inset: 0; z-index: -1; pointer-events: none; }
+.shards i { position: absolute; width: var(--s); height: calc(var(--s) * .7); background: linear-gradient(135deg, #3a4390, #0d1026); clip-path: polygon(10% 0, 100% 20%, 80% 100%, 0 70%); opacity: .8; animation: float 9s ease-in-out infinite alternate; box-shadow: 0 0 20px #9b5cff; }
+@keyframes float { to { transform: translateY(-18px) rotate(6deg); } }
+.hero-grid { display: grid; grid-template-columns: 1.1fr .9fr; gap: 40px; align-items: center; padding: 80px 0 60px; }
+.hero h1 { font: 400 clamp(56px, 9vw, 112px)/.9 var(--head); letter-spacing: .06em; background: linear-gradient(180deg, #fff, #d6b8ff 60%, #7b4fd6); -webkit-background-clip: text; background-clip: text; color: transparent; filter: drop-shadow(0 0 30px #9b5cff88); }
+.hero h1 small { display: block; font-size: .3em; letter-spacing: .12em; text-transform: uppercase; color: var(--cyan); -webkit-text-fill-color: var(--cyan); margin-top: 8px; }
+.hero p.lead { max-width: 480px; margin-top: 18px; color: #d8dbff; font-size: 17px; }
+.cta { display: flex; gap: 10px; margin-top: 26px; flex-wrap: wrap; }
+.btn { display: inline-flex; align-items: center; gap: 8px; padding: 12px 20px; border-radius: 12px; font-weight: 800; font-size: 14px; border: 0; cursor: pointer; }
+.btn.main { background: linear-gradient(135deg, var(--abyss), #6b3fe0); color: #fff; box-shadow: 0 10px 30px -10px var(--abyss); }
+.btn.ghost { background: #ffffff10; box-shadow: inset 0 0 0 1px #ffffff26; }
+
+/* кільце трьох сил */
+.forces { position: relative; aspect-ratio: 1; max-width: 420px; margin-left: auto; width: 100%; }
+.forces svg { width: 100%; height: 100%; overflow: visible; }
+.forces .center { position: absolute; inset: 0; display: grid; place-content: center; text-align: center; }
+.forces .center b { font: 400 44px var(--head); }
+.forces .center span { font-size: 12px; letter-spacing: .14em; text-transform: uppercase; color: var(--muted); }
+.legend { display: flex; justify-content: center; gap: 16px; margin-top: 10px; font-size: 13px; color: var(--muted); flex-wrap: wrap; }
+.legend i { display: inline-block; width: 10px; height: 10px; border-radius: 3px; margin-right: 6px; vertical-align: -1px; }
+
+/* розклад облог */
+section.block { padding: 70px 0; }
+.head { display: flex; justify-content: space-between; align-items: end; gap: 20px; margin-bottom: 24px; flex-wrap: wrap; }
+.head h2 { font: 400 clamp(28px, 3.6vw, 42px)/1.05 var(--head); letter-spacing: .03em; }
+.head p { color: var(--muted); max-width: 420px; }
+.sched { position: relative; overflow: hidden; border-radius: var(--r); border: 1px solid var(--line); background: linear-gradient(90deg, #070816 30%, #07081699), url('img/aion/battle.webp') right center / cover; }
+.days { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); }
+.day { padding: 16px 14px 18px; border-right: 1px solid #ffffff12; min-height: 190px; }
+.day:last-child { border-right: 0; }
+.day h3 { font: 800 12px var(--ui); letter-spacing: .14em; text-transform: uppercase; color: var(--faint); margin-bottom: 10px; }
+.day.today h3 { color: var(--cyan); }
+.day.today { background: linear-gradient(180deg, #3fe0ff14, transparent); }
+.siege { display: block; padding: 8px 10px; border-radius: 10px; background: #0d1026e6; border: 1px solid var(--line-2); margin-bottom: 8px; font-size: 12px; }
+.siege b { display: block; font: 700 13px var(--mono); color: #fff; }
+.siege span { color: var(--muted); }
+.siege.live { border-color: var(--balaur); box-shadow: 0 0 0 1px var(--balaur), 0 0 18px -4px var(--balaur); }
+.siege.live b::after { content: ' · ЗАРАЗ'; color: var(--balaur); }
+
+/* сервери-фортеці */
+.toolbar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 18px; align-items: center; }
+.seg { display: flex; padding: 4px; border-radius: 12px; background: var(--void-2); border: 1px solid var(--line); flex-wrap: wrap; }
+.seg button { padding: 7px 12px; border: 0; border-radius: 9px; background: none; font-weight: 800; font-size: 13px; color: var(--muted); cursor: pointer; }
+.seg button[aria-pressed="true"] { background: var(--abyss); color: #fff; }
+.search { flex: 1; min-width: 200px; padding: 10px 14px; border-radius: 12px; border: 1px solid var(--line); background: var(--void-2); color: var(--text); font: inherit; }
+.forts { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+.fort { position: relative; display: grid; grid-template-columns: 64px 1fr auto; gap: 16px; align-items: center; padding: 18px; border-radius: var(--r); background: linear-gradient(135deg, #141a3d, #0d1026); border: 1px solid var(--line); overflow: hidden; }
+.fort:hover { border-color: var(--line-2); transform: translateY(-2px); transition: transform .2s; }
+.fort .crest { width: 64px; height: 64px; display: grid; place-items: center; font: 400 26px var(--head); border-radius: 18px; background: radial-gradient(circle at 30% 30%, var(--c), #0d1026 75%); box-shadow: 0 0 24px -6px var(--c); }
+.fort h3 { font: 400 20px var(--head); letter-spacing: .02em; }
+.meta { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 4px; }
+.meta span { padding: 2px 8px; border-radius: 6px; font-size: 12px; font-weight: 700; background: #ffffff0f; color: var(--muted); }
+.meta .v { background: #9b5cff33; color: var(--abyss-2); }
+.own { margin-top: 8px; font-size: 12px; color: var(--muted); }
+.own b { color: var(--c); }
+.three { display: flex; height: 5px; border-radius: 3px; overflow: hidden; margin-top: 6px; }
+.three i { display: block; }
+.score { text-align: right; }
+.score b { display: block; font: 700 24px var(--mono); }
+.score small { color: var(--ok); font-weight: 700; font-size: 12px; }
+.score a { display: inline-block; margin-top: 8px; padding: 7px 12px; border-radius: 10px; background: #ffffff12; font-weight: 800; font-size: 12px; }
+.score a:hover { background: var(--abyss); }
+.fort .crest { position: relative; }
+.fort .rank { position: absolute; bottom: -6px; right: -6px; min-width: 26px; height: 22px; padding: 0 6px; border-radius: 8px; display: grid; place-items: center; font: 700 11px var(--mono); color: #fff; background: #0d1026; border: 1px solid var(--line-2); }
+
+/* чемпіон + скоро */
+.duo { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.art { position: relative; overflow: hidden; border-radius: var(--r); min-height: 320px; padding: 28px; display: flex; flex-direction: column; justify-content: flex-end; border: 1px solid var(--line); background: var(--img) center / cover; isolation: isolate; }
+.art::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 25%, #070816f0); }
+.art h3 { font: 400 34px/1.1 var(--head); }
+.art p { color: var(--muted); margin-top: 6px; }
+.soon-list { display: grid; gap: 10px; margin-top: 14px; }
+.soon-list div { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 14px; border-radius: 12px; background: #070816cc; border: 1px solid var(--line); flex-wrap: wrap; }
+.soon-list b { font: 400 17px var(--head); }
+.soon-list span { font: 700 14px var(--mono); color: var(--cyan); }
+
+footer { border-top: 1px solid var(--line); padding: 28px 0; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+
+@media (max-width: 900px) {
+  .hero-grid, .duo, .forts { grid-template-columns: 1fr; }
+  .forces { margin: 0 auto; max-width: 300px; }
+  .sched { overflow-x: auto; }
+  .days { grid-template-columns: repeat(7, 150px); }
+}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap topbar">
+    <a class="logo" href="#"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB"></a>
+    <nav class="games" aria-label="Ігри"><a href="#">L2</a><a href="#">WoW</a><a href="#">MU</a><a href="#" aria-current="page">Aion</a><a href="#">PW</a><a href="#">Minecraft</a><a href="#">CS</a></nav>
+  </div>
+</header>
+
+<section class="hero" aria-labelledby="game-h">
+  <div class="bg" aria-hidden="true"></div>
+  <div class="shards" aria-hidden="true">
+    <i style="--s:70px;left:8%;top:18%"></i><i style="--s:40px;left:46%;top:12%;animation-delay:-3s"></i><i style="--s:90px;left:58%;top:70%;animation-delay:-6s"></i><i style="--s:30px;left:30%;top:80%;animation-delay:-2s"></i>
+  </div>
+  <div class="wrap hero-grid">
+    <div>
+      <span class="eyebrow">Фентезі MMORPG · приватні сервери</span>
+      <h1 id="game-h">AION<small>Безодня чекає</small></h1>
+      <p class="lead">Облоги фортець, легіони й війна трьох сил. Знайди сервер, де Безодня жива: версія від 1.9 до 7.x і Classic, рейти, розклад облог і чесний онлайн.</p>
+      <div class="cta"><a class="btn main" href="#forts">Знайти сервер</a><a class="btn ghost" href="#">Додати свій сервер</a></div>
+    </div>
+    <div>
+      <div class="forces">
+        <svg viewBox="0 0 200 200" aria-hidden="true">
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#ffffff10" stroke-width="18"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#ffd37a" stroke-width="18" stroke-dasharray="211 503" transform="rotate(-90 100 100)"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#b38bff" stroke-width="18" stroke-dasharray="226 503" stroke-dashoffset="-213" transform="rotate(-90 100 100)"/>
+          <circle cx="100" cy="100" r="80" fill="none" stroke="#ff6a4d" stroke-width="18" stroke-dasharray="60 503" stroke-dashoffset="-441" transform="rotate(-90 100 100)"/>
+        </svg>
+        <div class="center"><b>6 830</b><span>у Безодні зараз</span></div>
+      </div>
+      <div class="legend"><span><i style="background:var(--ely)"></i>Елійці 42%</span><span><i style="background:var(--asmo)"></i>Асмодіанці 45%</span><span><i style="background:var(--balaur)"></i>фортеці Балаурів 13%</span></div>
+    </div>
+  </div>
+</section>
+
+<section class="block" aria-labelledby="sched-h">
+  <div class="wrap">
+    <div class="head"><div><span class="eyebrow">Тиждень у Безодні</span><h2 id="sched-h">Розклад облог</h2></div><p>Коли й де б'ються легіони на серверах з рейтингу. Час — київський.</p></div>
+    <div class="sched"><div class="days" id="days"></div></div>
+  </div>
+</section>
+
+<section class="block" id="forts" style="padding-top:10px" aria-labelledby="forts-h">
+  <div class="wrap">
+    <div class="head"><div><span class="eyebrow">Рейтинг серверів</span><h2 id="forts-h">Фортеці Атреї</h2></div><p>Кожен сервер — фортеця: хто нею володіє, яка версія й скільки гравців онлайн.</p></div>
+    <div class="toolbar">
+      <div class="seg" data-one><button aria-pressed="true">Усі</button><button aria-pressed="false">Classic</button><button aria-pressed="false">2.x</button><button aria-pressed="false">4.x</button><button aria-pressed="false">5.x+</button></div>
+      <div class="seg"><button aria-pressed="false">x1</button><button aria-pressed="false">x3–x5</button><button aria-pressed="false">x10+</button></div>
+      <div class="seg"><button aria-pressed="false">Без донату</button><button aria-pressed="false">Облоги щодня</button></div>
+      <input class="search" placeholder="Назва або IP">
+    </div>
+    <div class="forts" id="list"></div>
+  </div>
+</section>
+
+<section class="block" style="padding-top:10px">
+  <div class="wrap duo">
+    <article class="art" style="--img:url('img/aion/knight.webp')">
+      <span class="eyebrow">Сервер місяця</span>
+      <h3>Трон вільний</h3>
+      <p>Переможець визначиться у фіналі сезону — за голосами гравців.</p>
+    </article>
+    <article class="art" style="--img:url('img/aion/hall.webp')">
+      <span class="eyebrow">Скоро відкриття</span>
+      <h3>Нові портали</h3>
+      <div class="soon-list">
+        <div><b>Elysea Rising · 4.8 x5</b><span data-to="1.4">—</span></div>
+        <div><b>Asmodae Classic · x1</b><span data-to="4.2">—</span></div>
+        <div><b>Balaur Wrath · 2.7 x10</b><span data-to="9.7">—</span></div>
+      </div>
+    </article>
+  </div>
+</section>
+
+<footer><div class="wrap"><span>© 2026 GRAJ.CLUB · Демо: Aion, варіант B «Безодня»</span><span>Aion — торгова марка NCSOFT. Арт — офіційні промоматеріали NCSOFT.</span></div></footer>
+
+<script>
+const forts = [
+  ['Atreia Legacy', '4.8', 'x5', 'PvP', 1840, [46, 44, 10], 'Елійці', '#ffd37a'],
+  ['Abyss Eternal', '5.8', 'x10', 'PvP', 1320, [38, 50, 12], 'Асмодіанці', '#b38bff'],
+  ['Kaisinel Classic', 'Classic', 'x1', 'PvE', 1105, [50, 41, 9], 'Елійці', '#ffd37a'],
+  ['Marchutan 2.7', '2.7', 'x3', 'PvP', 960, [33, 37, 30], 'Балаури', '#ff6a4d'],
+  ['Tiamat Realm', '4.6', 'x50', 'Кастом', 640, [40, 48, 12], 'Асмодіанці', '#b38bff'],
+  ['Beritra Dawn', '7.2', 'x3', 'PvP', 512, [45, 45, 10], 'Елійці', '#ffd37a'],
+];
+document.getElementById('list').innerHTML = forts.map((f, i) => `
+  <article class="fort" style="--c:${f[7]}">
+    <div class="crest">${f[0][0]}<span class="rank">#${i + 1}</span></div>
+    <div><h3>${f[0]}</h3>
+      <div class="meta"><span class="v">${f[1]}</span><span>${f[2]}</span><span>${f[3]}</span></div>
+      <div class="own">Безоднею володіють: <b>${f[6]}</b></div>
+      <div class="three" title="Елійці / Асмодіанці / Балаури"><i style="width:${f[5][0]}%;background:var(--ely)"></i><i style="width:${f[5][1]}%;background:var(--asmo)"></i><i style="flex:1;background:var(--balaur)"></i></div>
+    </div>
+    <div class="score"><small>● онлайн</small><b>${f[4].toLocaleString('uk')}</b><a href="#">Голосувати</a></div>
+  </article>`).join('');
+
+const names = ['Пн', 'Вт', 'Ср', 'Чт', 'Пт', 'Сб', 'Нд'];
+const plan = [
+  [['20:00', 'Atreia Legacy', 'Фортеця Сіель']],
+  [['21:00', 'Abyss Eternal', 'Вежа Крота'], ['22:30', 'Tiamat Realm', 'Мирафора']],
+  [['20:00', 'Marchutan 2.7', 'Фортеця Асталь']],
+  [['19:00', 'Kaisinel Classic', 'Фортеця Сіель'], ['21:00', 'Beritra Dawn', 'Кротан']],
+  [['20:00', 'Atreia Legacy', 'Божественна фортеця']],
+  [['18:00', 'Abyss Eternal', 'Мирафора'], ['20:00', 'Marchutan 2.7', 'Сіель'], ['22:00', 'Tiamat Realm', 'Кротан']],
+  [['20:00', 'Kaisinel Classic', 'Божественна фортеця']],
+];
+const today = (new Date().getDay() + 6) % 7;
+document.getElementById('days').innerHTML = names.map((n, d) => `
+  <div class="day${d === today ? ' today' : ''}"><h3>${n}${d === today ? ' · сьогодні' : ''}</h3>
+    ${plan[d].map((s, k) => `<span class="siege${d === today && k === 0 ? ' live' : ''}"><b>${s[0]}</b>${s[1]}<br><span>${s[2]}</span></span>`).join('')}
+  </div>`).join('');
+
+document.querySelectorAll('.seg').forEach(seg => seg.addEventListener('click', e => {
+  const b = e.target.closest('button'); if (!b) return;
+  if (seg.hasAttribute('data-one')) seg.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === b));
+  else b.setAttribute('aria-pressed', b.getAttribute('aria-pressed') !== 'true');
+}));
+const now = Date.now();
+const pad = n => String(n).padStart(2, '0');
+const timers = [...document.querySelectorAll('[data-to]')].map(el => ({ el, to: now + el.dataset.to * 864e5 }));
+function tick() {
+  for (const { el, to } of timers) {
+    const s = Math.max(0, (to - Date.now()) / 1000 | 0);
+    el.textContent = `${s / 86400 | 0}д ${pad(s / 3600 % 24 | 0)}:${pad(s / 60 % 60 | 0)}:${pad(s % 60)}`;
+  }
+}
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

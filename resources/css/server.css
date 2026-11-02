@@ -324,7 +324,7 @@ footer .wrap { display: flex; justify-content: space-between; gap: 16px; flex-wr
 /* Нова гра без стилю в адмінці — нейтральне оформлення в кольорах порталу */
 .g-default { --gc: #fbbf24; --gc2: #7c2d12; --gink: #1c1003; --gfont: 'Unbounded', sans-serif; --gtrack: -0.01em; --gcase: none; --gshadow: 0 0 22px #fbbf2455; --gsize: .9; }
 .scene-default { background: radial-gradient(circle at 70% 30%, #fbbf2440, transparent 45%), linear-gradient(160deg, #27272a, #09090b); }
-.logo img { height: 32px; width: auto; max-width: 180px; object-fit: contain; display: block; }
+.logo img { height: 32px; width: auto; max-width: 240px; object-fit: contain; display: block; }
 .bar .actions form { display: contents; }
 /* Банер і логотип від власника */
 .shero .scene-img { position: absolute; inset: 0; background: center / cover no-repeat; }

@@ -604,7 +604,7 @@ tbody tr.in { opacity: 1; transform: none; }
 .champ .scene-img { opacity: .75; }
 .cta-img { position: absolute; inset: 0; z-index: 0; pointer-events: none; background: center / cover no-repeat; opacity: .28; mask-image: linear-gradient(90deg, transparent, #000 60%); animation: ken-burns 28s ease-in-out infinite alternate; }
 .cta > :not(.cta-img) { position: relative; z-index: 1; }/* Логотипи серверів (з кабінету власника), іконки ігор, логотип сайту */
-.logo img { height: 32px; width: auto; max-width: 180px; object-fit: contain; display: block; }
+.logo img { height: 32px; width: auto; max-width: 240px; object-fit: contain; display: block; }
 .slogo { flex: none; width: 36px; height: 36px; border-radius: var(--r-sm); object-fit: cover; background: var(--bg-2); border: 1px solid var(--line); }
 .slogo.sm { width: 24px; height: 24px; border-radius: 6px; vertical-align: middle; margin-right: 8px; }
 .sname { display: inline-flex; align-items: center; gap: 12px; }

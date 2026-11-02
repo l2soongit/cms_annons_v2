@@ -2,9 +2,8 @@
     use App\Support\HomeContent;
     use App\Support\HomePageData;
 
-    $logo = HomePageData::url(config('graj.home.logo_image'));
+    $logo = HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg');
     $og = HomePageData::url(config('graj.home.og_image'));
-    $cup = '<svg width="16" height="16" viewBox="0 0 24 24" fill="#1c1003" aria-hidden="true"><path d="M7 3h10v3h4v3a5 5 0 0 1-5 5h-.3A5 5 0 0 1 13 16.9V19h3v2H8v-2h3v-2.1A5 5 0 0 1 8.3 14H8a5 5 0 0 1-5-5V6h4z"/></svg>';
     // Секція => якір; пункт меню зникає разом із вимкненою в адмінці секцією
     $sections = ['ranking' => '#top', 'games' => '#games', 'soon' => '#soon', 'owners' => '#owners', 'plans' => '#plans'];
 @endphp
@@ -12,6 +11,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
 <meta charset="utf-8">
+<x-favicons />
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>{{ $title ?? __('ui.meta.title') }}</title>
 <meta name="description" content="{{ $description ?? __('ui.meta.description') }}">
@@ -40,7 +40,7 @@
 <header>
   <div class="wrap">
     <div class="bar">
-      <a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a>
+      <a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="32"></a>
       <nav aria-label="{{ __('ui.home.nav.aria') }}">
         @foreach ($sections as $key => $href)
           @if ($key === 'games')
@@ -70,7 +70,7 @@
 <footer>
   <div class="wrap">
     <div class="fgrid">
-      <div><a class="logo" href="{{ route('home') }}">@if ($logo)<img src="{{ $logo }}" alt="graj.club" height="32">@else<i>{!! $cup !!}</i>{{ 'graj.club' }}@endif</a><p>{{ __('ui.footer.tagline') }}</p></div>
+      <div><a class="logo" href="{{ route('home') }}"><img src="{{ $logo }}" alt="GRAJ.CLUB" height="32"></a><p>{{ __('ui.footer.tagline') }}</p></div>
       <div><h2>{{ __('ui.nav.games') }}</h2><ul>
         @foreach ($navGames as $navGame)
           <li><a href="{{ route('games.show', $navGame) }}">{{ $navGame->name }}</a></li>

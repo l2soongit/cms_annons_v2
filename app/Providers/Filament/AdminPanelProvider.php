@@ -28,7 +28,10 @@ class AdminPanelProvider extends PanelProvider
             ->id('admin')
             ->path('admin')
             ->login()
-            ->brandName('graj.club')
+            ->brandName('GRAJ.CLUB')
+            ->brandLogo(asset('images/brand/logo.svg'))
+            ->brandLogoHeight('2rem')
+            ->favicon(asset('favicon.svg'))
             ->colors([
                 'primary' => Color::Amber,
             ])

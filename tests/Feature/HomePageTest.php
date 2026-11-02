@@ -105,6 +105,14 @@ class HomePageTest extends TestCase
             ->assertSee('data-count="120"', false);
     }
 
+    public function test_default_brand_logo_and_favicons_without_uploaded_logo(): void
+    {
+        $this->get('/')
+            ->assertOk()
+            ->assertSee('<img src="'.asset('images/brand/logo.svg').'" alt="GRAJ.CLUB"', false)
+            ->assertSee('<link rel="icon" href="'.asset('favicon.svg').'" type="image/svg+xml">', false);
+    }
+
     public function test_home_hides_unpublished_servers(): void
     {
         $this->makeServer(['status' => ServerStatus::Pending, 'name' => 'Hidden One']);
@@ -201,7 +209,7 @@ class HomePageTest extends TestCase
             ->assertSee('/storage/servers/logo.webp', false)
             ->assertSee('class="soon-cover"', false)
             ->assertSee('/storage/games/icons/l2.webp', false)
-            ->assertSee('<img src="'.url('/storage/home/logo.webp').'" alt="graj.club"', false)
+            ->assertSee('<img src="'.url('/storage/home/logo.webp').'" alt="GRAJ.CLUB"', false)
             ->assertSee('<meta property="og:image" content="'.url('/storage/home/og.webp').'">', false);
 
         $this->assertSame(url('/storage/servers/banner.webp'), HomePageData::get()['arena']['all']['rows'][0]['image']);

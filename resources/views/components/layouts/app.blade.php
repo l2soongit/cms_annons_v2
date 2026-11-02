@@ -2,6 +2,7 @@
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 <head>
     <meta charset="utf-8">
+    <x-favicons />
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>{{ $title ?? __('ui.meta.title') }}</title>
     <meta name="description" content="{{ $description ?? __('ui.meta.description') }}">
@@ -33,7 +34,7 @@
 
     <header class="border-b border-seam">
         <div class="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-3 px-4 py-4 sm:px-6">
-            <a href="{{ route('home') }}" class="font-display text-xl font-bold tracking-tight">graj<span class="text-amber">.</span>club</a>
+            <a href="{{ route('home') }}" class="shrink-0"><img src="{{ \App\Support\HomePageData::url(config('graj.home.logo_image')) ?: asset('images/brand/logo.svg') }}" alt="GRAJ.CLUB" class="block h-8 w-auto max-w-[240px] object-contain"></a>
 
             <x-game-switcher />
 

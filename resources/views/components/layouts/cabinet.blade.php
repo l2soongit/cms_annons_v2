@@ -26,6 +26,7 @@
     $items = array_merge($items, [
         ['cabinet.ads', __('billing.ads.nav'), '<rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 10h18M8 15h4"/>', null, null],
         ['cabinet.balance', __('billing.nav'), '<path d="M4 7h14a2 2 0 012 2v9a2 2 0 01-2 2H5a1 1 0 01-1-1V7zM4 7l11-3v3M16 13.5h.01"/>', null, null],
+        ['cabinet.bonus', __('community.bonus.nav'), '<path d="M12 3l1.8 4.9L19 9l-4 3.4 1.2 5.1L12 15l-4.2 2.5L9 12.4 5 9l5.2-1.1z"/><path d="M5 20h14"/>', null, null],
         ['cabinet.messages*', __('messages.nav'), '<path d="M4 5h16v11H8l-4 4z"/>', route('cabinet.messages'), $unreadMessages],
         ['cabinet.support*', __('messages.support.nav'), '<circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.5 2.5 0 114 2c-.8.5-1.5 1-1.5 2M12 17h.01"/>', route('cabinet.support'), null],
         ['cabinet.inbox', __('notifications.inbox.nav'), '<path d="M18 8a6 6 0 10-12 0c0 7-3 8-3 8h18s-3-1-3-8M10.3 20a2 2 0 003.4 0"/>', null, $unreadNotes],

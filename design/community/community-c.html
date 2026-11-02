@@ -1,0 +1,176 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спільнота — варіант C «Журнал»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* C «Журнал»: новина читається як стаття, а нижче — та сама тема форуму з відповідями, цитатами й реакціями.
+   Тема лежить у розділі форуму «Lineage 2 → Новини», тож її видно і зі стрічки новин, і з форуму. */
+.crumbs { padding: 24px 0 0; color: var(--faint); font-size: 13px; display: flex; gap: 8px; flex-wrap: wrap; }
+.crumbs a:hover { color: var(--text); }
+.art-hero { position: relative; margin-top: 16px; border-radius: 24px; overflow: hidden; min-height: 420px; display: flex; align-items: end; padding: 40px; border: 1px solid var(--line); isolation: isolate; }
+.art-hero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.art-hero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #09090b33 0%, #09090bf2 90%); }
+.art-hero h1 { font: 800 clamp(26px, 4vw, 46px)/1.12 var(--display); letter-spacing: -.02em; max-width: 22ch; margin: 14px 0 16px; }
+.byline { display: flex; align-items: center; gap: 12px; color: #d4d4d8; font-size: 14px; flex-wrap: wrap; }
+.byline b { color: var(--text); }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 40px; margin-top: 32px; }
+.body { font-size: 17px; line-height: 1.75; color: #e4e4e7; max-width: 72ch; }
+.body p + p, .body h2 + p, .body p + h2, .body ul + p, .body p + ul, .body .facts + p { margin-top: 16px; }
+.body h2 { font: 700 22px var(--display); margin-top: 32px; color: var(--text); }
+.body ul { margin-left: 22px; }
+.facts { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin: 24px 0; }
+.facts div { padding: 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.facts b { display: block; font: 700 26px var(--display); }
+.facts small { color: var(--faint); font-size: 13px; }
+.mention { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; background: var(--card); border: 1px solid #fbbf2455; margin: 24px 0; }
+.mention img { width: 40px; height: 40px; }
+.mention b { display: block; }
+.mention .btn { margin-left: auto; }
+.react { display: flex; gap: 8px; margin-top: 28px; flex-wrap: wrap; }
+.react button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line-2); font-weight: 700; font-size: 14px; }
+.react button.on { border-color: #fbbf2488; background: #fbbf2414; }
+
+.thread { margin-top: 48px; }
+.th-head { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding-bottom: 14px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.th-head .meta a { color: var(--amber); font-weight: 700; }
+.th-sort { display: flex; gap: 6px; }
+.th-sort a { padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 800; color: var(--muted); border: 1px solid var(--line); }
+.th-sort a[aria-current] { color: var(--text); border-color: var(--line-2); background: var(--card-2); }
+.reply { display: grid; grid-template-columns: 150px minmax(0, 1fr); border-bottom: 1px solid var(--line); }
+.who { padding: 20px 16px 20px 0; display: grid; justify-items: start; gap: 6px; align-content: start; font-size: 13px; }
+.who b { font-size: 14px; }
+.who .role { font-size: 11px; font-weight: 800; padding: 1px 8px; border-radius: 6px; }
+.role.owner { color: var(--orange); background: #f9731614; border: 1px solid #f9731650; }
+.role.team { color: var(--amber); background: #fbbf2414; border: 1px solid #fbbf2450; }
+.who .meta { font-size: 12px; }
+.msg { padding: 20px 0 20px 20px; border-left: 1px solid var(--line); }
+.msg .meta { display: flex; justify-content: space-between; gap: 8px; }
+.msg p { margin-top: 8px; color: #e4e4e7; }
+.quote { margin-top: 10px; padding: 10px 14px; border-left: 3px solid var(--amber); background: var(--bg-2); border-radius: 0 10px 10px 0; color: var(--muted); font-size: 14px; }
+.quote b { color: var(--text); }
+.acts { display: flex; gap: 16px; margin-top: 12px; color: var(--faint); font-size: 13px; font-weight: 700; }
+.acts span:first-child { color: var(--muted); }
+.reply.best .msg { background: linear-gradient(90deg, #34d3990d, transparent 60%); }
+.more { display: block; text-align: center; padding: 14px; color: var(--muted); font-weight: 700; border-bottom: 1px solid var(--line); }
+.editor { margin-top: 20px; padding: 16px; display: grid; gap: 12px; }
+.editor .tb { display: flex; gap: 6px; color: var(--muted); font-weight: 800; }
+.editor .tb span { padding: 4px 10px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--line); font-size: 13px; }
+.editor .area { min-height: 96px; padding: 12px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); color: var(--faint); }
+.editor .row { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; }
+
+aside { display: grid; gap: 16px; align-content: start; }
+aside .card { padding: 18px; }
+aside h3 { font: 700 15px var(--display); margin-bottom: 12px; }
+.where { display: grid; gap: 8px; font-size: 14px; }
+.where div { display: flex; justify-content: space-between; color: var(--muted); }
+.where b { color: var(--text); }
+.list { display: grid; gap: 12px; }
+.list a { display: grid; gap: 2px; font-size: 14px; font-weight: 700; line-height: 1.35; }
+.list .meta { font-weight: 500; }
+.srv { display: grid; grid-template-columns: 22px 1fr auto; gap: 10px; align-items: center; font-size: 14px; }
+.srv + .srv { margin-top: 10px; }
+.srv i { font-style: normal; font: 800 13px var(--display); color: var(--amber); }
+.srv b { font-weight: 700; }
+.toc a { display: block; padding: 6px 0 6px 12px; border-left: 2px solid var(--line); color: var(--muted); font-size: 14px; }
+.toc a.on { border-color: var(--amber); color: var(--text); }
+.sticky { position: sticky; top: 88px; display: grid; gap: 16px; }
+
+@media (max-width: 1000px) { .layout { grid-template-columns: 1fr; } .sticky { position: static; } }
+@media (max-width: 640px) { .art-hero { padding: 24px; min-height: 360px; } .facts { grid-template-columns: 1fr; } .reply { grid-template-columns: 1fr; } .who { padding: 16px 0 0; grid-auto-flow: column; justify-content: start; align-items: center; } .who .meta { display: none; } .msg { border-left: 0; padding: 8px 0 16px; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB">
+  <nav><a href="#">Lineage 2</a><a href="#">WoW</a><a href="#">Minecraft</a><a href="#">GTA</a><a href="#">Rust</a><a href="#">Ігри ▾</a><a href="#" aria-current="page">Спільнота</a></nav>
+  <div class="right"><a class="btn ghost" href="#">Увійти</a><a class="btn primary" href="#">+ Додати сервер</a></div></div></header>
+
+<main class="wrap">
+  <div class="crumbs"><a href="community-a.html">Спільнота</a>/<a href="#">Форум</a>/<a href="#">Lineage 2</a>/<span>Новини</span></div>
+  <section class="art-hero">
+    <img src="../../storage/app/public/games/cover/lineage2.webp" alt="">
+    <div>
+      <span class="chip news">Новина graj.club</span> <span class="chip">Lineage 2</span> <span class="chip">7 хв читання</span>
+      <h1>Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну Interlude</h1>
+      <div class="byline"><span class="ava c1">G</span><b>Команда graj.club</b><span>2 листопада 2026</span><span>👁 3,1 тис.</span><a href="#thread">💬 48 у темі форуму</a></div>
+    </div>
+  </section>
+
+  <div class="layout">
+    <article>
+      <div class="body">
+        <p>Жовтень видався найактивнішим місяцем для Lineage 2 за весь рік. У каталог додали 14 нових серверів, а сумарний онлайн Interlude вперше перевищив 20 тисяч гравців одночасно.</p>
+        <div class="facts"><div><b class="grad">14</b><small>нових серверів</small></div><div><b>20 480</b><small>пік онлайну Interlude</small></div><div><b>61 тис.</b><small>голосів за місяць</small></div></div>
+        <h2 id="t1">Хто піднявся в топ</h2>
+        <p>Найбільше зросли сервери з рейтами x10–x50: гравці шукають баланс між швидким стартом і відчуттям класики. Трійка лідерів за голосами:</p>
+        <ul><li>Atlas Legacy x50 — 4 120 голосів</li><li>Talking Island x10 — 3 870 голосів</li><li>Giran Classic x1 — 2 940 голосів</li></ul>
+        <div class="mention"><img src="../../public/images/games/l2.png" alt=""><div><b>Сервер місяця: Atlas Legacy</b><span class="meta">Interlude · x50 · онлайн 2 410</span></div><a class="btn ghost" href="#">Сторінка сервера</a></div>
+        <h2 id="t2">Чому x10 знову в моді</h2>
+        <p>Опитування на форумі показало: 46% гравців хочуть «пройти гру, а не прокачатися за вечір». Власники відповідають довшими сезонами й чеснішим донатом.</p>
+        <h2 id="t3">Що далі</h2>
+        <p>У листопаді чекаємо ще 6 відкриттів. Голосування за «Сервер листопада» вже триває, а обговорити підсумки можна прямо нижче — ця тема також лежить у форумі в розділі Lineage 2.</p>
+      </div>
+      <div class="react"><button class="on">🔥 128</button><button>👍 74</button><button>😮 12</button><button>🤔 5</button><button>↗ Поділитися</button></div>
+
+      <section class="thread" id="thread">
+        <div class="th-head">
+          <div><h2 class="h2">Обговорення · 48</h2><div class="meta">Тема у форумі: <a href="#">Lineage 2 → Новини</a> · підписано 212</div></div>
+          <div class="th-sort"><a href="#" aria-current="page">Найкращі</a><a href="#">Нові</a><a href="#">За порядком</a></div>
+        </div>
+
+        <div class="reply best">
+          <div class="who"><span class="ava c4">M</span><b>Marta_L2</b><span class="meta">1 240 дописів</span></div>
+          <div class="msg"><div class="meta"><span>3 хв тому</span><span class="chip guide">✓ Найкраща відповідь</span></div>
+            <p>Погоджуюсь щодо x10. Пограла місяць на x1000 — нудно, все вже є. На x10 знову цікаво йти в Cruma Tower з партією.</p>
+            <div class="acts"><span>▲ 41</span><span>Відповісти</span><span>Цитувати</span><span>Поскаржитися</span></div></div>
+        </div>
+        <div class="reply">
+          <div class="who"><span class="ava c5">A</span><b>Atlas_Admin</b><span class="role owner">Власник сервера</span><span class="meta">Atlas Legacy</span></div>
+          <div class="msg"><div class="meta"><span>20 хв тому</span><span>#2</span></div>
+            <div class="quote"><b>Команда graj.club:</b> Сервер місяця: Atlas Legacy</div>
+            <p>Дякуємо всім, хто голосував! До кінця листопада подвоюємо нагороду за голос, деталі в новині нашого сервера.</p>
+            <div class="acts"><span>▲ 28</span><span>Відповісти</span><span>Цитувати</span></div></div>
+        </div>
+        <div class="reply">
+          <div class="who"><span class="ava c3">K</span><b>Kain</b><span class="meta">312 дописів</span></div>
+          <div class="msg"><div class="meta"><span>1 год тому</span><span>#3</span></div>
+            <p>А можна в наступному звіті окремо High Five? Там теж кілька нормальних проєктів відкрилося.</p>
+            <div class="acts"><span>▲ 9</span><span>Відповісти</span><span>Цитувати</span></div></div>
+        </div>
+        <div class="reply">
+          <div class="who"><span class="ava c1">G</span><b>graj.club</b><span class="role team">Команда</span></div>
+          <div class="msg"><div class="meta"><span>48 хв тому</span><span>#4</span></div>
+            <div class="quote"><b>Kain:</b> А можна в наступному звіті окремо High Five?</div>
+            <p>Так, з грудня підсумки будуть по кожній хроніці окремо.</p>
+            <div class="acts"><span>▲ 17</span><span>Відповісти</span><span>Цитувати</span></div></div>
+        </div>
+        <a class="more" href="#">Показати ще 44 відповіді</a>
+
+        <div class="card editor">
+          <div class="tb"><span>B</span><span>I</span><span>❝</span><span>🔗</span><span>🖼</span><span>Спойлер</span></div>
+          <div class="area">Написати відповідь…</div>
+          <div class="row"><label class="meta"><input type="checkbox" checked> Сповіщати про нові відповіді</label><a class="btn primary" href="#">Відповісти</a></div>
+        </div>
+      </section>
+    </article>
+
+    <aside><div class="sticky">
+      <div class="card"><h3>У цій новині</h3><nav class="toc"><a class="on" href="#t1">Хто піднявся в топ</a><a href="#t2">Чому x10 знову в моді</a><a href="#t3">Що далі</a><a href="#thread">Обговорення · 48</a></nav></div>
+      <div class="card"><h3>Тема у форумі</h3><div class="where"><div>Розділ <b>Lineage 2 → Новини</b></div><div>Відповідей <b>48</b></div><div>Підписано <b>212</b></div><div>Остання <b>3 хв тому</b></div></div></div>
+      <div class="card"><h3>Згадані сервери</h3>
+        <div class="srv"><i>1</i><b>Atlas Legacy x50</b><span class="meta">4 120</span></div>
+        <div class="srv"><i>2</i><b>Talking Island x10</b><span class="meta">3 870</span></div>
+        <div class="srv"><i>3</i><b>Giran Classic x1</b><span class="meta">2 940</span></div></div>
+      <div class="card"><h3>Ще в розділі</h3><div class="list">
+        <a href="#">Шукаю КП на Interlude x50<span class="meta">Набір у клан · 9 відповідей</span></a>
+        <a href="#">Які сервери L2 переживуть зиму?<span class="meta">Обговорення · 87 відповідей</span></a>
+        <a href="#">Гайд: спойлер на старті x10<span class="meta">Гайд · 22 відповіді</span></a></div></div>
+    </div></aside>
+  </div>
+</main>
+<footer class="bot"><div class="wrap">Демо C «Журнал» · graj.club</div></footer>
+</body>
+</html>

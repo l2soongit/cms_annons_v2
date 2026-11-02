@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спільнота — варіант B «Стрічка»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* B «Стрічка»: одна стрічка дописів (новини, обговорення, гайди, питання, набір у клан), зліва ігри й розділи, справа новини сайту.
+   Новина — той самий допис із позначкою «Новина», тому коментарі й форум одне ціле. */
+.layout { display: grid; grid-template-columns: 230px minmax(0, 1fr) 300px; gap: 24px; padding-top: 24px; }
+.nav-col { position: sticky; top: 88px; align-self: start; display: grid; gap: 4px; }
+.nav-col h4 { font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 14px 10px 6px; }
+.nav-col a { display: flex; align-items: center; gap: 10px; padding: 8px 10px; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--muted); }
+.nav-col a:hover { background: var(--card); color: var(--text); }
+.nav-col a[aria-current] { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.nav-col a img { width: 22px; height: 22px; border-radius: 6px; }
+.nav-col a .cnt { margin-left: auto; font-size: 12px; color: var(--faint); }
+
+.compose { display: flex; gap: 12px; align-items: center; padding: 14px; }
+.compose .fake { flex: 1; padding: 10px 14px; border-radius: 10px; background: var(--bg-2); border: 1px solid var(--line); color: var(--faint); }
+.sort { display: flex; gap: 6px; margin: 16px 0 12px; flex-wrap: wrap; }
+.sort a { padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 13px; color: var(--muted); border: 1px solid var(--line); }
+.sort a[aria-current] { color: #1c1003; background: var(--grad); border-color: transparent; }
+.sort .sep { flex: 1; }
+
+.post { display: grid; grid-template-columns: 48px minmax(0, 1fr); gap: 14px; padding: 16px; margin-bottom: 12px; }
+.post:hover { border-color: var(--line-2); }
+.vote { display: grid; justify-items: center; align-content: start; gap: 2px; padding-top: 2px; }
+.vote button { width: 32px; height: 26px; border-radius: 8px; color: var(--faint); font-size: 14px; }
+.vote button:hover { background: var(--card-2); color: var(--amber); }
+.vote b { font: 700 14px var(--display); }
+.vote.on b, .vote.on .up { color: var(--amber); }
+.p-head { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; font-size: 13px; color: var(--faint); }
+.p-head b { color: var(--text); }
+.post h2 { font-size: 18px; line-height: 1.35; margin: 8px 0 6px; }
+.post p { color: var(--muted); }
+.post .img { display: block; margin-top: 12px; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); aspect-ratio: 21 / 8; }
+.post .img img { width: 100%; height: 100%; object-fit: cover; }
+.p-foot { display: flex; gap: 18px; margin-top: 12px; color: var(--muted); font-size: 13px; font-weight: 700; flex-wrap: wrap; }
+.p-foot .last { margin-left: auto; display: flex; gap: 8px; align-items: center; color: var(--faint); font-weight: 500; }
+.post.news { border-color: #fbbf2455; background: linear-gradient(180deg, #fbbf240d, transparent 40%), var(--card); }
+.srvcard { display: flex; gap: 12px; align-items: center; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); }
+.srvcard .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 8px var(--up); }
+.srvcard b { font-size: 14px; white-space: nowrap; }
+.srvcard .meta { margin-left: auto; }
+.clanline { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 10px; }
+
+aside { display: grid; gap: 16px; align-content: start; position: sticky; top: 88px; align-self: start; }
+aside .card { padding: 18px; }
+aside h3 { font: 700 15px var(--display); margin-bottom: 12px; }
+.sn { display: grid; gap: 14px; }
+.sn a { display: grid; gap: 4px; }
+.sn a b { font-size: 14px; line-height: 1.35; }
+.rules li { margin-left: 18px; color: var(--muted); font-size: 14px; }
+.rules li + li { margin-top: 4px; }
+.types { display: flex; gap: 6px; flex-wrap: wrap; }
+
+@media (max-width: 1150px) { .layout { grid-template-columns: 200px minmax(0, 1fr); } aside { display: none; } }
+@media (max-width: 800px) { .layout { grid-template-columns: 1fr; } .nav-col { position: static; display: flex; overflow-x: auto; gap: 6px; } .nav-col h4 { display: none; } .nav-col a { white-space: nowrap; } .nav-col a .cnt { display: none; } }
+@media (max-width: 560px) { .post { grid-template-columns: 1fr; } .vote { display: flex; gap: 8px; } .p-foot .last { display: none; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB">
+  <nav><a href="#">Lineage 2</a><a href="#">WoW</a><a href="#">Minecraft</a><a href="#">GTA</a><a href="#">Rust</a><a href="#">Ігри ▾</a><a href="#" aria-current="page">Спільнота</a></nav>
+  <div class="right"><a class="btn ghost" href="#">Увійти</a><a class="btn primary" href="#">+ Додати сервер</a></div></div></header>
+
+<main class="wrap layout">
+  <nav class="nav-col" aria-label="Розділи">
+    <a href="#" aria-current="page">🏠 Уся стрічка</a>
+    <a href="#">📣 Новини <span class="cnt">126</span></a>
+    <a href="#">⭐ Мої підписки</a>
+    <h4>Ігри</h4>
+    <a href="#"><img src="../../public/images/games/l2.png" alt="">Lineage 2 <span class="cnt">1,2к</span></a>
+    <a href="#"><img src="../../public/images/games/wow.png" alt="">WoW <span class="cnt">640</span></a>
+    <a href="#"><img src="../../public/images/games/mc.png" alt="">Minecraft <span class="cnt">890</span></a>
+    <a href="#"><img src="../../public/images/games/rust.png" alt="">Rust <span class="cnt">310</span></a>
+    <a href="#"><img src="../../public/images/games/gta.png" alt="">GTA <span class="cnt">280</span></a>
+    <a href="#"><img src="../../public/images/games/aion.png" alt="">Aion <span class="cnt">140</span></a>
+    <a href="#"><img src="../../public/images/games/pw.png" alt="">Perfect World <span class="cnt">120</span></a>
+    <h4>Інше</h4>
+    <a href="#">🛠 Власникам серверів</a>
+    <a href="#">⚔ Набір у клани</a>
+    <a href="#">💬 Флудилка</a>
+  </nav>
+
+  <section>
+    <div class="card compose"><span class="ava c3">K</span><div class="fake">Створити допис: новина сервера, питання, гайд, набір у клан…</div><a class="btn primary" href="#">Написати</a></div>
+    <div class="sort"><a href="#" aria-current="page">🔥 Гаряче</a><a href="#">🆕 Нове</a><a href="#">🏆 Топ тижня</a><span class="sep"></span><a href="#">Усі типи ▾</a></div>
+
+    <article class="card post news">
+      <div class="vote on"><button class="up" aria-label="Подобається">▲</button><b>312</b><button aria-label="Не подобається">▼</button></div>
+      <div>
+        <div class="p-head"><span class="chip pin">📌 Закріплено</span><span class="chip news">Новина graj.club</span><span class="ava s c1">G</span><b>Команда graj.club</b>· 2 год тому</div>
+        <h2><a href="community-c.html">Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну Interlude</a></h2>
+        <p>Хто піднявся в топ, які хроніки ростуть і чому x10 знову в моді. Плюс переможець «Сервера місяця».</p>
+        <a class="img" href="community-c.html"><img src="../../storage/app/public/games/cover/lineage2.webp" alt=""></a>
+        <div class="p-foot"><span>💬 48 коментарів</span><span>👁 3,1 тис.</span><span>↗ Поділитися</span><span class="last"><span class="ava s c4">M</span>Marta_L2 відповіла 3 хв тому</span></div>
+      </div>
+    </article>
+
+    <article class="card post">
+      <div class="vote"><button class="up" aria-label="Подобається">▲</button><b>96</b><button aria-label="Не подобається">▼</button></div>
+      <div>
+        <div class="p-head"><span class="chip srv">Новина сервера</span><span class="chip">WoW</span><span class="ava s c5">A</span><b>Azeroth_GM</b>· власник · 5 год тому</div>
+        <h2><a href="#">Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</a></h2>
+        <p>Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+        <div class="srvcard"><span class="dot"></span><b>Azeroth Legacy</b><span class="chip">3.3.5a</span><span class="chip">x5</span><span class="meta">відкриття через 13 днів</span><a class="btn ghost" href="#">Нагадати</a></div>
+        <div class="p-foot"><span>💬 21 коментар</span><span>↗ Поділитися</span><span class="last"><span class="ava s c2">N</span>Nyerk · 18 хв тому</span></div>
+      </div>
+    </article>
+
+    <article class="card post">
+      <div class="vote"><button class="up" aria-label="Подобається">▲</button><b>54</b><button aria-label="Не подобається">▼</button></div>
+      <div>
+        <div class="p-head"><span class="chip clan">Набір у клан</span><span class="chip">Lineage 2</span><span class="ava s c3">K</span><b>Kain</b>· 6 хв тому</div>
+        <h2><a href="#">[Phoenix] шукає КП на Interlude x50, прайм 20:00–00:00</a></h2>
+        <p>Потрібні бішоп, спойлер і два танки. Discord обов'язковий, вік 18+. Облоги щонеділі.</p>
+        <div class="clanline"><span class="chip">Сервер: Atlas x50</span><span class="chip">Рівень 76+</span><span class="chip">UA / PL</span></div>
+        <div class="p-foot"><span>💬 9 відповідей</span><span>✉ Написати лідеру</span></div>
+      </div>
+    </article>
+
+    <article class="card post">
+      <div class="vote"><button class="up" aria-label="Подобається">▲</button><b>141</b><button aria-label="Не подобається">▼</button></div>
+      <div>
+        <div class="p-head"><span class="chip guide">Гайд</span><span class="chip">Minecraft</span><span class="ava s c6">S</span><b>Steve228</b>· 2 дні тому</div>
+        <h2><a href="#">Як вибрати сервер Minecraft з модами й не наткнутися на pay-to-win</a></h2>
+        <p>Чекліст на 8 пунктів: що дивитися в описі, правилах донату й відгуках, перш ніж вкладати час.</p>
+        <div class="p-foot"><span>💬 12 коментарів</span><span>🔖 Зберегти</span></div>
+      </div>
+    </article>
+
+    <article class="card post">
+      <div class="vote"><button class="up" aria-label="Подобається">▲</button><b>23</b><button aria-label="Не подобається">▼</button></div>
+      <div>
+        <div class="p-head"><span class="chip ask">Питання</span><span class="chip">Aion</span><span class="ava s c2">N</span><b>Nyerk</b>· 40 хв тому</div>
+        <h2><a href="#">Aion 4.6 чи 5.8 — що вибрати новачку в 2026?</a></h2>
+        <p>Грав на офіціалі давно, хочу повернутися. Де менше донату й більше живих людей?</p>
+        <div class="p-foot"><span>💬 17 відповідей</span><span class="chip guide">✓ Є рішення</span></div>
+      </div>
+    </article>
+  </section>
+
+  <aside>
+    <div class="card"><h3>📣 Новини сайту</h3>
+      <div class="sn">
+        <a href="#"><span class="meta">вчора</span><b>Оцінка серверів за критеріями й значки довіри</b></a>
+        <a href="#"><span class="meta">28 жовтня</span><b>Сторінки Aion, WoW, PW і MU оновлено</b></a>
+        <a href="#"><span class="meta">21 жовтня</span><b>Голосування за «Сервер листопада» відкрито</b></a>
+      </div></div>
+    <div class="card"><h3>Типи дописів</h3><div class="types"><span class="chip news">Новина</span><span class="chip srv">Новина сервера</span><span class="chip guide">Гайд</span><span class="chip ask">Питання</span><span class="chip clan">Набір у клан</span><span class="chip">Обговорення</span></div></div>
+    <div class="card"><h3>Правила</h3><ol class="rules"><li>Без реклами серверів поза розділом «Новини сервера»</li><li>Без образ і спаму</li><li>Скарги на сервер — через кнопку на сторінці сервера</li></ol></div>
+  </aside>
+</main>
+<footer class="bot"><div class="wrap">Демо B «Стрічка» · graj.club</div></footer>
+</body>
+</html>

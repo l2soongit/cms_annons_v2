@@ -23,12 +23,13 @@ class PromotionController extends Controller
             'tariff_id' => ['required', 'integer'],
             'promo_code' => ['nullable', 'string', 'max:32'],
             'auto_renew' => ['nullable', 'boolean'],
+            'bonus_points' => ['nullable', 'integer', 'min:0'],
         ]);
 
         $tariff = Tariff::findOrFail($data['tariff_id']);
 
         try {
-            $order = $billing->purchase($request->user(), $server, $tariff, $data['promo_code'] ?? null, (bool) ($data['auto_renew'] ?? false));
+            $order = $billing->purchase($request->user(), $server, $tariff, $data['promo_code'] ?? null, (bool) ($data['auto_renew'] ?? false), points: (int) ($data['bonus_points'] ?? 0));
         } catch (BillingException $e) {
             return redirect()->to(route('cabinet.servers.show', $server).'#s-promo')->withInput()->withErrors(['tariff_id' => $e->getMessage()], 'promo');
         }

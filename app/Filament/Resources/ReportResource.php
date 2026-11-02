@@ -3,6 +3,8 @@
 namespace App\Filament\Resources;
 
 use App\Filament\Resources\ReportResource\Pages;
+use App\Models\ForumPost;
+use App\Models\ForumTopic;
 use App\Models\Message;
 use App\Models\ModerationLog;
 use App\Models\Report;
@@ -53,11 +55,15 @@ class ReportResource extends Resource
                         $r->reportable instanceof Server => 'Сервер: '.$r->reportable->name,
                         $r->reportable instanceof Review => 'Відгук на '.$r->reportable->server?->name,
                         $r->reportable instanceof Message => 'Повідомлення від '.$r->reportable->user->name.': «'.Str::limit($r->reportable->body, 80).'»',
+                        $r->reportable instanceof ForumTopic => 'Тема форуму: '.$r->reportable->title,
+                        $r->reportable instanceof ForumPost => 'Відповідь '.$r->reportable->user->name.': «'.Str::limit(strip_tags($r->reportable->body), 80).'»',
                         default => $state.' (видалено)',
                     })
                     ->url(fn (Report $r) => match (true) {
                         $r->reportable instanceof Server => route('servers.show', $r->reportable),
                         $r->reportable instanceof Review && $r->reportable->server => route('servers.show', $r->reportable->server).'#reviews',
+                        $r->reportable instanceof ForumTopic => route('community.topic', $r->reportable),
+                        $r->reportable instanceof ForumPost && $r->reportable->topic => route('community.topic', $r->reportable->topic).'#post-'.$r->reportable->id,
                         default => null,
                     }, shouldOpenInNewTab: true),
                 TextColumn::make('reason')->label('Причина')->formatStateUsing(fn ($state) => __("reviews.reasons.{$state}")),

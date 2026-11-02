@@ -6,6 +6,7 @@ use App\Support\HomePageData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Facades\Schema;
 use Illuminate\Support\Facades\Storage;
 use Spatie\Translatable\HasTranslations;
 
@@ -155,6 +156,19 @@ class Game extends Model
         // Головна кешує дані на хвилину — зміни гри з адмінки показуємо одразу
         static::saved(fn () => HomePageData::forget());
         static::deleted(fn () => HomePageData::forget());
+
+        // Нова гра — свій розділ форуму в спільноті (якщо таблиця вже є)
+        static::created(function (Game $game) {
+            if (Schema::hasTable('forum_categories') && ! ForumCategory::where('game_id', $game->id)->exists()) {
+                ForumCategory::create([
+                    'game_id' => $game->id,
+                    'slug' => ForumCategory::where('slug', $game->slug)->exists() ? $game->slug.'-'.$game->id : $game->slug,
+                    'name' => $game->getTranslations('name'),
+                    'group' => 'games',
+                    'sort' => (int) ForumCategory::max('sort') + 10,
+                ]);
+            }
+        });
 
         // Замінена або прибрана обкладинка/іконка більше ніде не використовується
         static::updated(function (Game $game) {

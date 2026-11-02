@@ -54,7 +54,33 @@ final class Settings
         'home.og_image',
     ];
 
-    public const EDITABLE = [...self::PORTAL, ...self::HOME];
+    /** Сторінка «Спільнота → Налаштування» */
+    public const COMMUNITY = [
+        'community.enabled',
+        'community.moderate_replies',
+        'community.newbie_posts',
+        'community.edit_requires_review',
+        'community.stop_words',
+        'community.flag_links_for_newbies',
+        'community.banned_domains',
+        'community.topics_per_day',
+        'community.posts_per_hour',
+        'community.bonus.enabled',
+        'community.bonus.topic',
+        'community.bonus.server_news',
+        'community.bonus.best_answer',
+        'community.bonus.like',
+        'community.bonus.daily_vote',
+        'community.bonus.streak_7',
+        'community.bonus.owner_reply',
+        'community.bonus.daily_cap',
+        'community.bonus.like_min_account_days',
+        'community.bonus.point_value',
+        'community.bonus.max_pay_share',
+        'community.levels',
+    ];
+
+    public const EDITABLE = [...self::PORTAL, ...self::HOME, ...self::COMMUNITY];
 
     /**
      * Застосувати збережені значення до config() — викликається при старті застосунку.

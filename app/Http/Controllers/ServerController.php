@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ServerStatus;
+use App\Models\ForumTopic;
 use App\Models\Report;
 use App\Models\Server;
 use App\Servers\ServerHistory;
@@ -63,6 +64,9 @@ class ServerController extends Controller
             'dayVotes' => $server->votes()->where('status', 'counted')->where('created_at', '>=', now()->subDay())->count(),
             'neighbors' => $this->neighbors($server),
             'similar' => $this->similar($server),
+            // Новини сервера зі спільноти (опубліковані після модерації)
+            'serverNews' => ForumTopic::published()->where('server_id', $server->id)->where('type', 'server_news')
+                ->latest('published_at')->limit(3)->get(['id', 'slug', 'title', 'excerpt', 'published_at', 'posts_count']),
         ]);
     }
 

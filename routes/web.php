@@ -3,9 +3,13 @@
 use App\Http\Controllers\AdsController;
 use App\Http\Controllers\AnalyticsController;
 use App\Http\Controllers\BillingController;
+use App\Http\Controllers\BonusController;
 use App\Http\Controllers\CabinetController;
+use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CoOwnerController;
 use App\Http\Controllers\DevelopersController;
+use App\Http\Controllers\ForumInteractionController;
+use App\Http\Controllers\ForumTopicController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\InboxController;
@@ -21,6 +25,7 @@ use App\Http\Controllers\SocialAuthController;
 use App\Http\Controllers\SupportController;
 use App\Http\Controllers\VoteController;
 use App\Http\Controllers\WidgetController;
+use App\Http\Middleware\CommunityEnabled;
 use App\Livewire\Cabinet\ServerForm;
 use Illuminate\Support\Facades\Route;
 
@@ -62,6 +67,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::post('/orders/{order}/auto-renew', [PromotionController::class, 'autoRenew'])->name('.orders.auto-renew');
         Route::get('/orders/{order}/receipt', [BillingController::class, 'receipt'])->name('.orders.receipt');
         Route::get('/balance', [BillingController::class, 'index'])->name('.balance');
+        Route::get('/bonus', [BonusController::class, 'index'])->name('.bonus');
+        Route::post('/bonus/{reward}', [BonusController::class, 'buy'])->middleware('throttle:10,1')->name('.bonus.buy');
         Route::get('/messages', [MessagesController::class, 'index'])->name('.messages');
         Route::get('/messages/{conversation}', [MessagesController::class, 'show'])->name('.messages.show');
         Route::get('/messages/attachment/{message}', [MessagesController::class, 'attachment'])->name('.messages.attachment');
@@ -82,6 +89,30 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/inbox', [InboxController::class, 'index'])->name('.inbox');
         Route::get('/inbox/{id}', [InboxController::class, 'open'])->name('.inbox.open');
         Route::post('/inbox/read-all', [InboxController::class, 'readAll'])->name('.inbox.read-all');
+    });
+});
+
+// Спільнота: новини + форум. Перегляд — усім, дії — після входу з підтвердженою поштою
+Route::prefix('community')->name('community')->middleware(CommunityEnabled::class)->group(function () {
+    Route::get('/', [CommunityController::class, 'index']);
+    Route::get('/news', [CommunityController::class, 'news'])->name('.news');
+    Route::get('/forum', [CommunityController::class, 'forum'])->name('.forum');
+    Route::get('/c/{category}', [CommunityController::class, 'category'])->name('.category');
+    Route::get('/t/{topic}', [CommunityController::class, 'show'])->name('.topic');
+
+    Route::middleware(['auth', 'verified'])->group(function () {
+        Route::get('/mine', [CommunityController::class, 'mine'])->name('.mine');
+        Route::get('/new', [ForumTopicController::class, 'create'])->name('.create');
+        Route::post('/topics', [ForumTopicController::class, 'store'])->middleware('throttle:10,1')->name('.store');
+        Route::get('/t/{topic}/edit', [ForumTopicController::class, 'edit'])->name('.edit');
+        Route::put('/t/{topic}', [ForumTopicController::class, 'update'])->middleware('throttle:20,1')->name('.update');
+        Route::post('/t/{topic}/reply', [ForumInteractionController::class, 'reply'])->middleware('throttle:10,1')->name('.reply');
+        Route::put('/posts/{post}', [ForumInteractionController::class, 'updatePost'])->middleware('throttle:20,1')->name('.posts.update');
+        Route::post('/posts/{post}/best', [ForumInteractionController::class, 'best'])->name('.posts.best');
+        Route::post('/react', [ForumInteractionController::class, 'react'])->middleware('throttle:60,1')->name('.react');
+        Route::post('/report', [ForumInteractionController::class, 'report'])->middleware('throttle:10,1')->name('.report');
+        Route::post('/subscribe', [ForumInteractionController::class, 'subscribe'])->middleware('throttle:30,1')->name('.subscribe');
+        Route::post('/polls/{poll}/vote', [ForumInteractionController::class, 'vote'])->middleware('throttle:20,1')->name('.poll');
     });
 });
 
@@ -115,6 +146,6 @@ Route::post('/billing/test', [BillingController::class, 'testPay'])->middleware(
 Route::get('/{game}/{filters?}', [GameController::class, 'show'])
     ->middleware('page.cache')
     // Зарезервовані перші сегменти інших розділів — цілим словом, щоб не відрізати ігри зі схожим початком (ad → adventure)
-    ->where('game', '(?!(?:admin|livewire|api|up|storage|filament|cabinet|billing|developers|widget|page|search|server|ad|sitemap|robots|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor|en)$)[a-z0-9-]+')
+    ->where('game', '(?!(?:admin|livewire|api|up|storage|filament|cabinet|community|billing|developers|widget|page|search|server|ad|sitemap|robots|auth|login|logout|register|forgot-password|reset-password|email|user|two-factor|en)$)[a-z0-9-]+')
     ->where('filters', '[a-z0-9-]+(?:/[a-z0-9-]+){0,3}')
     ->name('games.show');

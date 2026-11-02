@@ -65,6 +65,7 @@ return [
             'new_review' => 'Nowa opinia o moim serwerze',
             'billing' => 'Saldo i płatne usługi (wygaśnięcie, przedłużenie)',
             'messages' => 'Nowe wiadomości i odpowiedzi pomocy',
+            'community' => 'Społeczność: odpowiedzi i tematy, które obserwujesz',
         ],
         'site_always' => 'Na stronie powiadomienia są zapisywane zawsze.',
         'saved' => 'Ustawienia powiadomień zapisane.',

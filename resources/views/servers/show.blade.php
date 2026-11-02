@@ -111,6 +111,21 @@
         </section>
       @endif
 
+      @if ($serverNews->isNotEmpty())
+        <section class="card" data-reveal aria-labelledby="news-h" id="news">
+          <h2 id="news-h">{{ __('community.server_news.title') }} <a href="{{ route('community', ['server' => $server->id, 'sort' => 'new']) }}" style="font:700 13px var(--font);color:var(--amber)">{{ __('community.server_news.all') }} →</a></h2>
+          <div style="display:grid;gap:14px;margin-top:14px">
+            @foreach ($serverNews as $item)
+              <a href="{{ route('community.topic', $item) }}" style="display:grid;gap:4px;padding:14px;border-radius:14px;background:#ffffff06;border:1px solid var(--line)">
+                <span style="font-size:12px;color:var(--faint)">{{ $item->published_at?->translatedFormat('j F Y') }} · 💬 {{ $item->posts_count }}</span>
+                <b style="font-size:16px">{{ $item->title }}</b>
+                @if ($item->excerpt)<span style="color:var(--muted);font-size:14px">{{ \Illuminate\Support\Str::limit($item->excerpt, 160) }}</span>@endif
+              </a>
+            @endforeach
+          </div>
+        </section>
+      @endif
+
       <section class="card" data-reveal aria-labelledby="stats-h" id="history">
         <h2 id="stats-h">{{ __('serverpage.stats') }}
           <span class="seg" role="group" aria-label="{{ __('ui.server_page.period') }}" id="period">

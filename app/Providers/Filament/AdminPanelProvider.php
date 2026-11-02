@@ -37,7 +37,7 @@ class AdminPanelProvider extends PanelProvider
             ])
             ->darkMode(true)
             // Групи меню в порядку щоденної роботи: спершу черги модерації, системне — внизу
-            ->navigationGroups(['Модерація', 'Каталог', 'Сайт', 'Платні послуги', 'Користувачі', 'Система'])
+            ->navigationGroups(['Модерація', 'Спільнота', 'Каталог', 'Сайт', 'Платні послуги', 'Користувачі', 'Система'])
             ->sidebarCollapsibleOnDesktop()
             // Таблицям потрібна ширина — сторінки адмінки на всю ширину екрана
             ->maxContentWidth(Width::Full)

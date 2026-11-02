@@ -2,6 +2,8 @@
 
 namespace App\Support;
 
+use App\Models\ForumPost;
+use App\Models\ForumTopic;
 use App\Models\Game;
 use App\Models\Server;
 
@@ -56,6 +58,50 @@ final class StructuredData
         return [
             self::breadcrumbs([[__('ui.game.home'), route('home')], [$server->game->name, route('games.show', $server->game)], [$server->name, route('servers.show', $server)]]),
             $app,
+        ];
+    }
+
+    /**
+     * Тема спільноти: новина — NewsArticle, решта — DiscussionForumPosting з відповідями (Comment).
+     *
+     * @param  iterable<ForumPost>  $posts
+     * @return list<array<string, mixed>>
+     */
+    public static function forumTopic(ForumTopic $topic, iterable $posts): array
+    {
+        $author = fn ($user) => ['@type' => 'Person', 'name' => $user?->nickname ?: ($user->name ?? 'graj.club')];
+        $url = route('community.topic', $topic);
+        $image = $topic->cover ? HomePageData::url($topic->cover) : HomePageData::url($topic->category->game?->cover);
+
+        $main = array_filter([
+            '@context' => 'https://schema.org',
+            '@type' => $topic->isNews() ? 'NewsArticle' : 'DiscussionForumPosting',
+            'headline' => $topic->title,
+            'url' => $url,
+            'mainEntityOfPage' => $url,
+            'image' => $image,
+            'datePublished' => $topic->published_at?->toIso8601String(),
+            'dateModified' => $topic->updated_at?->toIso8601String(),
+            'author' => $author($topic->user),
+            'text' => $topic->isNews() ? null : HtmlSanitizer::text($topic->body),
+            'description' => $topic->excerpt,
+            'publisher' => $topic->isNews() ? ['@type' => 'Organization', 'name' => 'graj.club', 'logo' => ['@type' => 'ImageObject', 'url' => asset('images/brand/icon-512.png')]] : null,
+            'interactionStatistic' => [
+                ['@type' => 'InteractionCounter', 'interactionType' => 'https://schema.org/CommentAction', 'userInteractionCount' => $topic->posts_count],
+                ['@type' => 'InteractionCounter', 'interactionType' => 'https://schema.org/LikeAction', 'userInteractionCount' => max(0, $topic->score)],
+            ],
+            'comment' => collect($posts)->filter(fn (ForumPost $p) => $p->status === 'published')->take(20)->map(fn (ForumPost $p) => [
+                '@type' => 'Comment',
+                'text' => HtmlSanitizer::text($p->body),
+                'datePublished' => $p->created_at?->toIso8601String(),
+                'author' => $author($p->user),
+                'url' => $url.'#post-'.$p->id,
+            ])->values()->all() ?: null,
+        ]);
+
+        return [
+            self::breadcrumbs([[__('community.nav'), route('community')], [$topic->category->name, route('community.category', $topic->category)], [$topic->title, $url]]),
+            $main,
         ];
     }
 }

@@ -1,0 +1,156 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спільнота — варіант A «Хаб»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* A «Хаб»: зверху новини (головна + дві), нижче розділи форуму таблицею. Кожна новина — тема форуму з коментарями */
+.intro { display: flex; align-items: end; justify-content: space-between; gap: 24px; padding: 40px 0 24px; flex-wrap: wrap; }
+.intro h1 { font: 800 clamp(30px, 4vw, 44px)/1.1 var(--display); letter-spacing: -.02em; }
+.intro p { color: var(--muted); margin-top: 8px; max-width: 60ch; }
+.tabs { display: flex; gap: 4px; padding: 4px; background: var(--card); border: 1px solid var(--line); border-radius: 12px; }
+.tabs a { padding: 8px 16px; border-radius: 9px; font-weight: 800; font-size: 14px; color: var(--muted); }
+.tabs a[aria-current] { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+
+.newsgrid { display: grid; grid-template-columns: 1.6fr 1fr; gap: 16px; }
+.lead { position: relative; min-height: 380px; border-radius: 20px; overflow: hidden; display: flex; flex-direction: column; justify-content: end; padding: 28px; border: 1px solid var(--line); isolation: isolate; }
+.lead img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.lead::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 20%, #09090bf0 85%); }
+.lead h2 { font: 700 clamp(22px, 2.6vw, 30px)/1.2 var(--display); margin: 12px 0 8px; }
+.lead p { color: #d4d4d8; max-width: 60ch; }
+.foot { display: flex; align-items: center; gap: 14px; margin-top: 14px; color: var(--muted); font-size: 13px; flex-wrap: wrap; }
+.foot b { color: var(--text); }
+.side-news { display: grid; gap: 16px; }
+.mini { display: grid; grid-template-columns: 120px 1fr; gap: 14px; padding: 12px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.mini img { width: 120px; height: 100%; min-height: 96px; object-fit: cover; border-radius: 10px; }
+.mini h3 { font-size: 15px; line-height: 1.35; margin: 6px 0 6px; }
+.more-news { display: flex; justify-content: space-between; align-items: center; padding: 14px 16px; border-radius: 16px; border: 1px dashed var(--line-2); color: var(--muted); font-weight: 700; }
+
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 24px; margin-top: 40px; }
+.sec-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; gap: 12px; }
+.forum { overflow: hidden; }
+.grp { padding: 10px 20px; background: var(--bg-2); border-bottom: 1px solid var(--line); font: 800 12px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.row { display: grid; grid-template-columns: 44px minmax(0, 1fr) 90px 90px 230px; gap: 16px; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row:hover { background: var(--card-2); }
+.row .ic { width: 44px; height: 44px; border-radius: 12px; display: grid; place-items: center; background: var(--card-2); border: 1px solid var(--line-2); font-size: 20px; }
+.row .ic img { width: 30px; height: 30px; }
+.row h3 { font-size: 15px; }
+.row h3 .new { margin-left: 6px; width: 8px; height: 8px; border-radius: 50%; background: var(--amber); display: inline-block; vertical-align: middle; }
+.row .sub { color: var(--faint); font-size: 13px; }
+.row .subs { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+.row .subs a { font-size: 12px; color: var(--muted); padding: 1px 8px; border-radius: 6px; background: var(--bg-2); border: 1px solid var(--line); }
+.row .n { text-align: center; }
+.row .n b { display: block; font: 700 15px var(--display); }
+.row .n small { color: var(--faint); font-size: 12px; }
+.last { display: flex; gap: 10px; align-items: center; min-width: 0; }
+.last div { min-width: 0; }
+.last a { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+aside { display: grid; gap: 16px; align-content: start; }
+aside .card { padding: 18px; }
+aside h3 { font: 700 15px var(--display); margin-bottom: 12px; }
+.hot { display: grid; gap: 12px; counter-reset: h; }
+.hot a { display: grid; grid-template-columns: 24px 1fr; gap: 8px; font-size: 14px; font-weight: 700; line-height: 1.35; }
+.hot a::before { counter-increment: h; content: counter(h); font: 800 14px var(--display); color: var(--amber); }
+.hot .meta { grid-column: 2; font-weight: 500; }
+.online { display: flex; flex-wrap: wrap; gap: 6px; }
+.stat { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; text-align: center; }
+.stat b { display: block; font: 700 18px var(--display); }
+.stat small { color: var(--faint); font-size: 12px; }
+.cta { background: linear-gradient(135deg, #fbbf241f, #f973160d); border-color: #fbbf2440; }
+.cta p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+
+@media (max-width: 1000px) { .newsgrid, .layout { grid-template-columns: 1fr; } .row { grid-template-columns: 44px minmax(0, 1fr) 70px; } .row .n:nth-child(4), .row .last { display: none; } }
+@media (max-width: 560px) { .mini { grid-template-columns: 90px 1fr; } .mini img { width: 90px; } .row { grid-template-columns: 44px 1fr; } .row .n { display: none; } }
+</style>
+</head>
+<body>
+<header class="top"><div class="wrap bar"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB">
+  <nav><a href="#">Lineage 2</a><a href="#">WoW</a><a href="#">Minecraft</a><a href="#">GTA</a><a href="#">Rust</a><a href="#">Ігри ▾</a><a href="#" aria-current="page">Спільнота</a></nav>
+  <div class="right"><a class="btn ghost" href="#">Увійти</a><a class="btn primary" href="#">+ Додати сервер</a></div></div></header>
+
+<main class="wrap">
+  <section class="intro">
+    <div>
+      <h1>Новини й <span class="grad">форум</span></h1>
+      <p>Новини graj.club і серверів, гайди й пошук клану в одному місці. Під кожною новиною відкривається обговорення, яке живе у форумі.</p>
+    </div>
+    <div class="tabs"><a href="#" aria-current="page">Усе</a><a href="#">Новини</a><a href="#">Форум</a><a href="#">Мої теми</a></div>
+  </section>
+
+  <section class="newsgrid" aria-label="Новини">
+    <a class="lead" href="community-c.html">
+      <img src="../../storage/app/public/games/cover/lineage2.webp" alt="">
+      <div><span class="chip news">Новина graj.club</span> <span class="chip">Lineage 2</span></div>
+      <h2>Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну Interlude</h2>
+      <p>Хто піднявся в топ, які хроніки ростуть і чому x10 знову в моді. Плюс переможець «Сервера місяця».</p>
+      <div class="foot"><span class="ava s c1">G</span><b>Команда graj.club</b><span>2 год тому</span><span>💬 48 у темі</span><span>👁 3,1 тис.</span></div>
+    </a>
+    <div class="side-news">
+      <a class="mini" href="#"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt="">
+        <div><span class="chip srv">Від сервера · Azeroth Legacy</span><h3>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h3><div class="meta">5 год тому · 💬 21</div></div></a>
+      <a class="mini" href="#"><img src="../../storage/app/public/games/cover/rust.webp" alt="">
+        <div><span class="chip news">Оновлення сайту</span><h3>Нове на graj.club: оцінка серверів за критеріями й значки довіри</h3><div class="meta">вчора · 💬 33</div></div></a>
+      <a class="mini" href="#"><img src="../../storage/app/public/games/cover/minecraft.webp" alt="">
+        <div><span class="chip guide">Гайд</span><h3>Як вибрати сервер Minecraft з модами й не наткнутися на pay-to-win</h3><div class="meta">2 дні тому · 💬 12</div></div></a>
+      <a class="more-news" href="#">Усі новини <span>→</span></a>
+    </div>
+  </section>
+
+  <div class="layout">
+    <section>
+      <div class="sec-head"><h2 class="h2">Форум</h2><a class="btn primary" href="#">+ Нова тема</a></div>
+      <div class="card forum">
+        <div class="grp">graj.club</div>
+        <div class="row"><div class="ic">📣</div><div><h3>Новини й оголошення <span class="new"></span></h3><div class="sub">Кожна новина сайту — тема з обговоренням</div></div>
+          <div class="n"><b>126</b><small>тем</small></div><div class="n"><b>4,8 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c4">M</span><div><a href="#">Підсумки жовтня: 14 нових…</a><span class="meta">Marta_L2 · 3 хв тому</span></div></div></div>
+        <div class="row"><div class="ic">🛠</div><div><h3>Власникам серверів</h3><div class="sub">API, callback за голос, просування, питання до адміністрації</div><div class="subs"><a href="#">API й віджети</a><a href="#">Реклама</a><a href="#">Пропозиції</a></div></div>
+          <div class="n"><b>58</b><small>тем</small></div><div class="n"><b>912</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c2">D</span><div><a href="#">Callback не приходить після голосу</a><span class="meta">Dev_Tor · 1 год тому</span></div></div></div>
+
+        <div class="grp">Ігри</div>
+        <div class="row"><div class="ic"><img src="../../public/images/games/l2.png" alt=""></div><div><h3>Lineage 2 <span class="new"></span></h3><div class="sub">Interlude, High Five, Essence, Classic</div><div class="subs"><a href="#">Новини серверів</a><a href="#">Гайди</a><a href="#">Набір у клан</a><a href="#">Торгівля</a></div></div>
+          <div class="n"><b>1 204</b><small>тем</small></div><div class="n"><b>38 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c3">K</span><div><a href="#">Шукаю КП на Interlude x50</a><span class="meta">Kain · 6 хв тому</span></div></div></div>
+        <div class="row"><div class="ic"><img src="../../public/images/games/wow.png" alt=""></div><div><h3>World of Warcraft</h3><div class="sub">Vanilla, WotLK, Cataclysm, Pandaria</div><div class="subs"><a href="#">Новини серверів</a><a href="#">Гайди</a><a href="#">Гільдії</a></div></div>
+          <div class="n"><b>640</b><small>тем</small></div><div class="n"><b>17 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c5">A</span><div><a href="#">Відкриття Wrath 3.3.5a x5</a><span class="meta">Azeroth_GM · 5 год тому</span></div></div></div>
+        <div class="row"><div class="ic"><img src="../../public/images/games/mc.png" alt=""></div><div><h3>Minecraft</h3><div class="sub">Ванілла, моди, міні-ігри</div></div>
+          <div class="n"><b>890</b><small>тем</small></div><div class="n"><b>21 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c6">S</span><div><a href="#">Сервер з Create і без донату</a><span class="meta">Steve228 · 20 хв тому</span></div></div></div>
+        <div class="row"><div class="ic"><img src="../../public/images/games/rust.png" alt=""></div><div><h3>Rust</h3><div class="sub">Вайпи, кланові сервери, Modded</div></div>
+          <div class="n"><b>310</b><small>тем</small></div><div class="n"><b>6,2 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c1">R</span><div><a href="#">Розклад вайпів на листопад</a><span class="meta">rustacean · 2 год тому</span></div></div></div>
+        <div class="row"><div class="ic">🎮</div><div><h3>Інші ігри</h3><div class="sub">GTA, DayZ, CS, Aion, Perfect World, MU Online</div></div>
+          <div class="n"><b>702</b><small>тем</small></div><div class="n"><b>14 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c2">N</span><div><a href="#">Aion 4.6 чи 5.8 — що вибрати?</a><span class="meta">Nyerk · 40 хв тому</span></div></div></div>
+
+        <div class="grp">Різне</div>
+        <div class="row"><div class="ic">💬</div><div><h3>Флудилка</h3><div class="sub">Все, що не про сервери</div></div>
+          <div class="n"><b>215</b><small>тем</small></div><div class="n"><b>9 тис.</b><small>відповідей</small></div>
+          <div class="last"><span class="ava s c4">L</span><div><a href="#">Якою була ваша перша MMO?</a><span class="meta">Lumi · 1 хв тому</span></div></div></div>
+      </div>
+    </section>
+
+    <aside>
+      <div class="card cta"><h3>Ви власник сервера?</h3><p>Публікуйте новини сервера: вони з'являться на сторінці сервера, у розділі гри на форумі й у стрічці новин.</p><a class="btn primary" href="#">Написати новину сервера</a></div>
+      <div class="card"><h3>🔥 Гаряче зараз</h3>
+        <div class="hot">
+          <a href="#">Які сервери L2 переживуть зиму?<span class="meta">Lineage 2 · 87 відповідей</span></a>
+          <a href="#">Хто ще пам'ятає Talking Island о 3 ночі<span class="meta">Флудилка · 64 відповіді</span></a>
+          <a href="#">Чесний огляд: 5 серверів WoW x1<span class="meta">WoW · 51 відповідь</span></a>
+          <a href="#">Голосування за «Сервер листопада»<span class="meta">Новини · 40 відповідей</span></a>
+        </div></div>
+      <div class="card"><h3>Зараз на форумі</h3>
+        <div class="online"><span class="ava s c1">M</span><span class="ava s c2">K</span><span class="ava s c3">A</span><span class="ava s c4">L</span><span class="ava s c5">S</span><span class="ava s c6">D</span><span class="ava s c2">N</span><span class="ava s c3">R</span><span class="chip">+ 134</span></div></div>
+      <div class="card"><div class="stat"><div><b class="num">4 125</b><small>тем</small></div><div><b class="num">111 тис.</b><small>відповідей</small></div><div><b class="num">9 640</b><small>учасників</small></div></div></div>
+    </aside>
+  </div>
+</main>
+<footer class="bot"><div class="wrap">Демо A «Хаб» · graj.club</div></footer>
+</body>
+</html>

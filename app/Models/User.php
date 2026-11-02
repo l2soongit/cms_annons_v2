@@ -63,6 +63,8 @@ class User extends Authenticatable implements FilamentUser, MustVerifyEmail
             'two_factor_confirmed_at' => 'datetime',
             'notification_prefs' => 'array',
             'discord_webhook' => 'encrypted',
+            'perks' => 'array',
+            'streak_date' => 'date',
         ];
     }
 

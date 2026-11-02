@@ -3,7 +3,10 @@
 namespace App\Http\Controllers;
 
 use App\Analytics\Tracker;
+use App\Community\Activity;
+use App\Community\Bonus;
 use App\Enums\ServerStatus;
+use App\Models\BonusTransaction;
 use App\Models\Server;
 use App\Rules\Turnstile;
 use App\Voting\VoteRejected;
@@ -53,6 +56,14 @@ class VoteController extends Controller
         }
 
         app(Tracker::class)->event($request, 'vote', $server);
+
+        // Бонусна програма: бали за голос раз на день і день у серії активності
+        if ($user = $request->user()) {
+            if (! BonusTransaction::where('user_id', $user->id)->where('reason', 'daily_vote')->where('created_at', '>=', now()->startOfDay())->exists()) {
+                Bonus::award($user, 'daily_vote');
+            }
+            Activity::touch($user);
+        }
 
         return to_route('servers.vote', $server)->with('voted', ['nickname' => $data['nickname'] ?? null]);
     }

@@ -2,6 +2,8 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\ForumCategory;
+use App\Models\ForumTopic;
 use App\Models\Game;
 use App\Models\Page;
 use App\Models\Server;
@@ -44,7 +46,7 @@ class SeoController extends Controller
     {
         // Тестові й локальні копії сайту не індексуються зовсім
         $lines = app()->isProduction()
-            ? ['User-agent: *', 'Disallow: /cabinet', 'Disallow: /admin', 'Disallow: /billing', 'Disallow: /api/', 'Disallow: /ad/', 'Disallow: /livewire/', 'Disallow: /*?*q=', '', 'Sitemap: '.route('seo.sitemap')]
+            ? ['User-agent: *', 'Disallow: /cabinet', 'Disallow: /community/new', 'Disallow: /community/mine', 'Disallow: /admin', 'Disallow: /billing', 'Disallow: /api/', 'Disallow: /ad/', 'Disallow: /livewire/', 'Disallow: /*?*q=', '', 'Sitemap: '.route('seo.sitemap')]
             : ['User-agent: *', 'Disallow: /'];
 
         return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=utf-8']);
@@ -85,5 +87,20 @@ class SeoController extends Controller
         }
 
         yield [route('developers'), null, '0.4'];
+
+        // Спільнота: стрічка, розділи й опубліковані теми (новини — з вищим пріоритетом)
+        if (config('graj.community.enabled', true)) {
+            yield [route('community'), null, '0.7'];
+            yield [route('community.forum'), null, '0.5'];
+            yield [route('community.news'), null, '0.6'];
+            foreach (ForumCategory::where('is_active', true)->orderBy('sort')->get() as $category) {
+                yield [route('community.category', $category), null, '0.5'];
+            }
+            $topics = ForumTopic::published()->whereHas('category', fn ($q) => $q->where('is_active', true))
+                ->orderByDesc('last_post_at')->limit(5000)->cursor();
+            foreach ($topics as $topic) {
+                yield [route('community.topic', $topic), ($topic->last_post_at ?? $topic->updated_at)?->toAtomString(), $topic->isNews() ? '0.6' : '0.5'];
+            }
+        }
     }
 }

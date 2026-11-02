@@ -6,6 +6,10 @@
     $og = HomePageData::url(config('graj.home.og_image'));
     // Секція => якір; пункт меню зникає разом із вимкненою в адмінці секцією
     $sections = ['ranking' => '#top', 'games' => '#games', 'soon' => '#soon', 'owners' => '#owners', 'plans' => '#plans'];
+    // Ця сама шапка на сторінках спільноти: якорі ведуть на головну, свої стилі й скрипти
+    $onHome = request()->routeIs('home');
+    $assets ??= ['resources/css/home.css', 'resources/js/home.js'];
+    $community = config('graj.community.enabled', true) && \Illuminate\Support\Facades\Route::has('community');
 @endphp
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
@@ -30,7 +34,9 @@
 <link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 {{-- Шрифти ігор (усі з кирилицею) — лише для логотипів у картках, тому не блокують перший показ --}}
 <link href="https://fonts.googleapis.com/css2?family=Cormorant:wght@700&family=Russo+One&family=Press+Start+2P&family=Stalinist+One&family=Rubik+Dirt&family=Exo+2:ital,wght@1,800&family=Cinzel:wght@800&family=Marcellus+SC&family=Cinzel+Decorative:wght@700&family=Metamorphous&display=swap" rel="stylesheet" media="print" onload="this.media='all'">
-@vite(['resources/css/home.css', 'resources/js/home.js'])
+@vite($assets)
+@if (request()->routeIs('community*'))<meta name="csrf-token" content="{{ csrf_token() }}">@endif
+{{ $head ?? '' }}
 <x-layouts.mobile-bar />
 </head>
 <body>
@@ -44,9 +50,10 @@
       <nav aria-label="{{ __('ui.home.nav.aria') }}">
         @foreach ($sections as $key => $href)
           @if ($key === 'games')
-            <x-game-switcher mode="menu" :href="$href" :label="__('ui.home.nav.games')" />
-          @elseif (HomeContent::shows($key))<a href="{{ $href }}">{{ __("ui.home.nav.{$key}") }}</a>@endif
+            <x-game-switcher mode="menu" :href="($onHome ? '' : route('home')).$href" :label="__('ui.home.nav.games')" />
+          @elseif (HomeContent::shows($key))<a href="{{ ($onHome ? '' : route('home')).$href }}">{{ __("ui.home.nav.{$key}") }}</a>@endif
         @endforeach
+        @if ($community)<a href="{{ route('community') }}" @if (request()->routeIs('community*')) aria-current="page" @endif>{{ __('community.nav') }}</a>@endif
       </nav>
       <div class="actions">
         <x-locale-switcher dropdown />
@@ -78,13 +85,14 @@
       </ul></div>
       <div><h2>{{ __('ui.footer.owners') }}</h2><ul>
         <li><a href="{{ route('cabinet.servers.create') }}">{{ __('ui.nav.add_server') }}</a></li>
-        @if (HomeContent::shows('plans'))<li><a href="#plans">{{ __('ui.home.plans_label') }}</a></li>@endif
+        @if (HomeContent::shows('plans'))<li><a href="{{ $onHome ? '' : route('home') }}#plans">{{ __('ui.home.plans_label') }}</a></li>@endif
         <li><a href="{{ route('developers') }}">{{ __('ui.footer.api') }}</a></li>
       </ul></div>
       <div><h2>{{ __('ui.footer.portal') }}</h2><ul>
         <li><a href="{{ route('pages.show', 'rules') }}">{{ __('ui.footer.rules') }}</a></li>
         <li><a href="{{ route('pages.show', 'faq') }}">FAQ</a></li>
         <li><a href="{{ route('search') }}">{{ __('ui.search.title') }}</a></li>
+        @if ($community)<li><a href="{{ route('community') }}">{{ __('community.nav') }}</a></li>@endif
         <li><a href="{{ route('pages.show', 'contacts') }}">{{ __('ui.footer.contacts') }}</a></li>
         <li><a href="{{ route('pages.show', 'privacy') }}">{{ __('ui.cookies.more') }}</a></li>
       </ul></div>

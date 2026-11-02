@@ -28,6 +28,10 @@ final class Permissions
         'analytics.view' => 'Аналітика відвідувань (гроші — лише разом із дозволом на фінанси)',
         'tickets.manage' => 'Тікети підтримки: відповіді й закриття',
         'roles.manage' => 'Ролі та дозволи',
+        'community.moderate' => 'Спільнота: черга модерації тем і відповідей, приховування, закриття',
+        'community.manage' => 'Спільнота: розділи форуму, закріплення, головна новина, налаштування',
+        'community.news' => 'Спільнота: публікація новин сайту',
+        'community.bonus' => 'Бонусна програма: нарахування й списання балів, магазин нагород',
     ];
 
     /** Ролі, без яких портал не працює: їх не можна перейменувати чи видалити */
@@ -35,7 +39,7 @@ final class Permissions
 
     /** Дозволи ролей за замовчуванням (admin має всі через Gate::before) */
     private const DEFAULTS = [
-        'moderator' => ['admin.access', 'servers.moderate', 'reviews.moderate', 'reports.moderate', 'votes.moderate', 'users.ban', 'logs.view', 'tickets.manage'],
+        'moderator' => ['admin.access', 'servers.moderate', 'reviews.moderate', 'reports.moderate', 'votes.moderate', 'users.ban', 'logs.view', 'tickets.manage', 'community.moderate'],
     ];
 
     /** Створити дозволи й ролі; наявним ролям дозволи за замовчуванням додаються лише при першому створенні */

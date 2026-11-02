@@ -162,6 +162,13 @@
                                     @unless (in_array($service, ['boost', 'coming_soon'], true))
                                         <label class="c-check"><input type="checkbox" name="auto_renew" value="1" @checked(old('auto_renew'))>{{ __('billing.promo.renew_hint') }}</label>
                                     @endunless
+                                    @if (auth()->user()->bonus_balance > 0 && \App\Community\Bonus::enabled())
+                                        <div class="c-inp" style="margin-top:8px"><input type="number" name="bonus_points" min="0" max="{{ auth()->user()->bonus_balance }}" value="{{ old('bonus_points') }}"
+                                            placeholder="{{ __('community.bonus.pay_points', ['n' => auth()->user()->bonus_balance, 'share' => config('graj.community.bonus.max_pay_share')]) }}" aria-label="{{ __('community.bonus.pay_label') }}"></div>
+                                    @endif
+                                    @if ($disc = \App\Billing\BonusPayment::activeDiscount(auth()->user()))
+                                        <p class="c-muted" style="margin-top:6px;font-size:13px">🎁 {{ __('community.bonus.discount_active', ['n' => $disc]) }}</p>
+                                    @endif
                                 </details>
                                 <button class="c-btn is-go" name="tariff_id" value="{{ $pick->id }}" data-buy>{{ __('billing.promo.buy_now') }}</button>
                             @endif

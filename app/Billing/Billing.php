@@ -109,7 +109,7 @@ class Billing
     /**
      * Купити послугу для сервера з балансу. Повторна купівля тієї ж послуги продовжує її від кінця поточної.
      */
-    public function purchase(User $user, Server $server, Tariff $tariff, ?string $promoCode = null, bool $autoRenew = false, ?Order $renewing = null): Order
+    public function purchase(User $user, Server $server, Tariff $tariff, ?string $promoCode = null, bool $autoRenew = false, ?Order $renewing = null, int $points = 0): Order
     {
         // Банер купується через bookBanner(): потрібні дати, зображення й посилання
         if (! $tariff->is_active || ($tariff->game_id && $tariff->game_id !== $server->game_id) || ! isset(Tariff::SERVICES[$tariff->service]) || $tariff->service === 'banner') {
@@ -125,10 +125,12 @@ class Billing
             throw BillingException::because('promo');
         }
 
-        $order = DB::transaction(function () use ($user, $server, $tariff, $promo, $autoRenew, $renewing) {
+        $order = DB::transaction(function () use ($user, $server, $tariff, $promo, $autoRenew, $renewing, $points) {
             $user = User::whereKey($user->id)->lockForUpdate()->first();
             [$startsAt, $endsAt] = $this->period($server, $tariff);
             $cents = $this->price($tariff, $promo);
+            // Бонусна програма: знижка з магазину балів і часткова оплата балами (не для автопродовження)
+            [$cents, $usedPoints, $usedDiscount] = $renewing ? [$cents, 0, null] : BonusPayment::apply($user, $cents, $points);
 
             if (Money::cents($user->balance) < $cents) {
                 throw BillingException::because('balance', ['price' => Money::format($cents, true)]);
@@ -155,6 +157,7 @@ class Billing
                 'status' => 'succeeded',
             ]);
             $promo?->increment('used');
+            BonusPayment::commit($user, $order, $usedPoints, $usedDiscount);
 
             if ($tariff->service === 'highlight') {
                 $server->forceFill(['highlighted_until' => $endsAt])->saveQuietly();

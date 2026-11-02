@@ -28,6 +28,9 @@
       @if ($rates)<span class="tag rate">{{ $rates['label'] }}</span>@endif
       @if ($type)<span class="tag">{{ $type['label'] }}</span>@endif
     </div>
+  </div>
+  <div class="online"><div class="meter" aria-hidden="true">@for ($k = 0; $k < 12; $k++)<i class="{{ $k < $segments ? 'on' : '' }}"></i>@endfor</div>
+    @if ($server->is_online)<b class="num" data-online>{{ $fmt($server->players) }}</b> / {{ $fmt($server->max_players) }}@else{{ __('ui.server.offline') }}@endif
     @if ($ely !== null)
       <div class="race" title="{{ __('ui.aion.ely') }} {{ $ely }}% · {{ __('ui.aion.asmo') }} {{ 100 - $ely }}%">
         <span class="e num">{{ $ely }}%</span><span class="t"><i style="width:{{ $ely }}%"></i><b></b></span><span class="a num">{{ 100 - $ely }}%</span>
@@ -35,8 +38,6 @@
       </div>
     @endif
   </div>
-  <div class="online"><div class="meter" aria-hidden="true">@for ($k = 0; $k < 12; $k++)<i class="{{ $k < $segments ? 'on' : '' }}"></i>@endfor</div>
-    @if ($server->is_online)<b class="num" data-online>{{ $fmt($server->players) }}</b> / {{ $fmt($server->max_players) }}@else{{ __('ui.server.offline') }}@endif</div>
   <div class="votes"><b class="num" data-server-votes="{{ $server->id }}">{{ $fmt($server->votes_month) }}</b><small>{{ trans_choice('ui.server.votes', $server->votes_month) }}</small></div>
   <span class="btn ghost sm" data-vote="{{ route('servers.vote', $server) }}">{{ __('ui.server.vote') }}</span>
 </a>

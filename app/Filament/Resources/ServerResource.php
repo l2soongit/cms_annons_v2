@@ -94,7 +94,7 @@ class ServerResource extends Resource
             ]),
             Section::make('Опис')->columnSpanFull()->schema([
                 Tabs::make('description')->contained(false)->tabs(collect(Locales::all())->map(
-                    fn ($name, string $locale) => Tab::make(is_string($name) ? $name : strtoupper($locale))->schema([
+                    fn (string $name, string $locale) => Tab::make($name)->schema([
                         Textarea::make("description.{$locale}")->hiddenLabel()->rows(6),
                     ])
                 )->values()->all()),

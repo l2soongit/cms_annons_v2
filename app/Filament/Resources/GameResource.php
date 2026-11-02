@@ -179,7 +179,7 @@ class GameResource extends Resource
     private static function perLocale(\Closure $fields, int $columns = 1): Tabs
     {
         return Tabs::make('locales')->contained(false)->tabs(collect(Locales::all())->map(
-            fn ($name, string $locale) => Tab::make(is_string($name) ? $name : strtoupper($locale))->columns($columns)->schema($fields($locale))
+            fn (string $name, string $locale) => Tab::make($name)->columns($columns)->schema($fields($locale))
         )->values()->all());
     }
 

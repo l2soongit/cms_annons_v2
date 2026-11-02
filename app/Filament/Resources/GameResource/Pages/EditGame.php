@@ -12,7 +12,9 @@ class EditGame extends EditRecord
 
     public function getTitle(): string
     {
-        return 'Гра: '.$this->getRecord()->name;
+        $game = $this->getRecord();
+
+        return $game instanceof Game ? 'Гра: '.$game->name : parent::getTitle();
     }
 
     /** Гра без налаштованих блоків показує всі — і перемикачі у формі мають бути увімкнені */

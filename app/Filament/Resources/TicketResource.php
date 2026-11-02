@@ -33,6 +33,8 @@ class TicketResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Тікети підтримки';
 
+    protected static ?string $navigationLabel = 'Тікети підтримки';
+
     protected static ?int $navigationSort = 6;
 
     private const CATEGORIES = ['payment' => 'Оплата', 'moderation' => 'Модерація', 'technical' => 'Технічне', 'other' => 'Інше'];

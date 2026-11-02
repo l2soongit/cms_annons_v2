@@ -28,13 +28,13 @@ class PageResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedDocumentText;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    protected static string|UnitEnum|null $navigationGroup = 'Сайт';
 
     protected static ?string $modelLabel = 'сторінка';
 
     protected static ?string $pluralModelLabel = 'Сторінки';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 2;
 
     public static function canViewAny(): bool
     {

@@ -38,6 +38,14 @@ class UserResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Користувачі';
 
+    protected static ?string $recordTitleAttribute = 'name';
+
+    /** Глобальний пошук (Ctrl+K): за ім’ям і поштою */
+    public static function getGloballySearchableAttributes(): array
+    {
+        return ['name', 'email'];
+    }
+
     public static function canViewAny(): bool
     {
         return auth()->user()?->can('users.ban') ?? false;

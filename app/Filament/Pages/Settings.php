@@ -35,13 +35,13 @@ class Settings extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedCog6Tooth;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    protected static string|UnitEnum|null $navigationGroup = 'Сайт';
 
     protected static ?string $navigationLabel = 'Налаштування';
 
     protected static ?string $title = 'Налаштування порталу';
 
-    protected static ?int $navigationSort = 9;
+    protected static ?int $navigationSort = 4;
 
     protected string $view = 'filament.pages.settings';
 

@@ -20,13 +20,13 @@ class Translations extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedLanguage;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    protected static string|UnitEnum|null $navigationGroup = 'Сайт';
 
     protected static ?string $navigationLabel = 'Переклади';
 
     protected static ?string $title = 'Переклади інтерфейсу й листів';
 
-    protected static ?int $navigationSort = 10;
+    protected static ?int $navigationSort = 3;
 
     protected string $view = 'filament.pages.translations';
 

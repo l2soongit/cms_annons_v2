@@ -116,6 +116,24 @@ final class LogReader
         return ['entries' => $entries, 'counts' => $counts];
     }
 
+    /** Скільки помилок (error і серйозніше) записано після моменту — для інфопанелі; читаються найсвіжіші файли */
+    public function errorsSince(\DateTimeInterface $since): int
+    {
+        $count = 0;
+        foreach (array_slice($this->files(), 0, 2) as $file) {
+            if ($file['modified'] < $since->getTimestamp()) {
+                continue;
+            }
+            foreach ($this->read($file['name'], limit: 1000)['entries'] as $entry) {
+                if (in_array($entry['level'], ['emergency', 'alert', 'critical', 'error'], true) && strtotime($entry['time']) >= $since->getTimestamp()) {
+                    $count++;
+                }
+            }
+        }
+
+        return $count;
+    }
+
     /** Очистити файл (не видаляючи, щоб логер і далі писав у нього) */
     public function clear(string $name): bool
     {

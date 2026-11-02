@@ -34,7 +34,7 @@ class HomePageSettings extends Page
 {
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedHome;
 
-    protected static string|UnitEnum|null $navigationGroup = 'Каталог';
+    protected static string|UnitEnum|null $navigationGroup = 'Сайт';
 
     protected static ?string $navigationLabel = 'Головна сторінка';
 
@@ -42,7 +42,7 @@ class HomePageSettings extends Page
 
     protected static ?string $slug = 'home-page';
 
-    protected static ?int $navigationSort = 8;
+    protected static ?int $navigationSort = 1;
 
     protected string $view = 'filament.pages.settings';
 

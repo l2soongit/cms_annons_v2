@@ -43,6 +43,8 @@ class GameResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Ігри';
 
+    protected static ?string $recordTitleAttribute = 'slug';
+
     protected static ?int $navigationSort = 1;
 
     public static function canViewAny(): bool

@@ -24,6 +24,8 @@ class ModerationLogResource extends Resource
 
     protected static ?string $pluralModelLabel = 'Журнал дій';
 
+    protected static ?string $navigationLabel = 'Журнал дій';
+
     protected static ?int $navigationSort = 9;
 
     public static function canViewAny(): bool

@@ -25,6 +25,9 @@ final class Settings
         'reviews.stop_words',
         'locales',
         'default_locale',
+        'billing.currency',
+        'billing.min_deposit',
+        'billing.max_deposit',
         'page_cache.enabled',
         'page_cache.ttl',
     ];

@@ -14,7 +14,7 @@
     $h = 100;
     $x = fn ($i) => $n === 1 ? $w / 2 : round($i / ($n - 1) * $w, 2);
     $y = fn ($v) => round($h - ((float) $v / $top) * $h, 2);
-    $fmt = fn ($v) => $money ? number_format((float) $v, 0, ',', ' ').' ₴' : number_format((float) $v, 0, ',', ' ');
+    $fmt = fn ($v) => $money ? \App\Billing\Money::whole($v) : number_format((float) $v, 0, ',', ' ');
     // Підписи шкали коротко: 12 500 → 12,5k
     $axis = fn ($v) => $v >= 1000 ? rtrim(rtrim(number_format($v / 1000, 1, ',', ''), '0'), ',').'k' : number_format((float) $v, 0, ',', ' ');
     $uid = 'c'.substr(md5(json_encode($series).$n.mt_rand()), 0, 6);

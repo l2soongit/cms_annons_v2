@@ -29,7 +29,7 @@ class BillingController extends Controller
         return view('cabinet.balance', [
             'user' => $user,
             'gateways' => $gateways->available(),
-            // Валюта => курс до гривні; іноземні з’являються, лише коли є свіжий курс НБУ
+            // Валюта => курс до основної валюти; іноземні з’являються, лише коли є свіжий курс НБУ
             'currencies' => collect($rates->depositCurrencies())->mapWithKeys(fn (string $c) => [$c => $rates->rate($c)])->all(),
             'transactions' => $user->transactions()->with('order.tariff')->latest('id')->paginate(20),
             'orders' => $user->orders()->with(['tariff', 'server'])->latest('id')->limit(50)->get(),

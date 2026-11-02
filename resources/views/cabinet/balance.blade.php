@@ -2,12 +2,14 @@
     use App\Billing\Money;
 
     $base = config('graj.billing.currency');
-    $symbols = ['UAH' => '₴', 'USD' => '$', 'EUR' => '€', 'RUB' => '₽'];
+    $symbols = Money::SYMBOLS;
     $presets = ['UAH' => [200, 500, 1000, 2000], 'USD' => [5, 10, 25, 50], 'EUR' => [5, 10, 25, 50]];
     $currency = old('currency', array_key_first($currencies));
+    $baseSymbol = Money::symbol($base);
     $texts = [
         'credit' => __('billing.deposit.credit'),
         'rate' => __('billing.deposit.rate_line'),
+        'base' => $baseSymbol,
         'range' => __('billing.deposit.range_line', ['min' => Money::format((int) config('graj.billing.min_deposit') * 100, true), 'max' => Money::format((int) config('graj.billing.max_deposit') * 100, true)]),
         'pay' => __('billing.deposit.pay'),
     ];
@@ -90,11 +92,11 @@
                             @endforeach
                         </div>
                     @else
-                        <input type="hidden" name="currency" value="{{ $base }}" data-rate="1" data-symbol="₴">
+                        <input type="hidden" name="currency" value="{{ $base }}" data-rate="1" data-symbol="{{ $baseSymbol }}">
                     @endif
                     <div class="c-field">
                         <label for="amount">{{ __('billing.deposit.amount_plain') }}</label>
-                        <div class="c-inp"><input id="amount" name="amount" type="number" inputmode="decimal" min="1" step="0.01" value="{{ old('amount', 500) }}" required><b data-symbol-out>₴</b></div>
+                        <div class="c-inp"><input id="amount" name="amount" type="number" inputmode="decimal" min="1" step="0.01" value="{{ old('amount', ($presets[$base] ?? [10, 25])[1]) }}" required><b data-symbol-out>{{ $baseSymbol }}</b></div>
                         @error('amount')<p class="c-err">{{ $message }}</p>@enderror
                     </div>
                     <div class="c-quick" data-quick></div>
@@ -105,7 +107,7 @@
                         @endforeach
                     </div>
                     <button class="c-btn is-go" style="width:100%;margin-top:14px" data-pay>{{ __('billing.deposit.submit') }}</button>
-                    <p class="c-hint" style="margin-top:10px">{{ __('billing.deposit.rates_note') }}</p>
+                    <p class="c-hint" style="margin-top:10px">{{ __('billing.deposit.rates_note', ['currency' => $base]) }}</p>
                 </form>
             @else
                 <p class="c-muted" style="margin-top:12px;font-size:14px">{{ __('billing.deposit.unavailable') }}</p>
@@ -116,7 +118,7 @@
     <x-slot:scripts>
         @if ($gateways)
             <script>
-                // Поповнення: валюта, швидкі суми й перерахунок у гривні за курсом НБУ
+                // Поповнення: валюта, швидкі суми й перерахунок в основну валюту за курсом НБУ
                 (() => {
                     const form = document.querySelector('[data-deposit]');
                     const presets = @json($presets);
@@ -127,20 +129,23 @@
                     const fmt = (n, d = 2) => n.toLocaleString(locale, { minimumFractionDigits: d, maximumFractionDigits: d });
                     const cur = () => form.querySelector('input[name="currency"]:checked') || form.querySelector('input[name="currency"]');
                     const update = () => {
-                        const c = cur(), rate = +c.dataset.rate, sym = c.dataset.symbol, a = parseFloat(amount.value) || 0, uah = a * rate;
+                        const c = cur(), rate = +c.dataset.rate, sym = c.dataset.symbol, a = parseFloat(amount.value) || 0, credit = a * rate;
                         form.querySelector('[data-symbol-out]').textContent = sym;
-                        const ok = uah >= min && uah <= max;
-                        form.querySelector('[data-conv]').innerHTML = (rate !== 1 ? t.rate.replace(':symbol', sym).replace(':rate', fmt(rate, 4)) + '<br>' : '')
-                            + t.credit.replace(':sum', `<b>${fmt(uah)} ₴</b>`) + (ok ? '' : ` · <span class="c-down">${t.range}</span>`);
+                        const ok = credit >= min && credit <= max;
+                        // Курс «1 дорожча = N дешевшої»: 1 $ = 41,20 ₴, а не 1 ₴ = 0,0243 $
+                        const line = rate >= 1 ? t.rate.replace(':symbol', sym).replace(':rate', fmt(rate, 4)).replace(':base', t.base)
+                            : t.rate.replace(':symbol', t.base).replace(':rate', fmt(1 / rate, 4)).replace(':base', sym);
+                        form.querySelector('[data-conv]').innerHTML = (rate !== 1 ? line + '<br>' : '')
+                            + t.credit.replace(':sum', `<b>${fmt(credit)} ${t.base}</b>`) + (ok ? '' : ` · <span class="c-down">${t.range}</span>`);
                         form.querySelector('[data-pay]').textContent = t.pay.replace(':sum', `${fmt(a)} ${sym}`);
                         form.querySelector('[data-pay]').disabled = !ok;
                     };
                     const setPresets = () => {
-                        const c = cur(), list = presets[c.value] || presets.UAH;
+                        const c = cur(), list = presets[c.value] || presets.USD;
                         form.querySelector('[data-quick]').innerHTML = list.map(v => `<button type="button" data-q="${v}">${v.toLocaleString(locale)} ${c.dataset.symbol}</button>`).join('');
                     };
                     form.addEventListener('click', (e) => { const q = e.target.closest('[data-q]'); if (q) { amount.value = q.dataset.q; update(); } });
-                    form.querySelectorAll('input[name="currency"]').forEach(r => r.addEventListener('change', () => { setPresets(); amount.value = (presets[r.value] || presets.UAH)[1]; update(); }));
+                    form.querySelectorAll('input[name="currency"]').forEach(r => r.addEventListener('change', () => { setPresets(); amount.value = (presets[r.value] || presets.USD)[1]; update(); }));
                     amount.addEventListener('input', update);
                     setPresets(); update();
                 })();

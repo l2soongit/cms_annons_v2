@@ -161,7 +161,7 @@
                     const parse = (s) => new Date(s + 'T00:00:00Z');
                     const addDays = (d, n) => new Date(d.getTime() + n * 864e5);
                     const fmt = (s) => parse(s).toLocaleDateString(data.locale, { day: '2-digit', month: '2-digit', timeZone: 'UTC' });
-                    const money = (n) => n.toLocaleString(data.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ₴';
+                    const money = (n) => n.toLocaleString(data.locale, { minimumFractionDigits: 2, maximumFractionDigits: 2 }) + ' ' + @json(\App\Billing\Money::symbol());
 
                     let group = data.groups[0], tariff = null, start = null;
                     let month = parse(data.today); month.setUTCDate(1);

@@ -62,7 +62,7 @@ class TariffResource extends Resource
                 TextInput::make('points')->label('Бонусних балів')->numeric()->minValue(1)
                     ->helperText('Діють до кінця місяця; вага балів у формулі рейтингу — у Налаштуваннях.')
                     ->visible(fn (Get $get) => $get('service') === 'boost')->required(fn (Get $get) => $get('service') === 'boost'),
-                TextInput::make('price')->label('Ціна, ₴')->numeric()->minValue(0)->required(),
+                TextInput::make('price')->label('Ціна')->suffix(fn () => Money::symbol())->numeric()->minValue(0)->required(),
                 Toggle::make('is_active')->label('Продається')->default(true),
             ]),
         ]);

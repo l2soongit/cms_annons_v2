@@ -2,6 +2,7 @@
 
 namespace App\Filament\Widgets;
 
+use App\Billing\Money;
 use App\Enums\ServerStatus;
 use App\Models\Report;
 use App\Models\Review;
@@ -42,9 +43,9 @@ class PortalStats extends StatsOverviewWidget
                 ->description('серверів відповідають на запити'),
             Stat::make('Користувачі', User::count())
                 ->description('+'.User::where('created_at', '>=', now()->subDays(7))->count().' за 7 днів'),
-            Stat::make('Дохід за місяць', number_format((float) $revenue, 0, ',', ' ').' ₴')
-                ->description('поповнення балансу; за послуги списано '.number_format(-(float) Transaction::where('type', 'charge')
-                    ->where('created_at', '>=', now()->startOfMonth())->sum('amount'), 0, ',', ' ').' ₴')
+            Stat::make('Дохід за місяць', Money::whole($revenue))
+                ->description('поповнення балансу; за послуги списано '.Money::whole(-(float) Transaction::where('type', 'charge')
+                    ->where('created_at', '>=', now()->startOfMonth())->sum('amount')))
                 ->url(auth()->user()?->can('billing.manage') ? route('filament.admin.pages.finance') : null),
         ];
     }

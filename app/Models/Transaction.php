@@ -20,7 +20,7 @@ class Transaction extends Model
         ];
     }
 
-    /** Скільки списує платіжна система, у центах валюти оплати (для поповнення в гривнях — сам amount) */
+    /** Скільки списує платіжна система, у центах валюти оплати (для поповнення в основній валюті — сам amount) */
     public function chargeCents(): int
     {
         return Money::cents($this->paid_amount ?? $this->amount);

@@ -52,7 +52,7 @@ class DemoServerSeeder extends Seeder
             ['name' => 'Demo Owner', 'password' => bcrypt('password'), 'email_verified_at' => now()],
         );
         // Баланс для перевірки купівлі послуг у кабінеті
-        $owner->forceFill(['balance' => 5000])->save();
+        $owner->forceFill(['balance' => 120])->save();
 
         foreach (Game::with('fields')->get() as $game) {
             foreach (self::NAMES[$game->slug] ?? [] as $i => $name) {

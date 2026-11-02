@@ -31,9 +31,9 @@
     ];
     $check = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" aria-hidden="true"><path d="M5 12l5 5L20 7"/></svg>';
 
-    $price = fn ($p) => $p === null ? '—' : $fmt($p)."\u{00A0}₴";
+    $price = fn ($p) => $p === null ? '—' : \App\Billing\Money::short($p);
     $plans = [
-        [__('ui.home.plan_base'), '0 ₴', __('ui.home.plan_forever'), false],
+        [__('ui.home.plan_base'), \App\Billing\Money::short(0), __('ui.home.plan_forever'), false],
         [__('ui.home.plan_vip'), $data['plans']['vip'] !== null ? __('ui.home.plan_from').' '.$price($data['plans']['vip']) : '—', __('ui.home.plan_per'), true],
         [__('ui.home.plan_highlight'), $data['plans']['highlight'] !== null ? __('ui.home.plan_from').' '.$price($data['plans']['highlight']) : '—', __('ui.home.plan_per'), false],
     ];

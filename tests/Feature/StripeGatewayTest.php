@@ -78,7 +78,7 @@ class StripeGatewayTest extends TestCase
         $params = $this->sent[0]['params'];
         $this->assertStringEndsWith('/v1/checkout/sessions', $this->sent[0]['url']);
         $this->assertArrayNotHasKey('payment_method_types', $params);
-        $this->assertSame(['payment', 'uah', 30000], [$params['mode'], $params['line_items'][0]['price_data']['currency'], $params['line_items'][0]['price_data']['unit_amount']]);
+        $this->assertSame(['payment', 'usd', 30000], [$params['mode'], $params['line_items'][0]['price_data']['currency'], $params['line_items'][0]['price_data']['unit_amount']]);
         $this->assertMatchesRegularExpression('/_[a-z]{8}$/', $params['integration_identifier']);
         $this->assertSame('cs_test_abc', $user->transactions()->first()->external_id);
     }

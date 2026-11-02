@@ -83,7 +83,7 @@ class UserResource extends Resource
                     ->visible(fn () => auth()->user()->can('billing.manage'))
                     ->modalDescription(fn (User $u) => 'Зараз: '.Money::format($u->balance))
                     ->schema([
-                        TextInput::make('amount')->label('Сума, ₴ (мінус — списати)')->numeric()->required()->notIn(['0']),
+                        TextInput::make('amount')->label('Сума (мінус — списати)')->suffix(fn () => Money::symbol())->numeric()->required()->notIn(['0']),
                         TextInput::make('reason')->label('Причина')->required()->maxLength(160),
                     ])
                     ->action(function (User $u, array $data) {

@@ -91,7 +91,7 @@ class BannerTest extends TestCase
         ])->assertRedirect(route('cabinet.ads'))->assertSessionHasNoErrors();
 
         $banner = Banner::first();
-        $this->assertSame(['header', null, $server->website, '9300.00'], [$banner->placement, $banner->game_id, $banner->url, $server->owner->fresh()->balance]);
+        $this->assertSame(['header', null, $server->website, '9983.00'], [$banner->placement, $banner->game_id, $banner->url, $server->owner->fresh()->balance]);
         Storage::disk('public')->assertExists($banner->image);
 
         // Показ на публічних сторінках рахується, клік веде на сайт сервера

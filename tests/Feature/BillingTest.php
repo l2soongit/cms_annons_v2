@@ -86,7 +86,7 @@ class BillingTest extends TestCase
         $params = json_decode(base64_decode($checkout->fields['data']), true);
         $this->assertSame('POST', $checkout->method);
         $this->assertSame(base64_encode(sha1('sandbox_priv'.$checkout->fields['data'].'sandbox_priv', true)), $checkout->fields['signature']);
-        $this->assertSame(['500.00', 'UAH', '1', route('billing.callback', 'liqpay')], [$params['amount'], $params['currency'], $params['sandbox'], $params['server_url']]);
+        $this->assertSame(['500.00', 'USD', '1', route('billing.callback', 'liqpay')], [$params['amount'], $params['currency'], $params['sandbox'], $params['server_url']]);
 
         $callback = $this->liqpayCallback(['order_id' => $params['order_id'], 'status' => 'sandbox', 'amount' => 500, 'payment_id' => 777]);
         $this->post('/api/billing/callback/liqpay', $callback)->assertOk();
@@ -128,21 +128,21 @@ class BillingTest extends TestCase
         $this->assertSame('250.00', $user->fresh()->balance);
         $this->actingAs($user)->get(route('cabinet.balance'))->assertOk()->assertSee('Поповнення')->assertSee('250,00');
 
-        $this->actingAs($user)->post(route('cabinet.balance.deposit'), ['amount' => 10, 'gateway' => 'test'])->assertSessionHasErrors('amount');
+        $this->actingAs($user)->post(route('cabinet.balance.deposit'), ['amount' => 0.5, 'gateway' => 'test'])->assertSessionHasErrors('amount');
     }
 
     public function test_vip_purchase_charges_balance_and_pins_server_above_ranking(): void
     {
-        $server = $this->server(['name' => 'Giran VIP'], balance: 2000);
+        $server = $this->server(['name' => 'Giran VIP'], balance: 50);
 
         $this->actingAs($server->owner)->post(route('cabinet.servers.orders', $server), ['tariff_id' => $this->tariff('vip')->id, 'auto_renew' => 1])
             ->assertSessionHasNoErrors();
 
         $order = Order::first();
-        $this->assertSame(['1000.00', true], [$server->owner->fresh()->balance, $order->auto_renew]);
-        $this->assertDatabaseHas('transactions', ['order_id' => $order->id, 'type' => 'charge', 'amount' => '-1000.00']);
+        $this->assertSame(['26.00', true], [$server->owner->fresh()->balance, $order->auto_renew]);
+        $this->assertDatabaseHas('transactions', ['order_id' => $order->id, 'type' => 'charge', 'amount' => '-24.00']);
         $this->get('/lineage2')->assertOk()->assertSee('Giran VIP');
-        $this->actingAs($server->owner)->get(route('cabinet.orders.receipt', $order))->assertOk()->assertSee('000,00');
+        $this->actingAs($server->owner)->get(route('cabinet.orders.receipt', $order))->assertOk()->assertSee('24,00');
 
         // Повторна купівля продовжує від кінця поточної
         app(Billing::class)->purchase($server->owner, $server, $this->tariff('vip'));
@@ -175,11 +175,11 @@ class BillingTest extends TestCase
 
     public function test_promo_code_discount_and_limits(): void
     {
-        $server = $this->server(balance: 1000);
+        $server = $this->server(balance: 50);
         $promo = PromoCode::create(['code' => 'START20', 'discount_percent' => 20, 'max_uses' => 1, 'service' => 'highlight']);
 
         $order = app(Billing::class)->purchase($server->owner, $server, $this->tariff('highlight'), 'start20');
-        $this->assertSame(['400.00', 1], [$order->amount, $promo->fresh()->used]);
+        $this->assertSame(['9.60', 1], [$order->amount, $promo->fresh()->used]);
 
         $this->expectException(BillingException::class);
         app(Billing::class)->purchase($server->owner, $server, $this->tariff('highlight'), 'START20');
@@ -217,9 +217,9 @@ class BillingTest extends TestCase
     public function test_expiry_renews_from_balance_or_notifies(): void
     {
         Notification::fake();
-        $renewing = $this->server(balance: 2000);
-        $ending = $this->server(balance: 2000);
-        $broke = $this->server(balance: 1000);
+        $renewing = $this->server(balance: 50);
+        $ending = $this->server(balance: 50);
+        $broke = $this->server(balance: 30);
         $billing = app(Billing::class);
 
         $billing->purchase($renewing->owner, $renewing, $this->tariff('highlight', 7), autoRenew: true);
@@ -236,8 +236,8 @@ class BillingTest extends TestCase
         $this->travel(26)->days();
         $billing->expire();
 
-        // Виділення на 7 днів — 150 ₴: перша оплата й автопродовження
-        $this->assertSame('1700.00', $renewing->owner->fresh()->balance);
+        // Виділення на 7 днів — 3,5 $: перша оплата й автопродовження
+        $this->assertSame('43.00', $renewing->owner->fresh()->balance);
         $this->assertSame(1, Order::where('server_id', $renewing->id)->where('status', 'active')->count());
         $this->assertTrue($renewing->fresh()->isHighlighted());
         Notification::assertSentTo($renewing->owner, ServiceNotice::class, fn ($n) => $n->kind === 'renewed');
@@ -281,33 +281,33 @@ class BillingTest extends TestCase
         $this->artisan('billing:rates')->assertSuccessful();
 
         $rates = app(ExchangeRates::class);
-        $this->assertSame([41.2512, 44.1], [$rates->rate('USD'), $rates->rate('EUR')]);
+        $this->assertSame([1.0, round(44.1 / 41.2512, 6), round(1 / 41.2512, 8)], [$rates->rate('USD'), round($rates->rate('EUR'), 6), round($rates->rate('UAH'), 8)]);
         $this->assertNull($rates->rate('PLN'));
-        $this->assertSame(['UAH', 'USD', 'EUR'], $rates->depositCurrencies());
+        $this->assertSame(['USD', 'UAH', 'EUR'], $rates->depositCurrencies());
     }
 
-    public function test_foreign_currency_deposit_charges_currency_and_credits_hryvnias(): void
+    public function test_hryvnia_deposit_charges_hryvnias_and_credits_dollars(): void
     {
         DB::table('exchange_rates')->insert(['currency' => 'USD', 'rate' => 41.25, 'rate_date' => today()->toDateString()]);
         $user = User::factory()->create();
-        $deposit = app(Billing::class)->startDeposit($user, 1000, 'liqpay', 'USD');
+        $deposit = app(Billing::class)->startDeposit($user, 41250, 'liqpay', 'UAH');
 
-        $this->assertSame(['412.50', 'UAH', '10.00', 'USD'], [$deposit->amount, $deposit->currency, $deposit->paid_amount, $deposit->paid_currency]);
+        $this->assertSame(['10.00', 'USD', '412.50', 'UAH'], [$deposit->amount, $deposit->currency, $deposit->paid_amount, $deposit->paid_currency]);
 
         $params = json_decode(base64_decode(app(LiqPayGateway::class)->checkout($deposit)->fields['data']), true);
-        $this->assertSame(['10.00', 'USD'], [$params['amount'], $params['currency']]);
+        $this->assertSame(['412.50', 'UAH'], [$params['amount'], $params['currency']]);
 
-        // Та сама сума, але в гривнях — не зараховується
-        $wrong = $this->liqpayCallback(['order_id' => $params['order_id'], 'status' => 'success', 'amount' => 10, 'currency' => 'UAH']);
+        // Та сама сума, але в доларах — не зараховується
+        $wrong = $this->liqpayCallback(['order_id' => $params['order_id'], 'status' => 'success', 'amount' => 412.5, 'currency' => 'USD']);
         $this->post('/api/billing/callback/liqpay', $wrong)->assertOk();
         $this->assertSame(['0.00', 'failed'], [$user->fresh()->balance, $deposit->fresh()->status]);
 
-        $second = app(Billing::class)->startDeposit($user, 1000, 'liqpay', 'USD');
+        $second = app(Billing::class)->startDeposit($user, 41250, 'liqpay', 'UAH');
         $orderId = $second->id.'-'.$second->created_at->timestamp;
-        $this->post('/api/billing/callback/liqpay', $this->liqpayCallback(['order_id' => $orderId, 'status' => 'success', 'amount' => 10, 'currency' => 'USD']))->assertOk();
-        $this->assertSame('412.50', $user->fresh()->balance);
+        $this->post('/api/billing/callback/liqpay', $this->liqpayCallback(['order_id' => $orderId, 'status' => 'success', 'amount' => 412.5, 'currency' => 'UAH']))->assertOk();
+        $this->assertSame('10.00', $user->fresh()->balance);
 
-        $this->actingAs($user)->get(route('cabinet.balance'))->assertOk()->assertSee(Money::formatIn(1000, 'USD'), false)->assertSee('USD');
+        $this->actingAs($user)->get(route('cabinet.balance'))->assertOk()->assertSee(Money::formatIn(41250, 'UAH'), false)->assertSee('UAH');
     }
 
     public function test_currency_without_fresh_rate_or_out_of_range_is_rejected(): void
@@ -315,18 +315,18 @@ class BillingTest extends TestCase
         $user = User::factory()->create();
         DB::table('exchange_rates')->insert(['currency' => 'EUR', 'rate' => 44, 'rate_date' => today()->subDays(10)->toDateString()]);
 
-        foreach ([[1000, 'EUR', 'currency'], [1000, 'RUB', 'currency'], [100, 'UAH', 'deposit_range']] as [$cents, $currency, $error]) {
+        foreach ([[1000, 'EUR', 'currency'], [1000, 'RUB', 'currency'], [50, 'USD', 'deposit_range']] as [$cents, $currency, $error]) {
             try {
                 app(Billing::class)->startDeposit($user, $cents, 'liqpay', $currency);
                 $this->fail("{$currency} мав бути відхилений");
             } catch (BillingException $e) {
-                $this->assertSame(__("billing.errors.{$error}", ['min' => Money::format(5000, true), 'max' => Money::format(5000000, true)]), $e->getMessage());
+                $this->assertSame(__("billing.errors.{$error}", ['min' => Money::format((int) config('graj.billing.min_deposit') * 100, true), 'max' => Money::format((int) config('graj.billing.max_deposit') * 100, true)]), $e->getMessage());
             }
         }
 
-        // Межі поповнення — у гривнях після перерахунку: 1 $ = 41,25 ₴ — замало
+        // Межі поповнення — в основній валюті після перерахунку: 10 ₴ ≈ 0,24 $ — замало
         DB::table('exchange_rates')->insert(['currency' => 'USD', 'rate' => 41.25, 'rate_date' => today()->toDateString()]);
         $this->expectException(BillingException::class);
-        app(Billing::class)->startDeposit($user, 100, 'liqpay', 'USD');
+        app(Billing::class)->startDeposit($user, 1000, 'liqpay', 'UAH');
     }
 }

@@ -2,6 +2,8 @@
 
 namespace App\Filament\Pages;
 
+use App\Billing\CurrencySwitch;
+use App\Billing\Money;
 use App\Models\ModerationLog;
 use App\Support\Locales;
 use App\Support\PageCache;
@@ -21,6 +23,7 @@ use Filament\Schemas\Components\Utilities\Get;
 use Filament\Schemas\Schema;
 use Filament\Support\Icons\Heroicon;
 use Illuminate\Support\Arr;
+use Throwable;
 use UnitEnum;
 
 /**
@@ -106,6 +109,16 @@ class Settings extends Page
                             }
                         }]),
                 ]),
+            Section::make('Гроші')
+                ->description('Основна валюта — у ній баланс власників, ціни тарифів і банерів, історія операцій і звіти. Поповнити баланс можна й в інших валютах: сума перераховується за курсом НБУ.')
+                ->columns(3)->schema([
+                    Select::make('billing.currency')->label('Валюта сайту')->options(CurrencySwitch::CURRENCIES)->required()->native(false)
+                        ->helperText('При зміні всі суми (баланси, ціни, межі поповнення, історія) перераховуються за курсом НБУ — ні в кого не стане більше чи менше грошей. Ціни потім можна округлити в «Тарифах».'),
+                    TextInput::make('billing.min_deposit')->label('Мінімальне поповнення')->numeric()->minValue(1)->required()
+                        ->suffix(fn () => Money::symbol()),
+                    TextInput::make('billing.max_deposit')->label('Максимальне поповнення')->numeric()->minValue(1)->required()
+                        ->suffix(fn () => Money::symbol()),
+                ]),
             Section::make('Швидкість сайту')
                 ->description('Головна, сторінки ігор, серверів і статичні сторінки для гостей віддаються готовими, без запитів до бази. Залогінені користувачі завжди бачать сторінку наживо. Кеш скидається сам після змін в адмінці чи кабінеті.')
                 ->columns(2)->schema([
@@ -142,10 +155,29 @@ class Settings extends Page
                 $key === 'reviews.stop_words' => array_values(array_filter(array_map(fn ($w) => mb_strtolower(trim($w)), (array) $value))),
                 $key === 'default_locale' => (string) $value,
                 $key === 'page_cache.enabled' => (bool) $value,
+                $key === 'billing.currency' => (string) $value,
                 $key === 'locales' => collect((array) $value)->mapWithKeys(fn ($name, $code) => [strtolower(trim((string) $code)) => trim((string) $name)])->all(),
                 (float) $value == (int) $value => (int) $value,
                 default => (float) $value,
             };
+        }
+
+        // Нова валюта: спершу перерахунок усіх сум за курсом НБУ (межі поповнення перераховуються там само)
+        $from = Money::base();
+        if ($values['billing.currency'] !== $from) {
+            try {
+                $rate = app(CurrencySwitch::class)->run($values['billing.currency'], auth()->id());
+            } catch (Throwable $e) {
+                Notification::make()->title('Валюту не змінено')->body($e->getMessage())->danger()->send();
+
+                return;
+            }
+            // Курс показуємо «1 дорожча = N дешевшої»: 1 $ = 41,2 ₴, а не 1 ₴ = 0,024 $
+            $line = $rate >= 1 ? "1 {$from} = ".round($rate, 4).' '.Money::base() : '1 '.Money::base().' = '.round(1 / $rate, 4)." {$from}";
+            Notification::make()->title('Валюту змінено на '.Money::base())
+                ->body("Усі суми перераховано за курсом НБУ: {$line}.")->success()->send();
+            unset($values['billing.currency'], $values['billing.min_deposit'], $values['billing.max_deposit']);
+            $this->data['billing'] = ['currency' => Money::base(), 'min_deposit' => config('graj.billing.min_deposit'), 'max_deposit' => config('graj.billing.max_deposit')];
         }
 
         SettingsStore::save($values);

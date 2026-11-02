@@ -361,6 +361,7 @@ return [
         'u_s' => 'seconds',
         'season' => 'The server of the month is decided at the season finale — vote for your realm!',
         'war_eyebrow' => 'Azeroth divided',
+        'factions' => 'Factions',
         'war' => 'Faction war',
         'war_lead' => 'Players online by faction on :n realm that reports its balance.|Players online by faction on :n realms that report their balance.',
         'war_none' => 'No realm reports its faction balance yet. As soon as servers start sending Alliance and Horde online, you will see who rules Azeroth.',

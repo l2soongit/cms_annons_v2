@@ -12,7 +12,7 @@ use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 /**
- * Сторінка World of Warcraft за демо design/game/wow.html: «Альянс проти Орди», війна фракцій з балансу через API,
+ * Сторінка World of Warcraft за демо design/game/wow-b.html «Небо Азерота» (дашборд як у L2), війна фракцій з балансу через API,
  * вкладки версій, фільтри донату й контенту, «рівні фракції», set realmlist.
  */
 class WowPageTest extends TestCase
@@ -66,12 +66,13 @@ class WowPageTest extends TestCase
             // Банер і війна фракцій: сума лише з реалмів, що передають баланс (990 / 1010)
             ->assertSee('data-f="alli"', false)->assertSee('data-count="990"', false)->assertSee('data-count="1010"', false)
             ->assertSee('--split:49.5%', false)
-            // Вкладки версій: назва й збірка
-            ->assertSee('WotLK<small>3.3.5a</small>', false)
+            // Дашборд як у L2 (design/game/wow-b.html): фільтри рядками, бічна колонка, версія — фішкою з кількістю
+            ->assertSee('class="frow"', false)->assertSee('aside class="side"', false)
+            ->assertSee('WotLK 3.3.5a<small class="num">1</small>', false)
             // Рядок: realmlist (нестандартний порт — з портом), донат червоним, баланс, реалм без балансу
             ->assertSee('set realmlist logon.frostmourne.example.net:3725')
             ->assertSee('set realmlist logon.azeroth-legacy.example.net')
-            ->assertSee('class="p2w"', false)->assertSee('class="free"', false)
+            ->assertSee('class="tag p2w"', false)->assertSee('class="tag free"', false)
             ->assertSee('data-alli="47"', false)
             ->assertSee('Баланс фракцій не передається');
     }
@@ -92,7 +93,8 @@ class WowPageTest extends TestCase
 
         $this->get('/world-of-warcraft')->assertOk()
             ->assertSee('Поки жоден реалм не передає баланс фракцій')
-            ->assertDontSee('data-count="0"', false);
+            // Без балансу перемикачі фракцій — без лічильників
+            ->assertSee('<span>Альянс</span>', false)->assertDontSee('<span>Альянс</span><b', false);
     }
 
     public function test_api_accepts_faction_online(): void

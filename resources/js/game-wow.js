@@ -1,9 +1,9 @@
 /*
- * Сторінка гри в стилі World of Warcraft (design/game/wow.html): спільна логіка + вибір фракції в банері
- * (перефарбовує сторінку й показує в кожному реалмі «твою» частку; запам'ятовується), відлік до фіналу сезону,
- * копіювання set realmlist і голоси-сувої. Анімації банера стоять, коли його не видно.
+ * Сторінка World of Warcraft (design/game/wow-b.html): спільна логіка (фільтри, список, таймери — game-page)
+ * + вибір фракції в банері (перефарбовує сторінку й показує в кожному реалмі «твою» частку; запам'ятовується),
+ * відлік до фіналу сезону, копіювання set realmlist і живі голоси.
  */
-import { $, $$, calm, esc, setToastRenderer } from './game-page';
+import { $, $$, esc, setToastRenderer } from './game-page';
 
 const dataEl = document.getElementById('game-data');
 const DATA = dataEl ? JSON.parse(dataEl.textContent) : {};
@@ -11,8 +11,7 @@ const T = DATA.t ?? {};
 const tr = (str, vars) => Object.entries(vars).reduce((s, [k, v]) => s.replaceAll(`:${k}`, v), str ?? '');
 const store = { get: k => { try { return localStorage.getItem(k); } catch { return null; } }, set: (k, v) => { try { v ? localStorage.setItem(k, v) : localStorage.removeItem(k); } catch {} } };
 
-// ── Фракція: клік по стороні банера ──
-const hero = $('#whero');
+// ── Фракція: перемикачі в кутах банера ──
 let faction = store.get('wow-faction') || '';
 
 // «Твоя фракція: 47% — у меншості» в кожному реалмі, що надсилає баланс
@@ -26,11 +25,10 @@ const paintShares = () => $$('.srv[data-alli]').forEach(row => {
 
 const applyFaction = () => {
   document.body.dataset.faction = faction;
-  hero?.classList.toggle('picked', !!faction);
-  $$('.side').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === faction)));
+  $$('#whero .fpick').forEach(b => b.setAttribute('aria-pressed', String(b.dataset.f === faction)));
   paintShares();
 };
-$$('.side').forEach(b => b.addEventListener('click', () => {
+$$('#whero .fpick').forEach(b => b.addEventListener('click', () => {
   faction = faction === b.dataset.f ? '' : b.dataset.f;
   store.set('wow-faction', faction);
   applyFaction();
@@ -40,7 +38,7 @@ applyFaction();
 const results = $('#results');
 if (results) new MutationObserver(paintShares).observe(results, { childList: true, subtree: true });
 
-// ── Відлік до фіналу сезону: окремі цифри днів, годин, хвилин, секунд ──
+// ── Відлік до фіналу сезону ──
 (() => {
   const clock = $('#clock');
   if (!clock) return;
@@ -68,22 +66,14 @@ document.addEventListener('click', e => {
   setTimeout(() => { btn.textContent = label; btn.classList.remove('done'); }, 1600);
 });
 
-// ── Голоси наживо: сувої ──
+// ── Голоси наживо ──
 setToastRenderer(v => {
   const box = $('#toasts');
   if (!box) return;
   const el = document.createElement('div');
   el.className = 'toast';
-  el.innerHTML = `<svg aria-hidden="true"><use href="#crest-neutral"/></svg><span>${esc(tr(T.voted, { server: v.server }))}<br><small>${esc(v.nick || T.anon)}</small></span>`;
+  el.innerHTML = `${esc(tr(T.voted, { server: v.server }))}<br><small>${esc(v.nick || T.anon)}</small>`;
   box.append(el);
   while (box.children.length > 3) box.firstElementChild.remove();
   setTimeout(() => { el.classList.add('out'); setTimeout(() => el.remove(), 500); }, 4000);
 });
-
-// ── Банер поза екраном або вкладка прихована — анімації на паузі ──
-if (hero && !calm && 'IntersectionObserver' in window) {
-  let visible = true;
-  const sync = () => hero.classList.toggle('is-paused', !visible || document.hidden);
-  new IntersectionObserver(([e]) => { visible = e.isIntersecting; sync(); }).observe(hero);
-  document.addEventListener('visibilitychange', sync);
-}

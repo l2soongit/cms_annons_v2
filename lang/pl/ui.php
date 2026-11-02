@@ -362,6 +362,7 @@ return [
         'u_s' => 'sekund',
         'season' => 'Serwer miesiąca wyłoni finał sezonu — głosuj na swój realm!',
         'war_eyebrow' => 'Azeroth podzielony',
+        'factions' => 'Frakcje',
         'war' => 'Wojna frakcji',
         'war_lead' => 'Gracze online według frakcji na :n realmie, który przesyła balans.|Gracze online według frakcji na :n realmach, które przesyłają balans.|Gracze online według frakcji na :n realmach, które przesyłają balans.',
         'war_none' => 'Żaden realm nie przesyła jeszcze balansu frakcji. Gdy serwery zaczną wysyłać online Przymierza i Hordy, zobaczysz tu, kto rządzi Azerothem.',

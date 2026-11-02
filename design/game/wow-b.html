@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Сервери World of Warcraft — Небо Азерота | GRAJ.CLUB</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@700&family=Manrope:wght@500;600;700;800&family=Unbounded:wght@700&family=JetBrains+Mono:wght@500&display=swap" rel="stylesheet">
+<style>
+/*
+ * Демо сторінки World of Warcraft, варіант «Небо Азерота».
+ * Яскравий день у Драконячих островах: червоний дракон над містом. Теплі кольори — бірюза, багрянець і золото, банер світліший за інші.
+ * Структура — як на сторінці Lineage 2: картка-банер з цифрами, таймером і кнопкою, фільтри рядками, список реалмів, бічна колонка.
+ * Перемикачі Альянс / Орда в кутах банера перефарбовують акценти й показують у рядках «твою» частку. Арт — офіційні промоматеріали Blizzard.
+ */
+:root {
+  --bg: #0f1416; --card: #172024; --card-2: #1e2a2f; --line: #28383d; --line-2: #3a5058;
+  --text: #eef1f8; --muted: #a9b0c4; --faint: #737b93; --ok: #4fd18b;
+  --accent: #ffb547; --accent-ink: #2a1500; --alli: #2fb4d8; --horde: #e0453a; --tint: var(--accent);
+  --head: 'Cinzel', serif; --ui: 'Manrope', system-ui, sans-serif; --num: 'Unbounded', var(--ui); --mono: 'JetBrains Mono', monospace;
+}
+body[data-f="alli"] { --tint: var(--alli); } body[data-f="horde"] { --tint: var(--horde); }
+* { box-sizing: border-box; margin: 0; }
+body { background: var(--bg); color: var(--text); font: 500 15px/1.55 var(--ui); overflow-x: hidden; }
+a { color: inherit; text-decoration: none; } button { font: inherit; color: inherit; cursor: pointer; }
+.wrap { max-width: 1180px; margin: 0 auto; padding: 0 20px; }
+header { position: sticky; top: 0; z-index: 30; padding: 12px 0; }
+.bar { display: flex; align-items: center; gap: 22px; padding: 8px 8px 8px 16px; border-radius: 12px; background: #0f1416e6; backdrop-filter: blur(10px); box-shadow: inset 0 0 0 1px #ffffff10, 0 6px 24px -10px #000; }
+.bar img { height: 36px; display: block; }
+.bar nav { display: flex; gap: 2px; margin-left: auto; overflow-x: auto; scrollbar-width: none; }
+.bar nav a { padding: 6px 11px; border-radius: 999px; font-weight: 700; font-size: 13px; color: #d6dcef; white-space: nowrap; }
+.bar nav a[aria-current] { background: var(--accent); color: var(--accent-ink); }
+.crumbs { margin-top: 12px; font-size: 13px; color: var(--faint); }
+
+/* Банер-картка як у L2 */
+.ghero { position: relative; isolation: isolate; overflow: hidden; margin-top: 14px; border-radius: 24px; min-height: 430px; padding: 40px; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 32px;
+  border: 1px solid #ffb54744; background: url('img/wow/dragon.webp') center 40% / cover no-repeat padding-box, var(--bg); background-clip: padding-box; }
+.ghero::after { content: ''; position: absolute; inset: 0; z-index: -1; border-radius: inherit; background: linear-gradient(90deg, #0f1416e6 0%, #0f141699 38%, transparent 62%), linear-gradient(180deg, transparent 55%, #0f1416cc 100%); }
+.eyebrow { display: inline-flex; padding: 4px 12px; border-radius: 999px; font-size: 13px; font-weight: 700; color: var(--accent); background: color-mix(in srgb, var(--accent) 12%, transparent); border: 1px solid color-mix(in srgb, var(--accent) 35%, transparent); }
+.ghero h1 { margin-top: 14px; font: 700 clamp(44px, 6.4vw, 76px)/.95 var(--head); letter-spacing: .06em; text-transform: uppercase; text-shadow: 0 3px 3px #000a, 0 0 40px color-mix(in srgb, var(--accent) 45%, transparent); }
+.ghero h1 small { display: block; font-size: .34em; letter-spacing: .3em; text-transform: uppercase; color: var(--accent); margin-bottom: 4px; }
+.tagline { margin-top: 12px; max-width: 44ch; color: #e1e6f2; font-size: 17px; text-shadow: 0 2px 10px #000c; }
+.gstats { display: flex; gap: 32px; margin-top: 24px; flex-wrap: wrap; }
+.gstats dd { font: 700 28px var(--num); } .gstats dd.a { color: var(--alli); } .gstats dd.h { color: var(--horde); }
+.gstats dt { color: var(--muted); font-size: 13px; }
+.factions { position: absolute; inset: 20px 24px auto; display: flex; justify-content: space-between; pointer-events: none; }
+.fpick { pointer-events: auto; display: inline-flex; align-items: center; gap: 8px; padding: 7px 14px; border-radius: 999px; border: 1px solid; background: #000a; backdrop-filter: blur(6px); font-weight: 800; font-size: 13px; }
+.fpick b { font: 700 13px var(--num); color: #fff; } .fpick i { width: 8px; height: 8px; border-radius: 50%; background: currentColor; }
+.fpick.alli { color: var(--alli); } .fpick.horde { color: var(--horde); }
+.fpick[aria-pressed="true"] { background: currentColor; } .fpick[aria-pressed="true"] span, .fpick[aria-pressed="true"] b { color: #fff; } .fpick[aria-pressed="true"] i { background: #fff; }
+.hero-cta { display: grid; gap: 12px; justify-items: end; }
+.season { display: grid; justify-items: end; gap: 6px; font-size: 13px; color: var(--muted); text-shadow: 0 2px 8px #000c; }
+.clock { display: flex; gap: 6px; }
+.clock div, .cd div { min-width: 52px; padding: 5px 6px; border-radius: 10px; background: #000a; border: 1px solid #ffffff1a; text-align: center; }
+.clock span, .cd span { display: block; font: 700 19px/1.2 var(--num); color: var(--accent); }
+.clock small, .cd small { font: 800 9px var(--ui); letter-spacing: .1em; color: var(--faint); text-transform: uppercase; }
+.btn { display: inline-flex; align-items: center; justify-content: center; padding: 12px 22px; border-radius: 12px; border: 0; font-weight: 800; font-size: 14px; background: var(--accent); color: var(--accent-ink); box-shadow: 0 8px 30px -12px var(--accent); }
+.btn.ghost { background: transparent; color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.btn.sm { padding: 8px 14px; font-size: 13px; }
+
+/* Дашборд */
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 32px; margin-top: 32px; align-items: start; }
+.filters { padding: 20px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.frow { display: grid; grid-template-columns: 110px minmax(0, 1fr); gap: 12px; align-items: center; padding: 8px 0; }
+.frow + .frow { border-top: 1px solid var(--line); }
+.frow > span { font-size: 13px; font-weight: 700; color: var(--faint); }
+.chips { display: flex; flex-wrap: wrap; gap: 6px; }
+.chip { border: 1px solid var(--line-2); background: none; border-radius: 999px; padding: 4px 12px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.chip:hover { color: var(--text); }
+.chip[aria-pressed="true"] { background: var(--tint); border-color: transparent; color: #fff; }
+body:not([data-f]) .chip[aria-pressed="true"], body[data-f=""] .chip[aria-pressed="true"] { color: var(--accent-ink); }
+.ftools { display: flex; gap: 12px; margin-top: 16px; flex-wrap: wrap; }
+.fsearch { flex: 1; min-width: 200px; padding: 9px 14px; border-radius: 10px; background: var(--bg); border: 1px solid var(--line); color: var(--text); font: inherit; }
+.sorts { display: flex; gap: 4px; padding: 4px; border-radius: 10px; background: var(--bg); }
+.sorts button { border: 0; background: none; padding: 6px 12px; border-radius: 7px; font-size: 13px; font-weight: 700; color: var(--muted); }
+.sorts button[aria-pressed="true"] { background: var(--card-2); color: var(--tint); }
+.result-line { margin: 24px 0 12px; font-size: 14px; color: var(--muted); } .result-line b { color: var(--text); }
+.list { display: grid; gap: 8px; }
+.srv { display: grid; grid-template-columns: 44px 52px minmax(0, 1fr) 170px 76px auto; gap: 14px; align-items: center; row-gap: 10px; padding: 14px 16px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); transition: transform .2s, border-color .2s, box-shadow .2s; }
+.srv:hover { transform: translateX(4px); border-color: var(--line-2); box-shadow: -8px 0 0 -4px var(--tint); }
+.srv.vip { border-color: color-mix(in srgb, var(--accent) 45%, transparent); background: linear-gradient(90deg, color-mix(in srgb, var(--accent) 9%, var(--card)), var(--card) 45%); }
+.rank { font: 700 22px var(--num); text-align: center; color: var(--faint); }
+.rank.m1 { color: var(--accent); font-size: 28px; } .rank.m2 { color: #d4d4d8; font-size: 25px; } .rank.m3 { color: #c2410c; font-size: 24px; }
+.crest { width: 52px; height: 52px; border-radius: 14px; display: grid; place-items: center; font: 700 22px var(--head); color: #fff; background: radial-gradient(circle at 30% 25%, var(--c), color-mix(in srgb, var(--c) 25%, #000)); box-shadow: 0 6px 20px -8px var(--c); }
+.sname { min-width: 0; } .sname .top { display: flex; align-items: center; gap: 8px; }
+.sname b { font: 400 19px var(--head); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.dot { flex: none; width: 8px; height: 8px; border-radius: 50%; background: var(--ok); box-shadow: 0 0 8px var(--ok); }
+.badge { font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 6px; background: var(--accent); color: var(--accent-ink); }
+.tags { margin-top: 6px; display: flex; flex-wrap: nowrap; gap: 5px; overflow: hidden; }
+.tag { white-space: nowrap; }
+.tag { font-size: 11.5px; font-weight: 700; padding: 2px 8px; border-radius: 6px; background: #ffffff08; border: 1px solid var(--line); color: var(--muted); }
+.tag.ver { color: var(--accent); border-color: color-mix(in srgb, var(--accent) 35%, transparent); }
+.tag.rate { color: #1eff00; } .tag.p2w { color: #ff8f7f; } .tag.free { color: #9ee08a; }
+.realmlist { grid-column: 3 / -1; margin-top: -4px; display: flex; gap: 6px; }
+.realmlist code { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; padding: 4px 9px; border-radius: 7px; background: var(--bg); border: 1px solid var(--line); font: 500 11.5px var(--mono); color: #bfe3f0; }
+.realmlist button { padding: 4px 9px; border-radius: 7px; border: 1px solid var(--line-2); background: none; font-size: 11.5px; font-weight: 700; color: var(--muted); }
+.online { font-size: 12px; color: var(--muted); } .online > b { color: var(--text); }
+.meter { display: grid; grid-template-columns: repeat(12, 1fr); gap: 2px; height: 8px; margin-bottom: 5px; }
+.meter i { background: var(--line); border-radius: 1px; } .meter i.on { background: var(--accent); box-shadow: 0 0 6px color-mix(in srgb, var(--accent) 50%, transparent); }
+.fac { margin-top: 6px; display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 6px; align-items: center; font-size: 11px; font-weight: 800; }
+.fac .a { color: var(--alli); } .fac .h { color: var(--horde); }
+.fac .t { display: flex; height: 5px; border-radius: 3px; overflow: hidden; } .fac .t i { display: block; background: var(--alli); } .fac .t b { display: block; flex: 1; background: var(--horde); }
+.fac.none { display: block; font-weight: 600; font-style: italic; color: var(--faint); }
+.fac .mine { grid-column: 1 / -1; color: var(--tint); }
+.votes { text-align: right; } .votes b { display: block; font: 700 19px var(--num); } .votes small { font-size: 12px; color: var(--faint); }
+
+aside { display: grid; gap: 16px; position: sticky; top: 88px; }
+.panel { position: relative; overflow: hidden; isolation: isolate; padding: 20px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.panel h2 { font: 700 15px var(--num); margin-bottom: 12px; }
+.ad { padding: 22px; border-radius: 16px; border: 1px dashed var(--line-2); text-align: center; font-size: 12px; color: var(--muted); } .ad b { display: block; color: var(--text); font-size: 13px; }
+.soon-item { position: relative; overflow: hidden; isolation: isolate; padding: 14px; border-radius: 14px; border: 1px solid var(--line); }
+.soon-item + .soon-item { margin-top: 10px; }
+.soon-item::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, var(--card-2) 35%, color-mix(in srgb, var(--card-2) 60%, transparent)), var(--img) center / cover; }
+.soon-item b { display: block; font: 400 17px var(--head); } .soon-item > small { font-size: 12px; color: var(--muted); }
+.cd { display: grid; grid-template-columns: repeat(4, 1fr); gap: 5px; margin-top: 10px; } .cd div { min-width: 0; }
+.war .rope { display: flex; height: 30px; border-radius: 10px; overflow: hidden; font: 800 13px var(--ui); }
+.war .rope span { display: flex; align-items: center; padding: 0 10px; } .war .rope .a { background: var(--alli); flex: 0 0 47.6%; } .war .rope .h { background: var(--horde); flex: 1; justify-content: flex-end; }
+.war .lbl { display: flex; justify-content: space-between; margin-top: 6px; font-size: 12px; font-weight: 700; } .war .lbl .a { color: var(--alli); } .war .lbl .h { color: var(--horde); }
+.war .rows { margin-top: 14px; display: grid; gap: 8px; }
+.war .rows div { display: grid; grid-template-columns: 54px minmax(0, 1fr) 44px; gap: 10px; align-items: center; font-size: 12px; color: var(--muted); } .war .rows b { color: var(--text); }
+.war .rows i { display: block; height: 6px; border-radius: 3px; background: linear-gradient(90deg, var(--alli) var(--p), var(--horde) var(--p)); } .war .rows span { text-align: right; }
+.champ { min-height: 210px; display: flex; flex-direction: column; justify-content: flex-end; }
+.champ::before { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 20%, var(--card) 92%), url('img/wow/golden.webp') center 30% / cover; }
+.champ h2 { position: absolute; top: 18px; left: 20px; color: var(--accent); }
+.champ h3 { font: 700 26px var(--head); } .champ p { font-size: 13px; color: var(--muted); }
+.bars { display: grid; gap: 10px; }
+.bars .l { display: flex; justify-content: space-between; font-size: 13px; } .bars .l span { color: var(--muted); }
+.bars .track { margin-top: 4px; height: 6px; border-radius: 999px; background: var(--bg); overflow: hidden; } .bars .track i { display: block; height: 100%; border-radius: inherit; background: linear-gradient(90deg, var(--accent), var(--tint)); }
+footer { margin-top: 96px; border-top: 1px solid var(--line); padding: 30px 0 44px; color: var(--faint); font-size: 13px; }
+footer .wrap { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+@media (max-width: 1024px) { .layout { grid-template-columns: 1fr; } aside { position: static; grid-template-columns: 1fr 1fr; } .srv { grid-template-columns: 40px 48px minmax(0, 1fr) 76px auto; } .srv .online { display: none; } }
+@media (max-width: 640px) {
+  .ghero { grid-template-columns: 1fr; padding: 80px 20px 24px; min-height: 0; } .hero-cta, .season { justify-items: start; }
+  aside { grid-template-columns: 1fr; } .frow { grid-template-columns: 1fr; gap: 6px; }
+  .srv { grid-template-columns: 32px minmax(0, 1fr) auto; } .srv .crest, .srv .votes { display: none; } .realmlist { grid-column: 2 / -1; }
+}
+</style>
+</head>
+<body data-f="">
+<header><div class="wrap bar"><img src="../../public/images/brand/logo.svg" alt="GRAJ.CLUB">
+  <nav><a href="#">L2</a><a href="#">GTA</a><a href="#">Minecraft</a><a href="#">DayZ</a><a href="#">Rust</a><a href="#">CS</a><a href="#" aria-current="page">WoW</a><a href="#">PW</a><a href="#">Aion</a><a href="#">MU</a></nav></div></header>
+<main class="wrap">
+  <div class="crumbs">Головна / World of Warcraft</div>
+
+  <section class="ghero">
+    <div class="factions">
+      <button class="fpick alli" data-f="alli" aria-pressed="false"><i></i><span>Альянс</span><b>2 960</b></button>
+      <button class="fpick horde" data-f="horde" aria-pressed="false"><i></i><span>Орда</span><b>3 360</b></button>
+    </div>
+    <div>
+      <span class="eyebrow">Легенда повертається · Classic, TBC, WotLK і новіші</span>
+      <h1><small>World of</small>Warcraft</h1>
+      <p class="tagline">Від Classic і Burning Crusade до Wrath of the Lich King і Legion. Обери фракцію — покажемо реалми, де ти не в меншості.</p>
+      <dl class="gstats">
+        <div><dd>7</dd><dt>реалмів</dt></div>
+        <div><dd class="a">6 840</dd><dt>гравців онлайн</dt></div>
+        <div><dd class="h">1 284</dd><dt>голосів цього місяця</dt></div>
+      </dl>
+    </div>
+    <div class="hero-cta">
+      <div class="season">Фінал сезону через
+        <div class="clock" data-to="28.4"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div>
+      </div>
+      <a class="btn" href="#">Додати свій сервер WoW</a>
+    </div>
+  </section>
+
+  <div class="layout">
+    <div>
+      <section class="filters">
+        <div class="frow"><span>Доповнення</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">Classic</button><button class="chip" aria-pressed="false">TBC</button><button class="chip" aria-pressed="false">WotLK</button><button class="chip" aria-pressed="false">Cata</button><button class="chip" aria-pressed="false">MoP</button><button class="chip" aria-pressed="false">Legion</button></div></div><div class="frow"><span>Рейти</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">x1</button><button class="chip" aria-pressed="false">x3</button><button class="chip" aria-pressed="false">x5</button><button class="chip" aria-pressed="false">x100</button></div></div><div class="frow"><span>Тип</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">PvP</button><button class="chip" aria-pressed="false">PvE</button><button class="chip" aria-pressed="false">RP-PvP</button><button class="chip" aria-pressed="false">FFA-PvP</button></div></div><div class="frow"><span>Донат</span><div class="chips"><button class="chip" aria-pressed="true">Усі</button><button class="chip" aria-pressed="false">Без донату</button><button class="chip" aria-pressed="false">Косметика</button><button class="chip" aria-pressed="false">Впливає на гру</button></div></div><div class="frow"><span>Фракції</span><div class="chips"><button class="chip" aria-pressed="false">Рівні 40–60%</button><button class="chip" aria-pressed="false">Лише з гравцями</button></div></div>
+        <div class="ftools"><input class="fsearch" placeholder="Назва реалму або realmlist…"><div class="sorts"><button aria-pressed="true">Голоси</button><button aria-pressed="false">Онлайн</button><button aria-pressed="false">Нові</button><button aria-pressed="false">Аптайм</button></div></div>
+      </section>
+      <div class="result-line">Знайдено <b>7</b> реалмів</div>
+      <div class="list">
+      <article class="srv vip">
+        <span class="rank m1">1</span>
+        <span class="crest" style="--c:#d4403a">F</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Frostmourne</b><span class="badge vip">VIP</span></div>
+          <div class="tags"><span class="tag ver">WotLK 3.3.5a</span><span class="tag rate">x5</span><span class="tag">PvP</span><span class="tag free">Без донату</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i></div><b>2 140</b> / 3 000<div class="fac" data-alli="47"><span class="a">47%</span><span class="t"><i style="width:47%"></i><b></b></span><span class="h">53%</span></div></div>
+        <div class="votes"><b>1550</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.frostmourne.example.net</code><button type="button" data-copy="set realmlist logon.frostmourne.example.net">Копіювати</button></div>
+      </article>
+      <article class="srv vip">
+        <span class="rank m2">2</span>
+        <span class="crest" style="--c:#e5c06a">A</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Azeroth Legacy</b><span class="badge vip">VIP</span></div>
+          <div class="tags"><span class="tag ver">Classic 1.12</span><span class="tag rate">x1</span><span class="tag">PvP</span><span class="tag free">Без донату</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>1 830</b> / 3 000<div class="fac" data-alli="52"><span class="a">52%</span><span class="t"><i style="width:52%"></i><b></b></span><span class="h">48%</span></div></div>
+        <div class="votes"><b>1271</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.azeroth-legacy.example.net</code><button type="button" data-copy="set realmlist logon.azeroth-legacy.example.net">Копіювати</button></div>
+      </article>
+      <article class="srv">
+        <span class="rank m3">3</span>
+        <span class="crest" style="--c:#8f7bff">S</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Sunwell Reborn</b></div>
+          <div class="tags"><span class="tag ver">TBC 2.4.3</span><span class="tag rate">x3</span><span class="tag">PvP</span><span class="tag">Косметика</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>1 210</b> / 3 000<div class="fac" data-alli="44"><span class="a">44%</span><span class="t"><i style="width:44%"></i><b></b></span><span class="h">56%</span></div></div>
+        <div class="votes"><b>1178</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.sunwell.example.net</code><button type="button" data-copy="set realmlist logon.sunwell.example.net">Копіювати</button></div>
+      </article>
+      <article class="srv">
+        <span class="rank">4</span>
+        <span class="crest" style="--c:#4fd18b">K</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Kyiv Lich King</b></div>
+          <div class="tags"><span class="tag ver">WotLK 3.3.5a</span><span class="tag rate">x100</span><span class="tag">FFA-PvP</span><span class="tag p2w">Впливає на гру</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>950</b> / 3 000<div class="fac" data-alli="38"><span class="a">38%</span><span class="t"><i style="width:38%"></i><b></b></span><span class="h">62%</span></div></div>
+        <div class="votes"><b>1023</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.kyiv-lk.example.net</code><button type="button" data-copy="set realmlist logon.kyiv-lk.example.net">Копіювати</button></div>
+      </article>
+      <article class="srv">
+        <span class="rank">5</span>
+        <span class="crest" style="--c:#2fb4d8">P</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Pandaria UA</b></div>
+          <div class="tags"><span class="tag ver">MoP 5.4.8</span><span class="tag rate">x5</span><span class="tag">PvE</span><span class="tag free">Без донату</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>520</b> / 3 000<div class="fac none">баланс не передається</div></div>
+        <div class="votes"><b>651</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.pandaria.example.net</code><button type="button" data-copy="set realmlist logon.pandaria.example.net">Копіювати</button></div>
+      </article>
+      <article class="srv">
+        <span class="rank">6</span>
+        <span class="crest" style="--c:#3f80e8">M</span>
+        <div class="sname">
+          <div class="top"><i class="dot"></i><b>Moonglade RP</b></div>
+          <div class="tags"><span class="tag ver">WotLK 3.3.5a</span><span class="tag rate">x1</span><span class="tag">RP-PvP</span><span class="tag free">Без донату</span></div>
+        </div>
+        <div class="online"><div class="meter"><i class="on"></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i><i class=""></i></div><b>190</b> / 3 000<div class="fac" data-alli="61"><span class="a">61%</span><span class="t"><i style="width:61%"></i><b></b></span><span class="h">39%</span></div></div>
+        <div class="votes"><b>372</b><small>голосів</small></div>
+        <a class="btn ghost sm" href="#">Голосувати</a>
+        <div class="realmlist"><code>set realmlist logon.moonglade.example.net</code><button type="button" data-copy="set realmlist logon.moonglade.example.net">Копіювати</button></div>
+      </article>
+      </div>
+    </div>
+    <aside>
+      <div class="ad"><b>Тут може бути ваша реклама</b>Банер 300×250 на сторінці гри</div>
+      <section class="panel"><h2>Скоро відкриття</h2>
+          <div class="soon-item" style="--img:url('img/wow/autumn.webp')"><b>Icecrown Citadel x7</b><small>WotLK 3.3.5a · x7 · PvP</small>
+            <div class="cd" data-to="1.3"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div></div>
+          <div class="soon-item" style="--img:url('img/wow/tree.webp')"><b>Northrend Fresh</b><small>WotLK · x1 · Blizzlike</small>
+            <div class="cd" data-to="4.6"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div></div>
+          <div class="soon-item" style="--img:url('img/wow/crystal.webp')"><b>Legion Rising</b><small>Legion 7.3.5 · x10</small>
+            <div class="cd" data-to="9.2"><div><span class="d">00</span><small>днів</small></div><div><span class="h">00</span><small>год</small></div><div><span class="m">00</span><small>хв</small></div><div><span class="s">00</span><small>сек</small></div></div></div>
+      </section>
+      <section class="panel war"><h2>Війна фракцій</h2>
+        <div class="rope"><span class="a">47,6%</span><span class="h">52,4%</span></div>
+        <div class="lbl"><span class="a">Альянс</span><span class="h">Орда</span></div>
+        <div class="rows"><div><b>WotLK</b><i style="--p:45%"></i><span>45/55</span></div><div><b>Classic</b><i style="--p:52%"></i><span>52/48</span></div><div><b>TBC</b><i style="--p:44%"></i><span>44/56</span></div><div><b>MoP</b><i style="--p:49%"></i><span>49/51</span></div></div>
+      </section>
+      <section class="panel champ"><h2>Зал слави</h2><h3>Трон вільний</h3><p>Переможець визначиться у фіналі сезону — за голосами гравців.</p></section>
+      <section class="panel"><h2>Популярні доповнення</h2>
+        <div class="bars"><div><div class="l"><b>WotLK 3.3.5a</b><span>46%</span></div><div class="track"><i style="width:100%"></i></div></div><div><div class="l"><b>Classic 1.12</b><span>24%</span></div><div class="track"><i style="width:52%"></i></div></div><div><div class="l"><b>TBC 2.4.3</b><span>15%</span></div><div class="track"><i style="width:33%"></i></div></div><div><div class="l"><b>MoP 5.4.8</b><span>9%</span></div><div class="track"><i style="width:20%"></i></div></div><div><div class="l"><b>Legion 7.3.5</b><span>6%</span></div><div class="track"><i style="width:13%"></i></div></div></div>
+      </section>
+    </aside>
+  </div>
+</main>
+<footer><div class="wrap"><span>© 2026 GRAJ.CLUB · Демо: World of Warcraft, «Небо Азерота»</span><span>World of Warcraft — торгова марка Blizzard Entertainment. Арт — офіційні промоматеріали.</span></div></footer>
+<script>
+const $$ = (s, r = document) => [...r.querySelectorAll(s)];
+// Фракція: перефарбовує акценти й показує в рядках твою частку
+$$('.fpick').forEach(b => b.addEventListener('click', () => {
+  const f = document.body.dataset.f === b.dataset.f ? '' : b.dataset.f;
+  document.body.dataset.f = f;
+  $$('.fpick').forEach(x => x.setAttribute('aria-pressed', x.dataset.f === f));
+  $$('.fac[data-alli]').forEach(row => {
+    let m = row.querySelector('.mine'); if (!m) { m = document.createElement('span'); m.className = 'mine'; row.append(m); }
+    const share = f === 'alli' ? +row.dataset.alli : 100 - +row.dataset.alli;
+    m.textContent = f ? `${share >= 50 ? '▲' : '▼'} ${share}% — твоя фракція ${share >= 50 ? 'в більшості' : 'в меншості'}` : '';
+  });
+}));
+$$('.chip, .sorts button').forEach(c => c.addEventListener('click', () => {
+  const group = c.parentElement;
+  if (group.classList.contains('sorts') || c.textContent === 'Усі') $$('button', group).forEach(x => x.setAttribute('aria-pressed', 'false'));
+  else group.querySelector('button')?.textContent === 'Усі' && group.querySelector('button').setAttribute('aria-pressed', 'false');
+  c.setAttribute('aria-pressed', group.classList.contains('sorts') || c.getAttribute('aria-pressed') !== 'true');
+}));
+$$('[data-copy]').forEach(b => b.addEventListener('click', () => { navigator.clipboard?.writeText(b.dataset.copy); b.textContent = 'Скопійовано'; setTimeout(() => b.textContent = 'Копіювати', 1500); }));
+const now = Date.now(), pad = n => String(n).padStart(2, '0');
+const timers = $$('[data-to]').map(el => ({ el, to: now + el.dataset.to * 864e5 }));
+const tick = () => timers.forEach(({ el, to }) => {
+  const s = Math.max(0, (to - Date.now()) / 1000 | 0), v = { d: s / 86400 | 0, h: s / 3600 % 24 | 0, m: s / 60 % 60 | 0, s: s % 60 };
+  for (const k in v) { const e = el.querySelector('.' + k); if (e) e.textContent = pad(v[k]); }
+});
+tick(); setInterval(tick, 1000);
+</script>
+</body>
+</html>

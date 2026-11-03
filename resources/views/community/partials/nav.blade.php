@@ -1,10 +1,10 @@
 {{-- Ліва колонка: стрічка, розділи, ігри --}}
 @php $current = $category ?? null; @endphp
 <nav class="cm-navcol" aria-label="{{ __('community.navcol.aria') }}">
-  <a href="{{ route('community') }}" @if ($tab === 'feed') aria-current="page" @endif>🏠 {{ __('community.navcol.all') }}</a>
-  <a href="{{ route('community.forum') }}" @if ($tab === 'forum') aria-current="page" @endif>🗂 {{ __('community.navcol.sections') }}</a>
-  <a href="{{ route('community.news') }}" @if ($tab === 'news') aria-current="page" @endif>📣 {{ __('community.tabs.news') }}</a>
-  @auth<a href="{{ route('community.mine') }}" @if ($tab === 'mine') aria-current="page" @endif>⭐ {{ __('community.tabs.mine') }}</a>@endauth
+  <a class="base" href="{{ route('community') }}" @if ($tab === 'feed') aria-current="page" @endif>🏠 {{ __('community.navcol.all') }}</a>
+  <a class="base" href="{{ route('community.forum') }}" @if ($tab === 'forum') aria-current="page" @endif>🗂 {{ __('community.navcol.sections') }}</a>
+  <a class="base" href="{{ route('community.news') }}" @if ($tab === 'news') aria-current="page" @endif>📣 {{ __('community.tabs.news') }}</a>
+  @auth<a class="base" href="{{ route('community.mine') }}" @if ($tab === 'mine') aria-current="page" @endif>⭐ {{ __('community.tabs.mine') }}</a>@endauth
   @foreach (['games', 'site', 'other'] as $group)
     @php $items = $navCategories->where('group', $group); @endphp
     @if ($items->isNotEmpty())

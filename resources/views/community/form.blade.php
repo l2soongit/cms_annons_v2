@@ -102,4 +102,5 @@
     </div>
   </form>
 </div>
+@include('community.partials.mobilebar')
 </x-layouts.home>

@@ -326,3 +326,86 @@
 .cm-chip { flex: none; width: auto; }
 header nav a[aria-current="page"] { color: var(--text); text-decoration: underline; text-decoration-color: var(--amber); text-decoration-thickness: 2px; text-underline-offset: 8px; }
 .cm-lead .cm-chip { background: #09090bcc; backdrop-filter: blur(4px); }
+
+/* ===== Телефон: нижня панель, новини каруселлю, щільна стрічка ===== */
+.cm-mbar { display: none; }
+@media (max-width: 800px) {
+  body:has(.cm-mbar) { padding-bottom: calc(72px + env(safe-area-inset-bottom)); }
+  body:has(.cm-mbar) .toasts { bottom: calc(84px + env(safe-area-inset-bottom)); left: 16px; right: 16px; }
+  body:has(.cm-mbar) #cookie-notice { bottom: calc(84px + env(safe-area-inset-bottom)) !important; }
+  .cm-mbar { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 2px; position: fixed; z-index: 45; left: 0; right: 0; bottom: 0; padding: 6px 6px calc(6px + env(safe-area-inset-bottom)); background: #0b0b0ff2; -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+  .cm-mbar a { display: grid; justify-items: center; align-content: center; gap: 2px; min-height: 52px; padding: 4px 2px; border-radius: 12px; font-size: 11px; font-weight: 700; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; -webkit-tap-highlight-color: transparent; }
+  .cm-mbar a > span { font-size: 19px; line-height: 1.2; }
+  .cm-mbar a[aria-current] { color: var(--text); background: var(--card-2); }
+  .cm-mbar .plus { color: var(--amber); }
+  .cm-mbar .plus > span { width: 44px; height: 30px; display: grid; place-items: center; border-radius: 12px; background: var(--grad); color: var(--gold-ink); font-size: 18px; font-weight: 800; box-shadow: 0 6px 20px -8px #f97316cc; }
+
+  /* Заголовок без опису й вкладок: їх замінює нижня панель */
+  .cm-intro { padding: 20px 0 14px; }
+  .cm-intro h1 { font-size: 28px; }
+  .cm-intro p, .cm-intro .cm-tabs { display: none; }
+  .cm-compose { display: none; }
+  .cm-layout { margin-top: 20px; gap: 14px; }
+
+  /* Ігри й розділи — стрічка «таблеток», що гортається пальцем */
+  .cm-navcol { margin: 0 -24px; padding: 0 24px 2px; scrollbar-width: none; }
+  .cm-navcol::-webkit-scrollbar { display: none; }
+  .cm-navcol .base { display: none; }
+  .cm-navcol a { flex: none; padding: 7px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-size: 13px; gap: 8px; }
+  .cm-navcol a img { width: 18px; height: 18px; border-radius: 5px; }
+  .cm-navcol .cm-ico { width: auto; }
+
+  /* Новини — горизонтальна карусель замість високого банера */
+  .cm-newsgrid { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -24px; padding: 0 24px 4px; scroll-padding: 0 24px; scrollbar-width: none; }
+  .cm-newsgrid::-webkit-scrollbar { display: none; }
+  .cm-lead { flex: 0 0 84%; min-height: 230px; padding: 16px; border-radius: 16px; scroll-snap-align: start; }
+  .cm-lead h2 { font-size: 20px; margin: 10px 0 0; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cm-lead p { display: none; }
+  .cm-lead .cm-foot { margin-top: 10px; gap: 10px; font-size: 12px; }
+  .cm-side-news { display: contents; }
+  .cm-mini { flex: 0 0 64%; grid-template-columns: 1fr; gap: 0; padding: 0; overflow: hidden; align-content: start; scroll-snap-align: start; }
+  .cm-mini img, .cm-mini .cm-noimg { width: 100%; height: 100px; min-height: 0; border-radius: 0; }
+  .cm-mini > div { padding: 10px 12px 12px; }
+  .cm-mini h3 { font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cm-more-news { flex: 0 0 auto; flex-direction: column; justify-content: center; gap: 6px; padding: 16px 20px; scroll-snap-align: start; text-align: center; }
+
+  /* Сортування в один рядок, фільтри — другим рядком навпіл */
+  .cm-sort { margin: 6px 0 12px; }
+  .cm-sort a { padding: 6px 12px; }
+  .cm-sort .sep { flex-basis: 100%; height: 0; }
+  .cm-sort select { flex: 1; min-width: 0; width: auto; }
+
+  /* Картка теми: оцінка — «таблеткою» в нижньому рядку, а не окремим рядком зверху */
+  .cm-post { position: relative; grid-template-columns: minmax(0, 1fr); gap: 0; padding: 14px; margin-bottom: 10px; }
+  .cm-post > .cm-vote { position: absolute; right: 12px; bottom: 10px; display: flex; flex-direction: row; align-items: center; gap: 0; padding: 0 2px; border: 1px solid var(--line-2); border-radius: 999px; background: var(--bg-2); }
+  .cm-post > .cm-vote button { width: 34px; height: 32px; }
+  .cm-post > .cm-vote b { min-width: 22px; text-align: center; font-size: 13px; }
+  .cm-phead { gap: 6px; font-size: 12px; }
+  .cm-phead .cm-chip { font-size: 11px; padding: 1px 8px; }
+  .cm-phead > .cm-ava { display: none; }
+  .cm-post h2 { font-size: 17px; margin: 8px 0 4px; }
+  .cm-post p { font-size: 14px; display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden; }
+  .cm-img { aspect-ratio: 2 / 1; margin-top: 10px; }
+  .cm-pfoot { min-height: 34px; padding-right: 118px; gap: 14px; margin-top: 10px; }
+  .cm-last { display: none; }
+  .cm-srvcard { padding: 8px 10px; }
+
+  /* Розділи форуму: назва з описом і лічильник тем у рядку */
+  .cm-row { grid-template-columns: 40px minmax(0, 1fr) auto; gap: 12px; padding: 12px 14px; }
+  .cm-row .ic { width: 40px; height: 40px; }
+  .cm-row .n:nth-child(3) { display: block; }
+  .cm-grp { padding: 8px 14px; }
+
+  /* Тема: менший банер, відповіді під нижньою панеллю не ховаються */
+  .cm-hero { min-height: 280px; padding: 20px; border-radius: 18px; }
+  .cm-hero h1 { font-size: 26px; margin: 10px 0 12px; }
+  .cm-byline { font-size: 13px; gap: 8px 12px; }
+  .cm-article-layout { margin-top: 20px; gap: 24px; }
+  .cm-body { font-size: 16px; line-height: 1.7; }
+  .cm-thread { margin-top: 32px; }
+  #reply, #thread { scroll-margin-top: 16px; }
+}
+@media (max-width: 640px) {
+  .cm-navcol, .cm-newsgrid { margin: 0 -16px; padding-left: 16px; padding-right: 16px; }
+  .cm-newsgrid { scroll-padding: 0 16px; }
+}

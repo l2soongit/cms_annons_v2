@@ -41,4 +41,5 @@
     @include('community.partials.aside')
   </div>
 </div>
+@include('community.partials.mobilebar')
 </x-layouts.home>

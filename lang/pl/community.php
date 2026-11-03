@@ -268,4 +268,8 @@ return [
         'all' => 'Wszystkie aktualności serwera',
         'write' => 'Napisz aktualność',
     ],
+    'mbar' => [
+        'forum' => 'Działy',
+        'mine' => 'Moje',
+    ],
 ];

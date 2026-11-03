@@ -268,4 +268,8 @@ return [
         'all' => 'All server news',
         'write' => 'Write news',
     ],
+    'mbar' => [
+        'forum' => 'Sections',
+        'mine' => 'Mine',
+    ],
 ];

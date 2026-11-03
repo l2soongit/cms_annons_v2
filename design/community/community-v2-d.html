@@ -1,0 +1,464 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Спільнота — D «Форум» (у стилі XenForo)</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* D «Форум»: структура класичного форуму на кшталт XenForo — головна з блоками розділів (підрозділи, лічильники, останнє повідомлення),
+   список тем із префіксами, закріпленими й сторінками, тема з карткою автора зліва, реакціями та швидкою відповіддю,
+   бічна колонка «Хто онлайн / Статистика / Останні повідомлення». Оформлення — graj.club: темна тема, золотий градієнт, бали.
+   Три екрани перемикаються кліками: головна → розділ → тема. */
+.wrap { max-width: 1280px; }
+.btn-hot { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 9px 16px; border-radius: 10px; background: var(--grad); color: #1c1003; font-weight: 800; font-size: 14px; white-space: nowrap; cursor: pointer; }
+.btn-ghost { display: inline-flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 14px; border-radius: 10px; border: 1px solid var(--line-2); font-weight: 800; font-size: 13px; white-space: nowrap; cursor: pointer; }
+.ibtn { flex: none; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 10px; background: var(--card); border: 1px solid var(--line); font-size: 16px; position: relative; cursor: pointer; }
+.ibtn .dot { position: absolute; top: -4px; right: -4px; min-width: 18px; height: 18px; padding: 0 5px; border-radius: 9px; background: var(--orange); color: #fff; font: 800 10px/18px var(--font); border: 2px solid var(--bg); }
+.ava { flex: none; width: 36px; height: 36px; border-radius: 50%; display: inline-grid; place-items: center; font: 800 14px var(--font); color: #111; }
+.ava.s { width: 26px; height: 26px; font-size: 11px; }
+.c1 { background: #fbbf24; } .c2 { background: #60a5fa; } .c3 { background: #34d399; } .c4 { background: #f472b6; } .c5 { background: #a78bfa; } .c6 { background: #fb923c; }
+.u-admin { color: #fb7185; } .u-owner { color: var(--orange); } .u-vet { color: var(--amber); }
+.meta { font-size: 13px; color: var(--faint); }
+.pfx { display: inline-block; padding: 0 7px; border-radius: 6px; font-size: 11px; font-weight: 800; line-height: 1.7; vertical-align: 2px; margin-right: 4px; color: #111; }
+.pfx.ask { background: #60a5fa; } .pfx.guide { background: #34d399; } .pfx.clan { background: #a78bfa; } .pfx.srv { background: #fb923c; } .pfx.news { background: var(--amber); } .pfx.ok { background: #34d399; }
+
+/* Шапка: основне меню + друге меню, як у XenForo */
+.hdr { background: linear-gradient(180deg, #18120a, var(--bg)); border-bottom: 1px solid var(--line); }
+.hdr .row { display: flex; align-items: center; gap: 14px; height: 60px; }
+.hdr .logo { height: 24px; }
+.hdr .burger { display: none; }
+.hdr nav.main { display: flex; gap: 4px; margin-left: 16px; }
+.hdr nav.main a { padding: 8px 14px; border-radius: 10px 10px 0 0; font-weight: 800; font-size: 14px; color: var(--muted); cursor: pointer; }
+.hdr nav.main a[aria-current] { color: var(--text); background: var(--card); box-shadow: inset 0 2px 0 var(--amber); }
+.hdr .sp { flex: 1; }
+.hdr .me { display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px; }
+.hdr .me small { display: block; font: 700 11px var(--font); color: var(--amber); }
+.subnav { background: var(--card); border-bottom: 1px solid var(--line); }
+.subnav .wrap { display: flex; gap: 20px; height: 42px; align-items: center; font-size: 13px; font-weight: 700; color: var(--muted); overflow-x: auto; scrollbar-width: none; white-space: nowrap; }
+.subnav a { cursor: pointer; }
+.subnav a:hover { color: var(--text); }
+.subnav .search { margin-left: auto; display: flex; align-items: center; gap: 8px; height: 30px; padding: 0 12px; border-radius: 8px; background: var(--bg-2); border: 1px solid var(--line); color: var(--faint); min-width: 260px; }
+
+.crumbs { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; padding: 18px 0 6px; font-size: 13px; color: var(--faint); }
+.crumbs a { cursor: pointer; } .crumbs a:hover { color: var(--amber); }
+.ptitle { display: flex; justify-content: space-between; align-items: end; gap: 16px; flex-wrap: wrap; padding-bottom: 16px; }
+.ptitle h1 { font: 800 28px/1.15 var(--display); letter-spacing: -.01em; }
+.ptitle p { color: var(--muted); margin-top: 4px; font-size: 14px; }
+.layout { display: grid; grid-template-columns: minmax(0, 1fr) 300px; gap: 24px; align-items: start; padding-bottom: 48px; }
+.view { display: none; }
+body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-view="thread"] .v-thread { display: block; }
+
+/* Блоки (категорії) */
+.block { border-radius: 14px; overflow: hidden; border: 1px solid var(--line); background: var(--card); margin-bottom: 18px; }
+.bhead { display: flex; justify-content: space-between; align-items: center; padding: 12px 16px; background: linear-gradient(90deg, #fbbf2422, #f9731608 60%, transparent), var(--card-2); border-bottom: 1px solid var(--line); }
+.bhead h2 { font: 700 15px var(--display); }
+.bhead h2 a { cursor: pointer; } .bhead h2 a:hover { color: var(--amber); }
+.bhead button { color: var(--faint); font-size: 14px; }
+.bhead small { color: var(--faint); font-size: 12px; font-weight: 600; }
+
+/* Розділ (node) */
+.node { display: grid; grid-template-columns: 46px minmax(0, 1fr) 150px 240px; gap: 16px; align-items: center; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.node:last-child { border-bottom: 0; }
+.node:hover { background: #ffffff04; }
+.nic { width: 46px; height: 46px; border-radius: 12px; display: grid; place-items: center; font-size: 22px; background: var(--bg-2); border: 1px solid var(--line); opacity: .55; }
+.nic img { width: 30px; height: 30px; }
+.node.unread .nic { opacity: 1; border-color: #fbbf2488; box-shadow: 0 0 0 3px #fbbf2414; }
+.node h3 { font: 700 15px var(--font); }
+.node h3 a { cursor: pointer; } .node h3 a:hover { color: var(--amber); }
+.node.unread h3 { font-weight: 800; }
+.node .desc { font-size: 13px; color: var(--faint); margin-top: 2px; }
+.subs { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; font-size: 13px; }
+.subs a { color: var(--muted); cursor: pointer; display: inline-flex; align-items: center; gap: 5px; }
+.subs a::before { content: ''; width: 6px; height: 6px; border-radius: 2px; background: var(--line-2); }
+.subs a.unread { color: var(--text); font-weight: 700; } .subs a.unread::before { background: var(--amber); }
+.nstats { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; font-size: 12px; color: var(--faint); }
+.nstats b { display: block; color: var(--text); font: 700 14px var(--display); }
+.nlast { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 10px; align-items: center; min-width: 0; }
+.nlast a { display: block; font-size: 13px; font-weight: 700; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; cursor: pointer; }
+.nlast a:hover { color: var(--amber); }
+.nlast .meta { font-size: 12px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+/* Новини зверху головної */
+.featured { display: grid; grid-template-columns: 1.4fr 1fr 1fr; gap: 12px; margin-bottom: 18px; }
+.fc { position: relative; isolation: isolate; min-height: 170px; border-radius: 14px; overflow: hidden; padding: 14px; display: flex; flex-direction: column; justify-content: end; border: 1px solid var(--line); cursor: pointer; }
+.fc img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; transition: transform .5s; }
+.fc:hover img { transform: scale(1.04); }
+.fc::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 20%, #09090bf0 90%); }
+.fc h3 { font: 700 16px/1.3 var(--display); margin-top: 6px; }
+.fc .meta { color: #d4d4d8; font-size: 12px; margin-top: 4px; }
+.fc.big h3 { font-size: 20px; }
+
+/* Бічна колонка */
+.side { display: grid; gap: 16px; }
+.side .block { margin: 0; }
+.side .bbody { padding: 14px 16px; font-size: 14px; }
+.online { display: flex; flex-wrap: wrap; gap: 4px 6px; font-size: 13px; font-weight: 700; }
+.online a { cursor: pointer; }
+.online a::after { content: ','; color: var(--faint); }
+.online a:last-child::after { content: ''; }
+.side .tot { margin-top: 10px; font-size: 12px; color: var(--faint); }
+.dl { display: grid; gap: 6px; }
+.dl div { display: flex; justify-content: space-between; color: var(--muted); }
+.dl b { color: var(--text); }
+.latest { display: grid; gap: 12px; }
+.latest a { display: grid; grid-template-columns: 26px minmax(0, 1fr); gap: 10px; cursor: pointer; }
+.latest b { display: block; font-size: 13px; line-height: 1.35; }
+.latest a:hover b { color: var(--amber); }
+.latest .meta { font-size: 12px; }
+.pts { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; }
+.pts b { font: 800 22px var(--display); color: var(--amber); }
+.bar { height: 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); margin: 8px 0 6px; overflow: hidden; }
+.bar i { display: block; width: 62%; height: 100%; background: var(--grad); }
+
+/* Список тем */
+.tools { display: flex; gap: 8px; align-items: center; justify-content: space-between; flex-wrap: wrap; margin-bottom: 12px; }
+.tools .l { display: flex; gap: 8px; flex-wrap: wrap; }
+.pager { display: flex; gap: 4px; }
+.pager a { min-width: 32px; height: 32px; padding: 0 8px; border-radius: 8px; display: grid; place-items: center; border: 1px solid var(--line); background: var(--card); font-weight: 800; font-size: 13px; color: var(--muted); cursor: pointer; }
+.pager a[aria-current] { background: var(--grad); color: #1c1003; border-color: transparent; }
+.th { display: grid; grid-template-columns: 40px minmax(0, 1fr) 110px 190px; gap: 14px; align-items: center; padding: 12px 16px; border-bottom: 1px solid var(--line); }
+.th:last-child { border-bottom: 0; }
+.th:hover { background: #ffffff04; }
+.th h3 { font: 600 15px/1.4 var(--font); color: var(--muted); }
+.th.unread h3 { font-weight: 800; color: var(--text); }
+.th h3 a { cursor: pointer; } .th h3 a:hover { color: var(--amber); }
+.th .meta { margin-top: 2px; display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.th .pg { display: inline-flex; gap: 3px; }
+.th .pg a { padding: 0 6px; border-radius: 5px; border: 1px solid var(--line-2); font-size: 11px; font-weight: 800; color: var(--muted); }
+.th .ic { font-size: 12px; }
+.th .cnt { display: grid; grid-template-columns: auto auto; gap: 0 8px; font-size: 12px; color: var(--faint); justify-content: end; }
+.th .cnt b { color: var(--text); text-align: right; }
+.th .last { display: grid; grid-template-columns: minmax(0, 1fr) 26px; gap: 8px; align-items: center; text-align: right; font-size: 12px; color: var(--faint); }
+.th .last b { display: block; color: var(--text); font-size: 13px; }
+.sticky-h { padding: 8px 16px; font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--amber); background: #fbbf240d; border-bottom: 1px solid var(--line); }
+
+/* Тема: повідомлення з карткою автора */
+.tmeta { display: flex; gap: 14px; flex-wrap: wrap; align-items: center; margin-top: 8px; font-size: 13px; color: var(--faint); }
+.tmeta b { color: var(--text); }
+.post { display: grid; grid-template-columns: 180px minmax(0, 1fr); border-radius: 14px; border: 1px solid var(--line); background: var(--card); margin-bottom: 14px; overflow: hidden; scroll-margin-top: 16px; }
+.post.best { border-color: #34d39966; }
+.post.op { border-color: #fbbf2455; }
+.pbit { padding: 18px 14px; display: grid; justify-items: center; align-content: start; gap: 6px; text-align: center; background: var(--bg-2); border-right: 1px solid var(--line); }
+.pbit .ava { width: 84px; height: 84px; font-size: 30px; border-radius: 22px; }
+.pbit .ava.fr { box-shadow: 0 0 0 3px var(--bg-2), 0 0 0 5px #fbbf24, 0 0 18px #fbbf2466; }
+.pbit h4 { font: 800 15px var(--font); margin-top: 4px; }
+.pbit .title { font-size: 12px; color: var(--faint); font-weight: 700; }
+.banner { width: 100%; padding: 3px 6px; border-radius: 6px; font-size: 11px; font-weight: 800; }
+.banner.owner { color: var(--orange); background: #f9731614; border: 1px solid #f9731650; }
+.banner.staff { color: #fb7185; background: #fb718514; border: 1px solid #fb718550; }
+.banner.lvl { color: var(--amber); background: #fbbf2414; border: 1px solid #fbbf2450; }
+.pstats { width: 100%; display: grid; gap: 2px; margin-top: 6px; font-size: 12px; color: var(--faint); }
+.pstats div { display: flex; justify-content: space-between; }
+.pstats b { color: var(--text); }
+.pmain { min-width: 0; display: flex; flex-direction: column; }
+.phead { display: flex; justify-content: space-between; align-items: center; gap: 10px; padding: 10px 18px; border-bottom: 1px solid var(--line); font-size: 13px; color: var(--faint); }
+.phead .r { display: flex; gap: 12px; }
+.phead .who-m { display: none; }
+.bestflag { color: var(--up); font-weight: 800; }
+.pbody { padding: 16px 18px; font-size: 15px; line-height: 1.7; color: #e4e4e7; flex: 1; }
+.pbody > * + * { margin-top: 12px; }
+.pbody ul { margin-left: 20px; }
+.pbody h3 { font: 700 18px var(--display); color: var(--text); }
+.pbody img.cover { border-radius: 12px; width: 100%; aspect-ratio: 21 / 9; object-fit: cover; }
+.quote { border-left: 3px solid var(--amber); background: var(--bg-2); border-radius: 0 10px 10px 0; overflow: hidden; }
+.quote .qh { padding: 6px 12px; font-size: 12px; font-weight: 800; color: var(--amber); background: #fbbf240f; }
+.quote p { padding: 8px 12px; font-size: 14px; color: var(--muted); }
+.srvbox { display: flex; align-items: center; gap: 12px; padding: 12px; border-radius: 12px; border: 1px solid #fbbf2455; background: var(--bg-2); }
+.srvbox img { width: 38px; height: 38px; }
+.srvbox div { flex: 1; } .srvbox small { display: block; color: var(--faint); font-size: 12px; }
+.sig { margin: 0 18px; padding: 10px 0; border-top: 1px dashed var(--line-2); font-size: 12px; color: var(--faint); }
+.reacts { display: flex; align-items: center; gap: 8px; margin: 0 18px 4px; padding: 8px 10px; border-radius: 10px; background: var(--bg-2); font-size: 13px; color: var(--muted); }
+.reacts .em { letter-spacing: -2px; }
+.reacts b { color: var(--text); }
+.pfoot { display: flex; justify-content: space-between; gap: 10px; padding: 8px 18px 12px; font-size: 13px; font-weight: 800; color: var(--faint); flex-wrap: wrap; }
+.pfoot .l, .pfoot .r { display: flex; gap: 16px; }
+.pfoot a { cursor: pointer; } .pfoot a:hover { color: var(--text); }
+.pfoot .liked { color: var(--amber); }
+.qr { display: grid; grid-template-columns: 56px minmax(0, 1fr); gap: 14px; padding: 16px; border-radius: 14px; border: 1px solid var(--line); background: var(--card); }
+.qr .ava { width: 56px; height: 56px; border-radius: 16px; font-size: 22px; }
+.ed { border: 1px solid var(--line-2); border-radius: 12px; overflow: hidden; background: var(--bg-2); }
+.ed .tb { display: flex; gap: 2px; padding: 6px; border-bottom: 1px solid var(--line); flex-wrap: wrap; }
+.ed .tb button { min-width: 32px; height: 30px; border-radius: 6px; color: var(--muted); font-weight: 800; font-size: 13px; }
+.ed .tb button:hover { background: var(--card-2); color: var(--text); }
+.ed .tb .sep { width: 1px; background: var(--line); margin: 4px 4px; }
+.ed .area { min-height: 110px; padding: 12px; color: var(--faint); font-size: 15px; }
+.qr .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+.mnav, .scrim, .tabbar { display: none; }
+.tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; grid-template-columns: repeat(5, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.tabbar a { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); cursor: pointer; position: relative; }
+.tabbar span { font-size: 20px; line-height: 1.2; }
+.tabbar a[aria-current] { color: var(--text); }
+.tabbar .plus { color: var(--amber); }
+.tabbar .plus span { width: 44px; height: 32px; border-radius: 12px; display: grid; place-items: center; background: var(--grad); color: #1c1003; font-weight: 800; }
+.tabbar i { position: absolute; top: -2px; left: calc(50% + 6px); font-style: normal; font-size: 10px; font-weight: 800; padding: 0 5px; border-radius: 8px; background: var(--orange); color: #fff; }
+
+/* ===== Телефон ===== */
+@media (max-width: 1023px) {
+  .layout { grid-template-columns: minmax(0, 1fr); }
+  .node { grid-template-columns: 40px minmax(0, 1fr) 70px; gap: 12px; }
+  .node .nlast { grid-column: 2 / -1; }
+  .featured { grid-template-columns: 1fr 1fr; }
+  .featured .fc.big { grid-column: span 2; }
+  .th { grid-template-columns: 36px minmax(0, 1fr) 80px; }
+  .th .last { display: none; }
+}
+@media (max-width: 720px) {
+  .wrap { padding: 0 12px; }
+  .hdr .row { height: 54px; gap: 8px; }
+  .hdr nav.main, .hdr .me span, .subnav .search { display: none; }
+  .hdr .burger { display: grid; }
+  .hdr .logo { height: 20px; }
+  .subnav .wrap { gap: 16px; height: 40px; }
+  .crumbs { padding-top: 12px; }
+  .ptitle h1 { font-size: 22px; }
+  .ptitle .btn-hot { width: 100%; }
+  .featured { display: flex; overflow-x: auto; scroll-snap-type: x mandatory; margin: 0 -12px 16px; padding: 0 12px; scrollbar-width: none; }
+  .fc { flex: 0 0 78%; scroll-snap-align: start; min-height: 160px; }
+  .block { border-radius: 12px; margin-left: -4px; margin-right: -4px; }
+  .bhead { padding: 10px 12px; }
+  .node { grid-template-columns: 38px minmax(0, 1fr); gap: 10px; padding: 12px; }
+  .nic { width: 38px; height: 38px; border-radius: 10px; font-size: 18px; }
+  .nic img { width: 24px; height: 24px; }
+  .node .nstats { display: none; }
+  .node .nlast { grid-column: 2; grid-template-columns: 22px minmax(0, 1fr); gap: 8px; padding-top: 8px; margin-top: 2px; border-top: 1px dashed var(--line); }
+  .node .nlast .ava { width: 22px; height: 22px; font-size: 9px; }
+  .node .desc { display: none; }
+  .th { grid-template-columns: 32px minmax(0, 1fr); gap: 10px; padding: 12px; }
+  .th .ava { width: 32px; height: 32px; }
+  .th .cnt { display: none; }
+  .th .pg { display: none; }
+  .tools .pager a:not([aria-current]):not(.nx) { display: none; }
+  .post { grid-template-columns: 1fr; }
+  .pbit { display: none; }
+  .phead .who-m { display: flex; align-items: center; gap: 10px; color: var(--faint); font-size: 12px; }
+  .phead .who-m b { display: block; font-size: 14px; }
+  .phead .who-m .banner { width: auto; display: inline-block; margin-left: 4px; }
+  .phead { padding: 10px 12px; }
+  .pbody { padding: 12px; font-size: 15px; }
+  .sig { margin: 0 12px; }
+  .reacts { margin: 0 12px 4px; }
+  .pfoot { padding: 8px 12px 12px; }
+  .pfoot .l { display: none; }
+  .pfoot .r { width: 100%; justify-content: space-between; }
+  .phead .d { font-size: 11px; text-align: right; }
+  body { padding-bottom: 76px; }
+  .tabbar { display: grid; }
+  .hdr .ibtn[aria-label="Особисті повідомлення"] { display: none; }
+  .qr { grid-template-columns: 1fr; padding: 12px; }
+  .qr > .ava { display: none; }
+  .qr .row .btn-hot { flex: 1; }
+  /* Мобільне меню як у XenForo — збоку */
+  .mnav { display: block; position: fixed; z-index: 50; top: 0; bottom: 0; left: 0; width: min(300px, 84vw); background: var(--card); border-right: 1px solid var(--line-2); transform: translateX(-100%); transition: transform .25s; padding: 16px; overflow-y: auto; }
+  .menu-open .mnav { transform: none; }
+  .scrim { display: block; position: fixed; inset: 0; z-index: 49; background: #000a; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .menu-open .scrim { opacity: 1; pointer-events: auto; }
+  .mnav .me { display: flex; align-items: center; gap: 10px; padding-bottom: 14px; border-bottom: 1px solid var(--line); }
+  .mnav .me b { display: block; } .mnav .me small { color: var(--amber); font-weight: 700; font-size: 12px; }
+  .mnav a { display: flex; align-items: center; gap: 10px; padding: 11px 6px; border-bottom: 1px solid var(--line); font-weight: 700; cursor: pointer; }
+  .mnav a .n { margin-left: auto; font-size: 11px; font-weight: 800; padding: 1px 7px; border-radius: 999px; background: var(--orange); color: #fff; }
+  .mnav h4 { font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 16px 6px 4px; }
+}
+</style>
+</head>
+<body data-view="index">
+
+<header class="hdr"><div class="wrap row">
+  <button class="ibtn burger" data-menu aria-label="Меню">☰</button>
+  <img class="logo" src="../../public/images/brand/logo.svg" alt="graj.club">
+  <nav class="main"><a>Рейтинг</a><a>Ігри</a><a aria-current="page" data-go="index">Форум</a><a>Новини</a><a>Учасники</a></nav>
+  <span class="sp"></span>
+  <button class="ibtn" aria-label="Пошук">🔍</button>
+  <button class="ibtn" aria-label="Особисті повідомлення">✉️<span class="dot">2</span></button>
+  <button class="ibtn" aria-label="Сповіщення">🔔<span class="dot">5</span></button>
+  <span class="me"><span class="ava c1">O</span><span>Orest<small>✨ 650 балів</small></span></span>
+</div></header>
+<div class="subnav"><div class="wrap">
+  <a>🆕 Нові повідомлення</a><a>📝 Нові теми</a><a>⭐ Мої теми</a><a>🔔 Підписки</a><a>✓ Позначити прочитаним</a>
+  <span class="search">🔍 Пошук по форуму…</span>
+</div></div>
+
+<div class="scrim" data-menu></div>
+<nav class="mnav" aria-label="Меню">
+  <div class="me"><span class="ava c1">O</span><div><b>Orest</b><small>Учасник · ✨ 650 балів</small></div></div>
+  <a data-go="index" data-menu>🗂 Форум</a><a>📣 Новини</a><a>🆕 Нові повідомлення<span class="n">12</span></a><a>🔔 Сповіщення<span class="n">5</span></a><a>✉️ Повідомлення<span class="n">2</span></a>
+  <h4>Сайт</h4><a>🏆 Рейтинг серверів</a><a>🎮 Ігри</a><a>👥 Учасники</a><a>✨ Бонуси й магазин</a>
+</nav>
+
+<main class="wrap">
+
+<!-- ========== Головна форуму ========== -->
+<section class="view v-index">
+  <div class="crumbs"><a>graj.club</a> › <span>Форум</span></div>
+  <div class="ptitle"><div><h1>Форум graj.club</h1><p>Новини серверів, обговорення, гайди й набори в клани для всіх ігор.</p></div><a class="btn-hot" data-new>+ Створити тему</a></div>
+  <div class="layout">
+    <div>
+      <div class="featured">
+        <a class="fc big" data-go="thread"><img src="../../storage/app/public/games/cover/lineage2.webp" alt=""><span><span class="pfx news">Новина</span></span><h3>Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну</h3><span class="meta">Admin · 5 год · 💬 3</span></a>
+        <a class="fc" data-go="thread"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""><span><span class="pfx srv">Сервер</span></span><h3>Відкриття Wrath 3.3.5a x5: старт 15 листопада</h3><span class="meta">8 год · 💬 4</span></a>
+        <a class="fc" data-go="thread"><img src="../../storage/app/public/games/cover/rust.webp" alt=""><span><span class="pfx srv">Сервер</span></span><h3>Глобальний вайп у четвер і нова карта 4500</h3><span class="meta">10 год · 💬 11</span></a>
+      </div>
+
+      <section class="block">
+        <div class="bhead"><h2>graj.club</h2><button aria-label="Згорнути">▾</button></div>
+        <div class="node unread"><span class="nic">📣</span><div><h3><a data-go="forum">Новини й оголошення</a></h3><div class="desc">Новини сайту: оновлення, конкурси, підсумки місяця</div></div><div class="nstats"><span><b>48</b>Теми</span><span><b>612</b>Повідомл.</span></div><div class="nlast"><span class="ava s c2">A</span><div><a data-go="thread">Підсумки жовтня: 14 нових серверів…</a><div class="meta">5 год · Admin</div></div></div></div>
+        <div class="node"><span class="nic">🛠</span><div><h3><a data-go="forum">Власникам серверів</a></h3><div class="desc">API, callback за голос, просування, питання до адміністрації</div><div class="subs"><a>Технічна підтримка</a><a>Пропозиції</a></div></div><div class="nstats"><span><b>131</b>Теми</span><span><b>1,9K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c4">D</span><div><a data-go="thread">Callback не приходить після голосу</a><div class="meta">40 хв · Dev_Tor</div></div></div></div>
+      </section>
+
+      <section class="block">
+        <div class="bhead"><h2>Ігри</h2><small>8 розділів</small></div>
+        <div class="node unread"><span class="nic"><img src="../../public/images/games/l2.png" alt=""></span><div><h3><a data-go="forum">Lineage 2</a></h3><div class="desc">Interlude, High Five, Essence та інші хроніки</div><div class="subs"><a class="unread">Новини серверів</a><a class="unread">Обговорення</a><a>Гайди</a><a>Клани</a></div></div><div class="nstats"><span><b>2,4K</b>Теми</span><span><b>38K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c5">K</span><div><a data-go="thread">[UA] Valhalla набирає DD й хілів</a><div class="meta">3 год · Kain</div></div></div></div>
+        <div class="node unread"><span class="nic"><img src="../../public/images/games/wow.png" alt=""></span><div><h3><a data-go="forum">World of Warcraft</a></h3><div class="desc">Classic, WotLK, Cataclysm — приватні сервери</div><div class="subs"><a class="unread">Новини серверів</a><a>Обговорення</a><a>Гайди</a><a>Клани</a></div></div><div class="nstats"><span><b>1,2K</b>Теми</span><span><b>17K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c3">L</span><div><a data-go="thread">Відкриття Wrath 3.3.5a x5: старт 15…</a><div class="meta">2 год · Lumi</div></div></div></div>
+        <div class="node"><span class="nic"><img src="../../public/images/games/mc.png" alt=""></span><div><h3><a data-go="forum">Minecraft</a></h3><div class="desc">Ванільні, модові та міні-ігрові сервери</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a><a>Гайди</a></div></div><div class="nstats"><span><b>904</b>Теми</span><span><b>9,1K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c1">S</span><div><a data-go="thread">Як вибрати сервер з модами без pay-to-win</a><div class="meta">1 день · Steve228</div></div></div></div>
+        <div class="node unread"><span class="nic"><img src="../../public/images/games/rust.png" alt=""></span><div><h3><a data-go="forum">Rust</a></h3><div class="desc">Вайпи, модові й ванільні сервери</div><div class="subs"><a class="unread">Вайпи</a><a>Обговорення</a></div></div><div class="nstats"><span><b>512</b>Теми</span><span><b>6,8K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c6">R</span><div><a data-go="thread">Розклад вайпів на листопад</a><div class="meta">5 год · rustacean</div></div></div></div>
+        <div class="node"><span class="nic"><img src="../../public/images/games/gta.png" alt=""></span><div><h3><a data-go="forum">GTA</a></h3><div class="desc">RP-сервери GTA V та SA:MP</div></div><div class="nstats"><span><b>377</b>Теми</span><span><b>4,2K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c2">V</span><div><a data-go="thread">Найкращі RP-проєкти українською</a><div class="meta">1 день · Vito</div></div></div></div>
+      </section>
+
+      <section class="block">
+        <div class="bhead"><h2>Різне</h2></div>
+        <div class="node unread"><span class="nic">☕</span><div><h3><a data-go="forum">Флудилка</a></h3><div class="desc">Про все, що не вмістилося в інші розділи</div></div><div class="nstats"><span><b>640</b>Теми</span><span><b>22K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c3">L</span><div><a data-go="thread">Якою була ваша перша ММО?</a><div class="meta">12 хв · Lumi</div></div></div></div>
+        <div class="node"><span class="nic">🖼</span><div><h3><a data-go="forum">Скриншоти й відео</a></h3><div class="desc">Ваші найкращі моменти з ігор</div></div><div class="nstats"><span><b>210</b>Теми</span><span><b>3,1K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c6">R</span><div><a data-go="thread">Скріни першого персонажа</a><div class="meta">6 год · rustacean</div></div></div></div>
+      </section>
+    </div>
+
+    <aside class="side">
+      <section class="block"><div class="bhead"><h2>✨ Ваші бали</h2></div><div class="bbody"><div class="pts"><span>Учасник</span><b>650</b></div><div class="bar"><i></i></div><div class="meta">До «Ветерана» — 350 · <a style="color:var(--amber);font-weight:800">Магазин →</a></div></div></section>
+      <section class="block"><div class="bhead"><h2>Зараз на форумі</h2></div><div class="bbody">
+        <div class="online"><a class="u-admin">Admin</a><a class="u-owner">Dev_Tor</a><a class="u-vet">Lumi</a><a>Kain</a><a>Steve228</a><a class="u-owner">rustacean</a><a>Vito</a><a>Orest</a><a>Nova</a><a>Ghost_UA</a></div>
+        <div class="tot">Усього: 214 (учасників: 38, гостей: 176)</div></div></section>
+      <section class="block"><div class="bhead"><h2>Останні повідомлення</h2></div><div class="bbody"><div class="latest">
+        <a data-go="thread"><span class="ava s c3">L</span><div><b>Якою була ваша перша ММО?</b><span class="meta">Lumi · 12 хв · Флудилка</span></div></a>
+        <a data-go="thread"><span class="ava s c4">D</span><div><b>Callback не приходить після голосу</b><span class="meta">Dev_Tor · 40 хв · Власникам</span></div></a>
+        <a data-go="thread"><span class="ava s c2">A</span><div><b>Відкриття Wrath 3.3.5a x5</b><span class="meta">Admin · 1 год · WoW</span></div></a>
+      </div></div></section>
+      <section class="block"><div class="bhead"><h2>Статистика форуму</h2></div><div class="bbody"><div class="dl"><div>Теми<b>6 312</b></div><div>Повідомлення<b>104 880</b></div><div>Учасники<b>18 405</b></div><div>Новий учасник<b class="u-vet">Nova</b></div></div></div></section>
+    </aside>
+  </div>
+</section>
+
+<!-- ========== Розділ: список тем ========== -->
+<section class="view v-forum">
+  <div class="crumbs"><a data-go="index">Форум</a> › <a data-go="index">Ігри</a> › <span>World of Warcraft</span></div>
+  <div class="ptitle"><div><h1>World of Warcraft</h1><p>Classic, WotLK, Cataclysm — приватні сервери. Стежать 412.</p></div><div style="display:flex;gap:8px"><a class="btn-ghost">🔔 Стежити</a><a class="btn-hot" data-new>+ Створити тему</a></div></div>
+  <div class="layout">
+    <div>
+      <section class="block" style="margin-bottom:14px">
+        <div class="node"><span class="nic" style="opacity:1">📣</span><div><h3><a>Новини серверів</a></h3><div class="desc">Тільки власники серверів WoW</div></div><div class="nstats"><span><b>86</b>Теми</span><span><b>940</b>Повідомл.</span></div><div class="nlast"><span class="ava s c2">A</span><div><a data-go="thread">Відкриття Wrath 3.3.5a x5</a><div class="meta">8 год · Admin</div></div></div></div>
+      </section>
+      <div class="tools"><div class="l"><a class="btn-ghost">Фільтри ▾</a><a class="btn-ghost">Префікс: усі ▾</a><a class="btn-ghost">Сортувати: остання відповідь ▾</a></div><div class="pager"><a aria-current="page">1</a><a>2</a><a>3</a><a>…</a><a>48</a><a class="nx">→</a></div></div>
+      <section class="block">
+        <div class="sticky-h">📌 Закріплені теми</div>
+        <div class="th unread"><span class="ava c2">A</span><div><h3><span class="pfx news">Важливо</span><a data-go="thread">Правила розділу WoW і як писати новини сервера</a></h3><div class="meta">Admin · 12 вер 2026 <span class="ic">📌 🔒</span></div></div><div class="cnt">Відповіді<b>0</b>Перегляди<b>9,4K</b></div><div class="last"><div><b>Admin</b>12 вер</div><span class="ava s c2">A</span></div></div>
+        <div class="th unread"><span class="ava c2">A</span><div><h3><span class="pfx srv">Сервер</span><a data-go="thread">Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</a></h3><div class="meta">Admin · 2 лис <span class="ic">📌</span></div></div><div class="cnt">Відповіді<b>4</b>Перегляди<b>2,3K</b></div><div class="last"><div><b>Dev_Tor</b>40 хв</div><span class="ava s c4">D</span></div></div>
+      </section>
+      <section class="block">
+        <div class="bhead"><h2>Теми</h2><small>1 204 теми</small></div>
+        <div class="th unread"><span class="ava c4">D</span><div><h3><span class="pfx ask">Питання</span><a data-go="thread">Який сервер 3.3.5a обрати новачку у 2026?</a></h3><div class="meta">Dev_Tor · вчора <span class="pg"><a>1</a><a>2</a></span></div></div><div class="cnt">Відповіді<b>23</b>Перегляди<b>1,1K</b></div><div class="last"><div><b>Lumi</b>2 год</div><span class="ava s c3">L</span></div></div>
+        <div class="th"><span class="ava c1">S</span><div><h3><span class="pfx guide">Гайд</span><a data-go="thread">Фрост-маг у PvP: таланти, гліфи, ротація</a></h3><div class="meta">Steve228 · 30 жов <span class="pfx ok" style="margin:0">✓ Рішення</span></div></div><div class="cnt">Відповіді<b>9</b>Перегляди<b>840</b></div><div class="last"><div><b>Steve228</b>1 день</div><span class="ava s c1">S</span></div></div>
+        <div class="th unread"><span class="ava c3">L</span><div><h3><a data-go="thread">Blizzlike чи кастом: що вам цікавіше?</a></h3><div class="meta">Lumi · 1 лис <span class="pg"><a>1</a><a>2</a><a>3</a></span> <span class="ic">🔥</span></div></div><div class="cnt">Відповіді<b>41</b>Перегляди<b>2,0K</b></div><div class="last"><div><b>Kain</b>3 год</div><span class="ava s c5">K</span></div></div>
+        <div class="th"><span class="ava c5">K</span><div><h3><span class="pfx clan">Клан</span><a data-go="thread">«Орда Карпат» набирає на старт Azeroth Legacy</a></h3><div class="meta">Kain · 31 жов</div></div><div class="cnt">Відповіді<b>7</b>Перегляди<b>390</b></div><div class="last"><div><b>Nova</b>5 год</div><span class="ava s c6">N</span></div></div>
+        <div class="th"><span class="ava c6">R</span><div><h3><a data-go="thread">Скриншоти з вашого першого персонажа</a></h3><div class="meta">rustacean · 29 жов <span class="ic">🖼</span></div></div><div class="cnt">Відповіді<b>18</b>Перегляди<b>720</b></div><div class="last"><div><b>Vito</b>6 год</div><span class="ava s c2">V</span></div></div>
+      </section>
+      <div class="tools"><span class="meta">Показано 1–20 із 1 204</span><div class="pager"><a aria-current="page">1</a><a>2</a><a>3</a><a>…</a><a>48</a><a class="nx">→</a></div></div>
+    </div>
+    <aside class="side">
+      <section class="block"><div class="bhead"><h2>🏆 Топ серверів WoW</h2></div><div class="bbody"><div class="dl"><div>1. Azeroth Legacy<b style="color:var(--up)">● 1 830</b></div><div>2. Frostmourne x5<b style="color:var(--up)">● 1 412</b></div><div>3. Classic Rebirth<b style="color:var(--up)">● 990</b></div></div></div></section>
+      <section class="block"><div class="bhead"><h2>Префікси</h2></div><div class="bbody" style="display:flex;flex-wrap:wrap;gap:6px"><span class="pfx news">Важливо</span><span class="pfx srv">Сервер</span><span class="pfx ask">Питання</span><span class="pfx guide">Гайд</span><span class="pfx clan">Клан</span></div></section>
+      <section class="block"><div class="bhead"><h2>Зараз у розділі</h2></div><div class="bbody"><div class="online"><a class="u-vet">Lumi</a><a class="u-owner">Dev_Tor</a><a>Kain</a><a>Orest</a></div><div class="tot">Учасників: 4, гостей: 31</div></div></section>
+    </aside>
+  </div>
+</section>
+
+<!-- ========== Тема ========== -->
+<section class="view v-thread">
+  <div class="crumbs"><a data-go="index">Форум</a> › <a data-go="index">Ігри</a> › <a data-go="forum">World of Warcraft</a> › <a data-go="forum">Новини серверів</a></div>
+  <div class="ptitle"><div><h1><span class="pfx srv">Сервер</span>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h1>
+    <div class="tmeta"><span>✍️ <b>Admin</b></span><span>🕒 2 лис 2026</span><span>💬 4 відповіді</span><span>👁 2 265</span><span>📌 Закріплено</span></div></div>
+    <div style="display:flex;gap:8px"><a class="btn-ghost">🔔 Стежити</a><a class="btn-ghost">↗</a></div></div>
+
+  <div class="layout" style="grid-template-columns:minmax(0,1fr)">
+    <div>
+      <div class="tools"><div class="l"><span class="meta">Сторінка 1 з 1</span></div><div class="pager"><a aria-current="page">1</a></div></div>
+
+      <article class="post op" id="p1">
+        <div class="pbit"><span class="ava c2 fr">A</span><h4 class="u-admin">Admin</h4><span class="title">Адміністрація graj.club</span><span class="banner staff">Команда</span><span class="banner owner">Власник Azeroth Legacy</span>
+          <div class="pstats"><div>Повідомлень<b>1 204</b></div><div>Реакцій<b>3 880</b></div><div>Балів<b>12 450</b></div><div>З нами з<b>2024</b></div></div></div>
+        <div class="pmain">
+          <div class="phead"><span class="who-m"><span class="ava c2">A</span><span><b class="u-admin">Admin</b>Адміністрація<span class="banner owner">Власник</span></span></span><span class="d">2 лис 2026 · 19:04</span><span class="r"><a>↗</a><a>#1</a></span></div>
+          <div class="pbody">
+            <img class="cover" src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt="">
+            <p>Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+            <h3>Що чекає на старті</h3>
+            <ul><li>x5 досвід, x3 золото</li><li>Кросфракційні поля бою</li><li>Без донату в характеристики</li></ul>
+            <div class="srvbox"><img src="../../public/images/games/wow.png" alt=""><div><b>Azeroth Legacy</b><small>● онлайн 1830 · #1 у рейтингу WoW</small></div><a class="btn-ghost">Сервер →</a></div>
+          </div>
+          <div class="reacts"><span class="em">👍🔥❤️</span><span><b>Lumi</b>, <b>Kain</b>, <b>Orest</b> та ще 263</span></div>
+          <div class="pfoot"><div class="l"><a>⚑ Поскаржитися</a><a>✎ Редагувати</a></div><div class="r"><a class="like">👍 Подобається</a><a>❝ Цитувати</a><a>↩ Відповісти</a></div></div>
+        </div>
+      </article>
+
+      <article class="post best" id="p2">
+        <div class="pbit"><span class="ava c3">L</span><h4 class="u-vet">Lumi</h4><span class="title">Ветеран</span><span class="banner lvl">✨ Легенда форуму</span>
+          <div class="pstats"><div>Повідомлень<b>2 311</b></div><div>Реакцій<b>5 102</b></div><div>Балів<b>4 870</b></div></div></div>
+        <div class="pmain">
+          <div class="phead"><span class="who-m"><span class="ava c3">L</span><span><b class="u-vet">Lumi</b>Ветеран</span></span><span class="d"><span class="bestflag">✓ Найкраща відповідь</span> · 2 год</span><span class="r"><a>#2</a></span></div>
+          <div class="pbody"><p>Турнір гільдій буде 3×3 чи 5×5? Хочемо зібрати склад заздалегідь. І чи можна буде заявити дві команди від однієї гільдії?</p></div>
+          <div class="sig">🛡 Гільдія «Світанок» · Azeroth Legacy · набір відкрито</div>
+          <div class="reacts"><span class="em">👍</span><span><b>Kain</b> та ще 13</span></div>
+          <div class="pfoot"><div class="l"><a>⚑ Поскаржитися</a></div><div class="r"><a class="like">👍 Подобається</a><a>❝ Цитувати</a><a>↩ Відповісти</a></div></div>
+        </div>
+      </article>
+
+      <article class="post" id="p3">
+        <div class="pbit"><span class="ava c2 fr">A</span><h4 class="u-admin">Admin</h4><span class="title">Адміністрація graj.club</span><span class="banner owner">Власник Azeroth Legacy</span>
+          <div class="pstats"><div>Повідомлень<b>1 204</b></div><div>Реакцій<b>3 880</b></div></div></div>
+        <div class="pmain">
+          <div class="phead"><span class="who-m"><span class="ava c2">A</span><span><b class="u-admin">Admin</b><span class="banner owner">Власник</span></span></span><span class="d">1 год</span><span class="r"><a>#3</a></span></div>
+          <div class="pbody"><div class="quote"><div class="qh">Lumi написав(ла):</div><p>Турнір гільдій буде 3×3 чи 5×5?</p></div><p>5×5, реєстрація відкриється в день старту. Дві команди від гільдії — так, якщо в складах різні гравці.</p></div>
+          <div class="reacts"><span class="em">👍❤️</span><span><b>Lumi</b>, <b>Orest</b> та ще 7</span></div>
+          <div class="pfoot"><div class="l"><a>⚑ Поскаржитися</a></div><div class="r"><a class="like">👍 Подобається</a><a>❝ Цитувати</a><a>↩ Відповісти</a></div></div>
+        </div>
+      </article>
+
+      <article class="post" id="p4">
+        <div class="pbit"><span class="ava c4">D</span><h4 class="u-owner">Dev_Tor</h4><span class="title">Учасник</span><span class="banner owner">Власник сервера</span>
+          <div class="pstats"><div>Повідомлень<b>188</b></div><div>Реакцій<b>402</b></div></div></div>
+        <div class="pmain">
+          <div class="phead"><span class="who-m"><span class="ava c4">D</span><span><b class="u-owner">Dev_Tor</b>Учасник</span></span><span class="d">40 хв</span><span class="r"><a>#4</a></span></div>
+          <div class="pbody"><p>Буде трансфер персонажів з x1? У нас частина гільдії вже 80 рівня.</p></div>
+          <div class="pfoot"><div class="l"><a>⚑ Поскаржитися</a></div><div class="r"><a class="like">👍 Подобається</a><a>❝ Цитувати</a><a>↩ Відповісти</a></div></div>
+        </div>
+      </article>
+
+      <div class="qr" id="reply">
+        <span class="ava c1">O</span>
+        <div>
+          <div class="ed"><div class="tb"><button>B</button><button><i>I</i></button><button><u>U</u></button><span class="sep"></span><button>❝</button><button>•</button><button>🔗</button><button>🖼</button><button>😊</button><span class="sep"></span><button>⤢</button></div><div class="area">Напишіть відповідь…</div></div>
+          <div class="row"><span class="meta">За відповідь, позначену найкращою, — +25 балів</span><div style="display:flex;gap:8px"><a class="btn-ghost">Попередній перегляд</a><a class="btn-hot">↩ Відповісти</a></div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+</main>
+<nav class="tabbar">
+  <a data-go="index" aria-current="page"><span>🗂</span>Форум</a>
+  <a><span>🆕</span>Нове<i>12</i></a>
+  <a class="plus" data-plus><span>+</span>Тема</a>
+  <a><span>✉️</span>Листи<i>2</i></a>
+  <a data-menu><span>👤</span>Я</a>
+</nav>
+<script>
+const b = document.body;
+const go = v => { b.dataset.view = v; b.classList.remove('menu-open'); scrollTo(0, 0); };
+document.querySelectorAll('[data-go]').forEach(el => el.addEventListener('click', e => { e.preventDefault(); go(el.dataset.go); }));
+document.querySelectorAll('[data-menu]').forEach(el => el.addEventListener('click', () => b.classList.toggle('menu-open')));
+document.querySelectorAll('.pfoot .like').forEach(l => l.addEventListener('click', () => l.classList.toggle('liked')));
+document.querySelectorAll('.pfoot .r a:last-child').forEach(a => a.addEventListener('click', () => document.getElementById('reply').scrollIntoView({ behavior: 'smooth' })));
+// «+» у темі веде до швидкої відповіді, в інших місцях — до створення теми
+document.querySelector('[data-plus]').addEventListener('click', () => { if (b.dataset.view === 'thread') document.getElementById('reply').scrollIntoView({ behavior: 'smooth' }); });
+const v = new URLSearchParams(location.search).get('view'); if (v) b.dataset.view = v;
+</script>
+</body>
+</html>

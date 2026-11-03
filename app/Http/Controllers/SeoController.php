@@ -91,7 +91,7 @@ class SeoController extends Controller
         // Спільнота: стрічка, розділи й опубліковані теми (новини — з вищим пріоритетом)
         if (config('graj.community.enabled', true)) {
             yield [route('community'), null, '0.7'];
-            yield [route('community.forum'), null, '0.5'];
+            yield [route('community.latest'), null, '0.5'];
             yield [route('community.news'), null, '0.6'];
             foreach (ForumCategory::where('is_active', true)->orderBy('sort')->get() as $category) {
                 yield [route('community.category', $category), null, '0.5'];

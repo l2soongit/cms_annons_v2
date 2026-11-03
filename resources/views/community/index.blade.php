@@ -1,65 +1,48 @@
-@php
-    $pageTitle = $category ? $category->name.' — '.__('community.nav') : ($tab === 'news' ? __('community.tabs.news') : __('community.meta_title'));
-@endphp
-<x-layouts.home :title="$pageTitle.' | graj.club'" :description="$category?->description ?: __('community.lead')" :assets="['resources/css/home.css', 'resources/css/community.css', 'resources/js/community.js']">
-<div class="wrap cm">
-  @include('community.partials.top')
+{{-- Головна форуму (демо design/community/community-v2-d.html): новини, блоки розділів, бічна колонка, рекламні місця --}}
+@php use App\Support\HomePageData; @endphp
+<x-layouts.home :title="__('community.forum.title').' — '.__('community.meta_title').' | graj.club'" :description="__('community.forum.lead')" :assets="['resources/css/home.css', 'resources/css/community.css', 'resources/css/forum.css', 'resources/js/community.js']">
+@include('community.partials.skin')
+<div class="wrap cm f">
+  @include('community.partials.sub')
+  <nav class="f-crumbs" aria-label="{{ __('ui.breadcrumbs') }}"><a href="{{ route('home') }}">graj.club</a> › <span>{{ __('community.forum.title') }}</span></nav>
+  <div class="f-title">
+    <div><h1>{{ __('community.forum.title') }}</h1><p>{{ __('community.forum.lead') }}</p></div>
+    <div class="f-acts"><a class="f-btn hot" href="{{ auth()->check() ? route('community.create') : route('login') }}">+ {{ __('community.forum.create') }}</a></div>
+  </div>
 
-  @if (session('status'))<div class="cm-flash" role="status">{{ session('status') }}</div>@endif
+  @if (session('status'))<div class="cm-flash" role="status" style="margin:0 0 16px">{{ session('status') }}</div>@endif
 
-  <div class="cm-layout">
-    @include('community.partials.nav')
+  <x-ad-banner placement="forum_top" gap="0 auto 18px" />
 
-    <section aria-label="{{ __('community.tabs.feed') }}">
-      @if ($category)
-        <div class="cm-cathead">
-          <div><h2 class="cm-h2">{{ $category->name }}</h2>@if ($category->description)<p class="cm-meta">{{ $category->description }}</p>@endif</div>
-          @auth<button type="button" class="btn btn-ghost btn-sm" data-subscribe="category" data-id="{{ $category->id }}" aria-pressed="{{ $subscribed ? 'true' : 'false' }}"
-            data-on="{{ __('community.subscribe.following') }}" data-off="{{ __('community.subscribe.follow') }}">{{ $subscribed ? __('community.subscribe.following') : __('community.subscribe.follow') }}</button>@endauth
-        </div>
+  <div class="f-layout">
+    <div>
+      @if ($news->isNotEmpty())
+        <section class="f-feat" aria-label="{{ __('community.tabs.news') }}">
+          @foreach ($news as $item)
+            @php $img = $item->cover ? HomePageData::url($item->cover) : HomePageData::url($item->category->game?->cover); @endphp
+            <a @class(['f-fc', 'big' => $loop->first]) href="{{ route('community.topic', $item) }}">
+              @if ($img)<img src="{{ $img }}" alt="" loading="lazy">@endif
+              @include('community.partials.pfx', ['topic' => $item])
+              <h3>{{ $item->title }}</h3>
+              <span class="meta">{{ $item->user->nickname ?: $item->user->name }} · {{ $item->published_at?->diffForHumans(short: true) }} · 💬 {{ $item->posts_count }}</span>
+            </a>
+          @endforeach
+        </section>
       @endif
 
-      @if ($canPost)
-        <div class="cm-card cm-compose">
-          @include('community.partials.ava', ['user' => auth()->user()])
-          <a class="fake" href="{{ route('community.create', array_filter(['category' => $category?->id])) }}">{{ __('community.compose.placeholder') }}</a>
-          <a class="btn btn-hot btn-sm" href="{{ route('community.create', array_filter(['category' => $category?->id])) }}">{{ __('community.compose.button') }}</a>
-        </div>
-      @elseif (! auth()->check())
-        <div class="cm-card cm-compose"><span class="fake">{{ __('community.compose.guest') }}</span><a class="btn btn-hot btn-sm" href="{{ route('login') }}">{{ __('ui.nav.login') }}</a></div>
-      @endif
+      @foreach (['site', 'games', 'other'] as $group)
+        @continue(! isset($groups[$group]))
+        @if ($group === 'other')<x-ad-banner placement="forum_list" gap="0 auto 18px" />@endif
+        <section class="f-blk">
+          <div class="f-bh"><h2>{{ __('community.groups.'.$group) }}</h2>@if ($group === 'games')<small>{{ trans_choice('community.forum.games_count', $groups[$group]->count(), ['n' => $groups[$group]->count()]) }}</small>@endif</div>
+          @foreach ($groups[$group] as $cat)
+            @include('community.partials.node', ['cat' => $cat, 'info' => $nodes[$cat->id] ?? []])
+          @endforeach
+        </section>
+      @endforeach
+    </div>
 
-      <form class="cm-sort" method="get">
-        @foreach (\App\Http\Controllers\CommunityController::SORTS as $s)
-          <a href="{{ request()->fullUrlWithQuery(['sort' => $s, 'page' => null]) }}" @if ($sort === $s) aria-current="page" @endif>{{ __('community.sort.'.$s) }}</a>
-        @endforeach
-        <span class="sep"></span>
-        <label class="sr" for="cm-type">{{ __('community.sort.type') }}</label>
-        <select id="cm-type" name="type" data-autosubmit>
-          <option value="">{{ __('community.sort.all_types') }}</option>
-          @foreach (array_keys(\App\Models\ForumTopic::TYPES) as $t)<option value="{{ $t }}" @selected($type === $t)>{{ __('community.types.'.$t) }}</option>@endforeach
-        </select>
-        @if (count(\App\Support\Locales::all()) > 1)
-          <label class="sr" for="cm-lang">{{ __('community.sort.lang') }}</label>
-          <select id="cm-lang" name="lang" data-autosubmit>
-            <option value="">{{ __('community.sort.all_langs') }}</option>
-            @foreach (\App\Support\Locales::all() as $code => $name)<option value="{{ $code }}" @selected($lang === $code)>{{ $name }}</option>@endforeach
-          </select>
-        @endif
-        <input type="hidden" name="sort" value="{{ $sort }}">
-        <noscript><button class="btn btn-ghost btn-sm">OK</button></noscript>
-      </form>
-
-      @forelse ($topics as $topic)
-        @include('community.partials.post-card', ['topic' => $topic])
-      @empty
-        <div class="cm-card cm-empty"><p>{{ $tab === 'mine' ? __('community.empty_mine') : __('community.empty') }}</p></div>
-      @endforelse
-
-      @if ($topics->hasPages())<div class="cm-pages">{{ $topics->links() }}</div>@endif
-    </section>
-
-    @include('community.partials.aside')
+    @include('community.partials.side')
   </div>
 </div>
 @include('community.partials.mobilebar')

@@ -33,6 +33,8 @@ class AdsController extends Controller
             ->with('game')->orderBy('placement')->orderBy('days')->get()
             // Бічна колонка гри — лише там, де стиль сторінки її має
             ->reject(fn (Tariff $t) => $t->placement === 'game_side' && ! in_array($t->game?->themeKey(), Banner::SIDE_COLUMN_THEMES, true))
+            // Місця — у порядку Banner::PLACEMENTS (спершу сторінки каталогу, далі форум), усередині — за терміном
+            ->sortBy(fn (Tariff $t) => [array_search($t->placement, array_keys(Banner::PLACEMENTS), true), $t->days])
             ->values();
 
         // Зайняті дні: шапка й сайдбар — спільні, місця на сторінці гри — для кожної гри окремо

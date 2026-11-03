@@ -31,7 +31,32 @@ class TariffSeeder extends Seeder
             }
         }
 
+        // Рекламні місця форуму — спільні для всього форуму
+        $forum = [
+            'forum_skin' => [[1 => 6, 7 => 28, 30 => 95], 'Фон форуму', 'Forum background'],
+            'forum_top' => [[1 => 3, 7 => 14, 30 => 48], 'Банер форуму під заголовком', 'Forum top banner'],
+            'forum_list' => [[1 => 1.5, 7 => 7, 30 => 24], 'Банер у списку тем форуму', 'Forum list banner'],
+            'forum_side' => [[1 => 2, 7 => 9, 30 => 30], 'Банер у бічній колонці форуму', 'Forum side column banner'],
+            'forum_post' => [[1 => 2, 7 => 9, 30 => 30], 'Банер у темі форуму', 'Forum topic banner'],
+        ];
+        foreach ($forum as $placement => [$prices, $uk, $en]) {
+            foreach ($prices as $days => $price) {
+                Tariff::updateOrCreate(
+                    ['game_id' => null, 'service' => 'banner', 'placement' => $placement, 'days' => $days],
+                    ['name' => ['uk' => "{$uk}, {$days} дн.", 'en' => "{$en}, {$days} days"], 'price' => $price],
+                );
+            }
+        }
+
         foreach (Game::all() as $game) {
+            // Банер у розділі цієї гри на форумі
+            foreach ([1 => 1.5, 7 => 7, 30 => 24] as $days => $price) {
+                Tariff::updateOrCreate(
+                    ['game_id' => $game->id, 'service' => 'banner', 'placement' => 'forum_game', 'days' => $days],
+                    ['name' => ['uk' => "Банер у розділі гри на форумі, {$days} дн.", 'en' => "Forum game section banner, {$days} days"], 'price' => $price],
+                );
+            }
+
             foreach ([7 => 7, 30 => 24] as $days => $price) {
                 Tariff::updateOrCreate(
                     ['game_id' => $game->id, 'service' => 'vip', 'days' => $days],

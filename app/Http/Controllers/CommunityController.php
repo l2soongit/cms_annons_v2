@@ -12,21 +12,53 @@ use App\Models\ForumTopic;
 use App\Models\User;
 use App\Support\Locales;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Collection;
 use Illuminate\View\View;
 
 /**
- * Спільнота: новини зверху, стрічка або таблиця розділів, сторінка теми (новина + обговорення).
+ * Спільнота у вигляді класичного форуму (дизайн design/community/community-v2-d.html):
+ * головна з блоками розділів, списки тем (розділ, нові повідомлення, новини, мої теми), тема з карткою автора.
  * Показується лише опубліковане; автор і модератори бачать свої теми на перевірці.
  */
 class CommunityController extends Controller
 {
     public const SORTS = ['hot', 'new', 'top'];
 
-    public function index(Request $request): View
+    /** Відповідей на сторінці теми — від цього залежать номери сторінок у списку тем */
+    public const PER_PAGE = 30;
+
+    /** Головна форуму: новини зверху, блоки розділів (graj.club, ігри, різне) з підрозділами й останньою темою */
+    public function index(): View
     {
-        return $this->feed($request, null, 'feed');
+        $categories = ForumCategory::active()->whereNull('parent_id')
+            ->with(['game', 'children' => fn ($q) => $q->where('is_active', true)])->get();
+        $ids = $categories->pluck('id')->merge($categories->flatMap(fn (ForumCategory $c) => $c->children->pluck('id')));
+        $last = $this->lastTopics($ids);
+
+        // Лічильники й остання тема розділу — разом із підрозділами
+        $nodes = $categories->mapWithKeys(function (ForumCategory $c) use ($last) {
+            $family = $c->children->concat([$c]);
+
+            return [$c->id => [
+                'topics' => (int) $family->sum('topics_count'),
+                'posts' => (int) $family->sum('posts_count'),
+                'last' => $family->map(fn (ForumCategory $f) => $last[$f->id] ?? null)->filter()->sortByDesc('last_post_at')->first(),
+            ]];
+        });
+
+        return view('community.index', $this->shared() + [
+            'groups' => $categories->groupBy('group'),
+            'nodes' => $nodes,
+            'tab' => 'forum',
+        ]);
+    }
+
+    /** Нові повідомлення: усі опубліковані теми, свіжі відповіді першими (sort=new — нові теми) */
+    public function latest(Request $request): View
+    {
+        return $this->feed($request, null, 'latest');
     }
 
     public function news(Request $request): View
@@ -44,20 +76,15 @@ class CommunityController extends Controller
     public function category(Request $request, ForumCategory $category): View
     {
         abort_unless($category->is_active, 404);
+        $category->loadMissing(['parent', 'game']);
 
         return $this->feed($request, $category, 'category');
     }
 
-    public function forum(): View
+    /** Колишня таблиця розділів — тепер це головна форуму */
+    public function forum(): RedirectResponse
     {
-        $categories = ForumCategory::active()->whereNull('parent_id')->with(['game', 'children'])->get();
-        $last = $this->lastTopics($categories->pluck('id'));
-
-        return view('community.forum', $this->shared() + [
-            'groups' => $categories->groupBy('group'),
-            'last' => $last,
-            'tab' => 'forum',
-        ]);
+        return redirect()->route('community', status: 301);
     }
 
     public function show(Request $request, ForumTopic $topic): View
@@ -72,7 +99,7 @@ class CommunityController extends Controller
             $request->session()->put('forum_seen', array_slice([...$seen, $topic->id], -200));
         }
 
-        $topic->load(['user', 'category.game', 'server.game', 'server.fieldValues.field', 'poll', 'bestPost.user']);
+        $topic->load(['user', 'category.game', 'category.parent', 'server.game', 'server.fieldValues.field', 'poll', 'bestPost.user']);
         $sort = in_array($request->query('order'), ['best', 'new', 'old'], true) ? $request->query('order') : 'old';
 
         $posts = $topic->posts()->with(['user', 'quote.user'])
@@ -81,12 +108,10 @@ class CommunityController extends Controller
             ->when($sort === 'best', fn ($q) => $q->orderByDesc('score')->orderBy('id'))
             ->when($sort === 'new', fn ($q) => $q->orderByDesc('id'))
             ->when($sort === 'old', fn ($q) => $q->orderBy('id'))
-            ->paginate(30)->withQueryString();
+            ->paginate(self::PER_PAGE)->withQueryString();
 
-        [$body, $toc] = Markup::withToc($topic->body);
-
-        $related = ForumTopic::published()->with('category')->where('category_id', $topic->category_id)->whereKeyNot($topic->id)
-            ->orderByDesc('last_post_at')->limit(4)->get();
+        $related = ForumTopic::published()->with(['category', 'lastPostUser', 'user', 'server'])->where('category_id', $topic->category_id)->whereKeyNot($topic->id)
+            ->orderByDesc('last_post_at')->limit(5)->get();
 
         $poll = $topic->poll;
         $pollVotes = $poll ? $poll->tally() : [];
@@ -95,10 +120,9 @@ class CommunityController extends Controller
         $authorIds = $posts->getCollection()->pluck('user_id')->push($topic->user_id)->unique();
         $ownerIds = $topic->server ? collect([$topic->server->user_id])->merge($topic->server->coOwners()->pluck('users.id'))->all() : [];
 
-        return view('community.show', $this->shared() + [
+        return view('community.show', [
             'topic' => $topic,
-            'body' => $body,
-            'toc' => $toc,
+            'body' => Markup::withToc($topic->body)[0],
             'posts' => $posts,
             'sort' => $sort,
             'related' => $related,
@@ -110,6 +134,8 @@ class CommunityController extends Controller
             'subscribers' => Subscriptions::count($topic),
             'staffIds' => User::whereIn('id', $authorIds)->get()->filter->isStaff()->pluck('id')->all(),
             'ownerIds' => $ownerIds,
+            // Значок «Власник сервера» в картці автора — для всіх, хто має сервер у каталозі
+            'serverOwnerIds' => User::whereIn('id', $authorIds)->whereHas('servers')->pluck('id')->all(),
             'canReply' => $user && ! $user->isBanned() && $topic->isPublished() && (! $topic->is_locked || $user->can('community.moderate')),
             'canEdit' => $user && ($user->id === $topic->user_id || $user->can('community.moderate')),
             'canChooseBest' => $user && ($user->id === $topic->user_id || $user->can('community.moderate')),
@@ -148,7 +174,7 @@ class CommunityController extends Controller
             $query->where('server_id', $request->integer('server'));
         }
 
-        // Закріплені — першими (у стрічці розділу й загальній)
+        // Закріплені — першими (у розділі й у загальних списках), окремим блоком
         $query->orderByRaw('CASE WHEN is_pinned = 1 OR pinned_until > ? THEN 0 ELSE 1 END', [now()]);
         match ($sort) {
             'new' => $query->orderByDesc('published_at')->orderByDesc('id'),
@@ -158,42 +184,49 @@ class CommunityController extends Controller
 
         $topics = $query->paginate(20)->withQueryString();
 
-        return view('community.index', $this->shared() + [
+        // Підрозділи розділу — блоком над списком тем
+        $children = $category ? $category->children()->where('is_active', true)->with('game')->get() : collect();
+
+        return view('community.list', $this->shared() + [
             'topics' => $topics,
+            'children' => $children,
+            'childLast' => $children->isNotEmpty() ? $this->lastTopics($children->pluck('id')) : collect(),
             'category' => $category,
             'tab' => $tab,
             'sort' => $sort,
             'type' => $type,
             'lang' => $lang,
-            'myVotes' => $this->myVotes($user, null, $topics->getCollection()),
             'subscribed' => $category ? Subscriptions::isSubscribed($user, $category) : false,
             'canPost' => $user && ($category ? $category->typesFor($user) !== [] : true),
         ]);
     }
 
-    /** Спільне для всіх сторінок: новини зверху, розділи зліва, бічна колонка */
+    /** Спільне для сторінок форуму: новини зверху, бічна колонка (бали, хто онлайн, останні повідомлення, статистика) */
     private function shared(): array
     {
         $news = ForumTopic::published()->news()->with(['user', 'server', 'category.game'])
-            ->orderByDesc('is_featured')->orderByDesc('published_at')->limit(4)->get();
+            ->orderByDesc('is_featured')->orderByDesc('published_at')->limit(3)->get();
 
-        $hot = ForumTopic::published()->with('category.game')->where('last_post_at', '>=', now()->subDays(7))
-            ->orderByDesc('posts_count')->limit(4)->get();
+        $latest = ForumTopic::published()->with(['lastPostUser', 'category.game'])
+            ->whereHas('category', fn ($q) => $q->where('is_active', true))
+            ->orderByDesc('last_post_at')->limit(5)->get();
 
-        $nav = ForumCategory::active()->whereNull('parent_id')->with('game')->get();
+        $all = ForumCategory::where('is_active', true)->get(['topics_count', 'posts_count']);
+        $online = User::where('updated_at', '>=', now()->subMinutes(15))->where('forum_posts_count', '>', 0)
+            ->orderByDesc('updated_at')->limit(30)->get();
         $user = auth()->user();
 
         return [
-            'featured' => $news->first(),
-            'sideNews' => $news->slice(1)->values(),
-            'navCategories' => $nav,
-            'hot' => $hot,
+            'news' => $news,
+            'latestTopics' => $latest,
             'stats' => [
-                'topics' => (int) $nav->sum('topics_count'),
-                'posts' => (int) $nav->sum('posts_count'),
+                'topics' => (int) $all->sum('topics_count'),
+                'posts' => (int) $all->sum('posts_count'),
                 'members' => User::where('forum_posts_count', '>', 0)->count(),
+                'newest' => User::where('forum_posts_count', '>', 0)->latest('id')->first(),
             ],
-            'online' => User::where('updated_at', '>=', now()->subMinutes(15))->where('forum_posts_count', '>', 0)->limit(8)->get(),
+            'online' => $online,
+            'onlineStaff' => $online->filter->isStaff()->pluck('id')->all(),
             'level' => $user ? Bonus::level($user) : null,
             'isOwner' => $user && $user->servers()->exists(),
         ];

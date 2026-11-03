@@ -8,6 +8,7 @@ use App\Community\Moderation;
 use App\Enums\ServerStatus;
 use App\Filament\Resources\ForumTopicResource;
 use App\Filament\Resources\ForumTopicResource\Pages\ListForumTopics;
+use App\Models\Banner;
 use App\Models\BonusReward;
 use App\Models\ForumCategory;
 use App\Models\ForumPost;
@@ -67,7 +68,7 @@ class CommunityTest extends TestCase
 
     private function gameCategory(): ForumCategory
     {
-        return ForumCategory::where('game_id', $this->l2->id)->firstOrFail();
+        return ForumCategory::where('game_id', $this->l2->id)->whereNull('parent_id')->firstOrFail();
     }
 
     private function topic(User $author, string $status = ForumTopic::PUBLISHED, array $extra = []): ForumTopic
@@ -79,10 +80,58 @@ class CommunityTest extends TestCase
         ]);
     }
 
-    public function test_every_game_gets_a_forum_section(): void
+    public function test_every_game_gets_a_forum_section_with_subsections(): void
     {
-        $this->assertSame(Game::count(), ForumCategory::whereNotNull('game_id')->count());
-        $this->assertNotNull(ForumCategory::where('slug', 'lineage2')->first());
+        $this->assertSame(Game::count(), ForumCategory::whereNotNull('game_id')->whereNull('parent_id')->count());
+        $l2 = ForumCategory::where('slug', 'lineage2')->firstOrFail();
+        $this->assertSame(['lineage2-news', 'lineage2-talk', 'lineage2-guides', 'lineage2-clans'], $l2->children()->pluck('slug')->all());
+        $this->assertSame(['server_news'], ForumCategory::where('slug', 'lineage2-news')->firstOrFail()->topic_types);
+
+        // Нова гра — одразу з розділом і підрозділами
+        $game = tap($this->l2->replicate()->fill(['slug' => 'tera', 'sort' => 999]))->save();
+        $this->assertSame(4, ForumCategory::where('game_id', $game->id)->whereNotNull('parent_id')->count());
+        $this->assertTrue(ForumCategory::where('slug', 'owners-support')->exists());
+        $this->assertTrue(ForumCategory::where('slug', 'media')->exists());
+    }
+
+    public function test_forum_pages_open_with_sections_and_old_table_redirects(): void
+    {
+        $author = $this->user();
+        $topic = $this->topic($author);
+        $topic->posts()->create(['user_id' => $author->id, 'body' => '<p>Перша відповідь</p>', 'status' => 'published']);
+
+        $this->get(route('community'))->assertOk()->assertSee(__('community.forum.title'))->assertSee('Lineage 2')->assertSee(__('community.groups.games'));
+        $this->get(route('community.latest'))->assertOk()->assertSee($topic->title);
+        $this->get(route('community.latest', ['sort' => 'new']))->assertOk()->assertSee(__('community.forum.new_topics'));
+        $this->get(route('community.category', $this->gameCategory()))->assertOk()->assertSee('lineage2-talk', false)->assertSee($topic->title);
+        $this->get(route('community.topic', $topic))->assertOk()->assertSee('Перша відповідь')->assertSee(__('community.forum.messages'));
+        $this->actingAs($author)->get(route('community.topic', $topic))->assertOk()->assertSee('reply-body', false)->assertSee(__('community.forum.like'));
+        $this->actingAs($author)->get(route('community'))->assertOk()->assertSee(__('community.bonus.title'));
+        $this->actingAs($author)->get(route('community.mine'))->assertOk()->assertSee($topic->title);
+        $this->get(route('community.forum'))->assertRedirect(route('community'));
+    }
+
+    public function test_forum_ad_placements_show_paid_banners(): void
+    {
+        $this->seed(TariffSeeder::class);
+        $this->assertTrue(Tariff::where('placement', 'forum_game')->where('game_id', $this->l2->id)->exists());
+        foreach (['forum_skin', 'forum_top', 'forum_list', 'forum_side', 'forum_post'] as $placement) {
+            $this->assertTrue(Tariff::where('placement', $placement)->whereNull('game_id')->exists(), $placement);
+        }
+
+        $make = fn (string $placement, ?int $gameId = null) => Banner::create([
+            'placement' => $placement, 'game_id' => $gameId, 'image' => "banners/{$placement}.webp", 'url' => "https://{$placement}.example.net",
+            'alt' => "ad-{$placement}", 'starts_at' => now()->subDay(), 'ends_at' => now()->addDay(), 'is_active' => true,
+        ]);
+        foreach (['forum_skin', 'forum_top', 'forum_side'] as $p) {
+            $make($p);
+        }
+        $make('forum_game', $this->l2->id);
+        $make('forum_post');
+
+        $this->get(route('community'))->assertOk()->assertSee('ad-forum_top')->assertSee('ad-forum_side')->assertSee('f-skin', false)->assertDontSee('ad-forum_game');
+        $this->get(route('community.category', $this->gameCategory()))->assertOk()->assertSee('ad-forum_game');
+        $this->get(route('community.topic', $this->topic($this->user())))->assertOk()->assertSee('ad-forum_post');
     }
 
     public function test_new_topic_from_site_waits_for_moderation_and_is_hidden_from_others(): void

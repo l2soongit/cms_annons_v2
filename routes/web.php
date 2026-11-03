@@ -95,6 +95,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 // Спільнота: новини + форум. Перегляд — усім, дії — після входу з підтвердженою поштою
 Route::prefix('community')->name('community')->middleware(CommunityEnabled::class)->group(function () {
     Route::get('/', [CommunityController::class, 'index']);
+    Route::get('/latest', [CommunityController::class, 'latest'])->name('.latest');
     Route::get('/news', [CommunityController::class, 'news'])->name('.news');
     Route::get('/forum', [CommunityController::class, 'forum'])->name('.forum');
     Route::get('/c/{category}', [CommunityController::class, 'category'])->name('.category');

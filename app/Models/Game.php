@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Community\ForumSections;
 use App\Support\HomePageData;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -160,13 +161,15 @@ class Game extends Model
         // Нова гра — свій розділ форуму в спільноті (якщо таблиця вже є)
         static::created(function (Game $game) {
             if (Schema::hasTable('forum_categories') && ! ForumCategory::where('game_id', $game->id)->exists()) {
-                ForumCategory::create([
+                $section = ForumCategory::create([
                     'game_id' => $game->id,
                     'slug' => ForumCategory::where('slug', $game->slug)->exists() ? $game->slug.'-'.$game->id : $game->slug,
                     'name' => $game->getTranslations('name'),
                     'group' => 'games',
                     'sort' => (int) ForumCategory::max('sort') + 10,
                 ]);
+                // Підрозділи гри: новини серверів, обговорення, гайди, клани
+                ForumSections::ensureGame($section);
             }
         });
 

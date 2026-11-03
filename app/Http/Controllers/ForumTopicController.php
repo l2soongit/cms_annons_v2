@@ -31,14 +31,16 @@ class ForumTopicController extends Controller
         $user = $request->user();
         abort_if($user->isBanned(), 403);
 
-        $categories = ForumCategory::active()->get()->filter(fn (ForumCategory $c) => $c->typesFor($user) !== [])->values();
+        $categories = ForumCategory::active()->with('parent')->get()->filter(fn (ForumCategory $c) => $c->typesFor($user) !== [])->values();
         abort_if($categories->isEmpty(), 403);
 
         $server = $request->integer('server') ? Server::find($request->integer('server')) : null;
         if ($server && ! $user->canManage($server)) {
             $server = null;
         }
-        $preset = $server ? ForumCategory::where('game_id', $server->game_id)->value('id') : $request->integer('category');
+        // Новина сервера — одразу в підрозділ «Новини серверів» його гри (якщо є), інакше в розділ гри
+        $preset = $server ? ForumCategory::where('game_id', $server->game_id)->where('is_active', true)
+            ->orderByRaw("CASE WHEN slug LIKE '%-news' THEN 0 ELSE 1 END")->orderBy('sort')->value('id') : $request->integer('category');
 
         return view('community.form', [
             'topic' => new ForumTopic(['type' => $server ? 'server_news' : ((string) $request->query('type') ?: 'discussion'), 'category_id' => $preset, 'server_id' => $server?->id]),
@@ -89,7 +91,7 @@ class ForumTopicController extends Controller
         $user = $request->user();
         abort_unless($user->id === $topic->user_id || $user->can('community.moderate'), 403);
 
-        $categories = ForumCategory::active()->get()->filter(fn (ForumCategory $c) => $c->typesFor($user) !== [] || $c->id === $topic->category_id)->values();
+        $categories = ForumCategory::active()->with('parent')->get()->filter(fn (ForumCategory $c) => $c->typesFor($user) !== [] || $c->id === $topic->category_id)->values();
 
         return view('community.form', [
             'topic' => $topic->load('poll'),

@@ -21,10 +21,19 @@ class Banner extends Model
         'game_side' => ['Бічна колонка сторінки гри', 300, 250],
         'sidebar' => ['Сайдбар сторінок серверів', 300, 250],
         'vote' => ['Сторінка голосування, під кнопкою', 300, 250],
+        'forum_skin' => ['Форум: фон сторінок (брендування)', 1920, 1080],
+        'forum_top' => ['Форум: під заголовком головної й списків тем', 1200, 150],
+        'forum_game' => ['Форум: розділ гри, під заголовком', 1200, 150],
+        'forum_list' => ['Форум: між розділами й у списку тем', 1200, 150],
+        'forum_side' => ['Форум: бічна колонка', 300, 250],
+        'forum_post' => ['Форум: у темі, після першого повідомлення', 1200, 150],
     ];
 
+    /** Місця форуму, що стоять на одній сторінці зі списком (головна форуму, розділ) */
+    public const FORUM_LIST_PAGE = ['forum_top', 'forum_game', 'forum_list', 'forum_side'];
+
     /** Місця, що продаються окремо для кожної гри */
-    public const PER_GAME = ['game', 'game_side'];
+    public const PER_GAME = ['game', 'game_side', 'forum_game'];
 
     /** Стилі сторінки гри, де є бічна колонка (місце game_side) */
     public const SIDE_COLUMN_THEMES = ['l2'];
@@ -41,6 +50,10 @@ class Banner extends Model
             'game' => ['header', 'game_side'],
             'game_side' => ['header', 'game'],
             'vote' => [],
+            // Фон форуму — на всіх його сторінках; місця списку — разом на головній форуму й у розділах; у темі — лише фон
+            'forum_skin' => ['header', 'forum_post', ...self::FORUM_LIST_PAGE],
+            'forum_top', 'forum_game', 'forum_list', 'forum_side' => ['header', 'forum_skin', ...array_values(array_diff(self::FORUM_LIST_PAGE, [$placement]))],
+            'forum_post' => ['header', 'forum_skin'],
             default => ['header'],
         };
     }

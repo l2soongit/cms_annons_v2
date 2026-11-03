@@ -22,7 +22,7 @@
           <option value="">—</option>
           @foreach ($categories->groupBy('group') as $group => $items)
             <optgroup label="{{ __('community.groups.'.$group) }}">
-              @foreach ($items as $c)<option value="{{ $c->id }}" @selected((int) old('category_id', $topic->category_id) === $c->id)>{{ $c->name }}</option>@endforeach
+              @foreach ($items as $c)<option value="{{ $c->id }}" @selected((int) old('category_id', $topic->category_id) === $c->id)>{{ $c->parent ? $c->parent->name.' › ' : '' }}{{ $c->name }}</option>@endforeach
             </optgroup>
           @endforeach
         </select>

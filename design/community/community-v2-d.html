@@ -214,8 +214,9 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
 .side .ad { margin: 0; }
 .side .sticky-ad { position: sticky; top: 16px; }
 /* Фон-брендування (background): фіксована картинка рекламодавця; контент лежить «аркушем» поверх, зверху й по боках фон видно й він клікабельний */
-.skin { position: fixed; inset: 0; z-index: 0; display: block; background: #09090b url(../../storage/app/public/games/cover/lineage2.webp) center top / cover no-repeat; }
-.skin::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 760px 100% at 50% 0, transparent 60%, #09090b99), linear-gradient(180deg, transparent 50%, #09090bcc); }
+.skin { position: absolute; top: 0; left: 0; right: 0; height: 1100px; z-index: 0; display: block; background: url(../../storage/app/public/games/cover/lineage2.webp) center top / cover no-repeat; -webkit-mask-image: linear-gradient(180deg, #000 55%, transparent 100%); mask-image: linear-gradient(180deg, #000 55%, transparent 100%); }
+.skin::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 760px 100% at 50% 0, transparent 60%, #09090b99); }
+body.skinned { position: relative; }
 .skin .adl { display: none; }
 .skin .cta { position: absolute; z-index: 1; left: 50%; top: 128px; transform: translateX(-50%); display: none; }
 .hdr, .subnav { position: relative; z-index: 2; }

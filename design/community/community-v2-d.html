@@ -220,7 +220,7 @@ body.skinned { position: relative; }
 .skin .adl { display: none; }
 .skin .cta { position: absolute; z-index: 1; left: 50%; top: 128px; transform: translateX(-50%); display: none; }
 .hdr, .subnav { position: relative; z-index: 2; }
-.skinned main.wrap { position: relative; z-index: 1; padding-top: 4px; background: var(--bg); border-radius: 22px 22px 0 0; box-shadow: 0 -20px 60px -10px #000, 0 0 0 1px var(--line); min-height: 100vh; }
+.skinned main.wrap { position: relative; z-index: 1; padding-top: 4px; background: var(--bg); border-radius: 22px; box-shadow: 0 -20px 60px -10px #000, 0 0 0 1px var(--line); margin-bottom: 40px; }
 .skin-head { position: relative; z-index: 1; height: 180px; display: grid; place-items: center; }
 .skin-head .adl { top: 12px; right: 16px; }
 .skinned .skin-head a { display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 10px; border-radius: 16px; background: #09090bcc; border: 1px solid #fbbf2466; backdrop-filter: blur(8px); white-space: nowrap; }
@@ -228,6 +228,14 @@ body.skinned { position: relative; }
 .skinned .skin-head b { display: block; font: 800 18px var(--display); }
 .skinned .skin-head small { color: #d4d4d8; font-size: 12px; }
 body:not(.skinned) .skin, body:not(.skinned) .skin-head { display: none; }
+/* Футер сайту під аркушем форуму */
+.ft { position: relative; z-index: 1; border-top: 1px solid var(--line); background: var(--bg); padding: 36px 0 28px; }
+.ft .wrap { display: grid; grid-template-columns: 1.4fr 1fr 1fr 1fr; gap: 28px; }
+.ft img { height: 28px; }
+.ft p { color: var(--faint); font-size: 13px; margin-top: 10px; max-width: 34ch; }
+.ft h2 { font: 700 14px var(--display); margin-bottom: 10px; }
+.ft ul { list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--muted); }
+.ft .copy { grid-column: 1 / -1; display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; padding-top: 18px; border-top: 1px solid var(--line); font-size: 12px; color: var(--faint); }
 .mnav, .scrim, .tabbar { display: none; }
 .tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; grid-template-columns: repeat(5, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
 .tabbar a { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); cursor: pointer; position: relative; }
@@ -290,7 +298,9 @@ body:not(.skinned) .skin, body:not(.skinned) .skin-head { display: none; }
   .tabbar { display: grid; }
   .skin { display: none; }
   .skin-head { height: 110px; background: url(../../storage/app/public/games/cover/lineage2.webp) center 30% / cover; }
-  .skinned main.wrap { border-radius: 18px 18px 0 0; margin-top: -14px; }
+  .skinned main.wrap { border-radius: 18px; margin-top: -14px; margin-bottom: 24px; }
+  .ft .wrap { grid-template-columns: 1fr 1fr; gap: 20px; }
+  .ft .about { grid-column: span 2; }
   .skinned .skin-head a { padding: 8px 12px 8px 8px; gap: 10px; margin-top: -10px; }
   .skinned .skin-head img { width: 30px; height: 30px; }
   .skinned .skin-head b { font-size: 14px; }
@@ -522,6 +532,13 @@ body:not(.skinned) .skin, body:not(.skinned) .skin-head { display: none; }
 </section>
 
 </main>
+<footer class="ft"><div class="wrap">
+  <div class="about"><img src="../../public/images/brand/logo.svg" alt="graj.club"><p>Рейтинг ігрових серверів, де місце виборюють гравці.</p></div>
+  <div><h2>Форум</h2><ul><li>Нові повідомлення</li><li>Нові теми</li><li>Правила форуму</li><li>Бонуси й магазин</li></ul></div>
+  <div><h2>Власникам</h2><ul><li>Додати сервер</li><li>Тарифи</li><li>Реклама на форумі</li><li>API для власників</li></ul></div>
+  <div><h2>Портал</h2><ul><li>Рейтинг серверів</li><li>Ігри</li><li>FAQ</li><li>Контакти</li></ul></div>
+  <div class="copy"><span>© 2026 graj.club</span><span>Форум · 214 зараз онлайн</span></div>
+</div></footer>
 <nav class="tabbar">
   <a data-go="index" aria-current="page"><span>🗂</span>Форум</a>
   <a><span>🆕</span>Нове<i>12</i></a>

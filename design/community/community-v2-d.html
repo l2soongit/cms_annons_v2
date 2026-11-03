@@ -184,6 +184,49 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
 .ed .tb .sep { width: 1px; background: var(--line); margin: 4px 4px; }
 .ed .area { min-height: 110px; padding: 12px; color: var(--faint); font-size: 15px; }
 .qr .row { display: flex; justify-content: space-between; align-items: center; gap: 10px; margin-top: 10px; flex-wrap: wrap; }
+/* Рекламні місця: завжди з позначкою «Реклама»; розміри як у наявних банерах сайту (1200×150, 300×250), на телефоні широкі — 320×100 */
+.ad { position: relative; margin-bottom: 18px; }
+.adl { position: absolute; z-index: 2; top: 8px; right: 8px; padding: 1px 7px; border-radius: 5px; background: #09090bcc; border: 1px solid var(--line-2); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); }
+.adc { position: relative; isolation: isolate; display: flex; align-items: center; gap: 16px; border-radius: 14px; overflow: hidden; border: 1px solid var(--line); }
+.ad.wide .adc { aspect-ratio: 1200 / 150; padding: 0 28px; }
+.ad.box .adc { aspect-ratio: 300 / 250; flex-direction: column; justify-content: end; align-items: start; gap: 6px; padding: 16px; }
+.adc > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.adc.filled::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(90deg, #09090bf2 25%, #09090b55); }
+.ad.box .adc.filled::after { background: linear-gradient(180deg, transparent 20%, #09090bf2 85%); }
+.adc .lg { width: 52px; height: 52px; flex: none; border-radius: 14px; display: grid; place-items: center; background: #09090bcc; border: 1px solid #fbbf2466; }
+.adc .lg img { width: 36px; height: 36px; }
+.adc .tx { flex: 1; min-width: 0; }
+.adc .tx b { display: block; font: 800 20px/1.2 var(--display); }
+.adc .tx small { color: #d4d4d8; font-size: 13px; }
+.adc .on { color: var(--up); font-weight: 800; font-size: 12px; }
+.adc.empty { justify-content: center; align-items: center; text-align: center; flex-direction: column; gap: 4px; border: 1px dashed var(--line-2); background: repeating-linear-gradient(135deg, #ffffff03 0 12px, transparent 12px 24px), var(--bg-2); }
+.adc.empty b { font: 700 15px var(--display); }
+.adc.empty small { color: var(--faint); font-size: 12px; }
+.adc.empty a { color: var(--amber); font-weight: 800; font-size: 13px; cursor: pointer; }
+.adc.empty .mob { display: none; }
+.th.sponsored { background: linear-gradient(90deg, #fbbf2410, transparent 60%); }
+.th.sponsored > .ava { border-radius: 10px; background: var(--bg-2); border: 1px solid #fbbf2466; }
+.th.sponsored > .ava img { width: 24px; height: 24px; }
+.spn { display: inline-block; padding: 0 6px; border-radius: 5px; border: 1px solid var(--line-2); font-size: 10px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: var(--faint); vertical-align: 2px; margin-right: 4px; }
+.th.adrow { display: block; padding: 12px 16px; }
+.th .last.go { display: flex; justify-content: end; }
+.th.adrow .ad { margin: 0; }
+.side .ad { margin: 0; }
+.side .sticky-ad { position: sticky; top: 16px; }
+/* Фон-брендування (background): фіксована картинка рекламодавця; контент лежить «аркушем» поверх, зверху й по боках фон видно й він клікабельний */
+.skin { position: fixed; inset: 0; z-index: 0; display: block; background: #09090b url(../../storage/app/public/games/cover/lineage2.webp) center top / cover no-repeat; }
+.skin::after { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse 760px 100% at 50% 0, transparent 60%, #09090b99), linear-gradient(180deg, transparent 50%, #09090bcc); }
+.skin .adl { display: none; }
+.skin .cta { position: absolute; z-index: 1; left: 50%; top: 128px; transform: translateX(-50%); display: none; }
+.hdr, .subnav { position: relative; z-index: 2; }
+.skinned main.wrap { position: relative; z-index: 1; padding-top: 4px; background: var(--bg); border-radius: 22px 22px 0 0; box-shadow: 0 -20px 60px -10px #000, 0 0 0 1px var(--line); min-height: 100vh; }
+.skin-head { position: relative; z-index: 1; height: 180px; display: grid; place-items: center; }
+.skin-head .adl { top: 12px; right: 16px; }
+.skinned .skin-head a { display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 10px; border-radius: 16px; background: #09090bcc; border: 1px solid #fbbf2466; backdrop-filter: blur(8px); white-space: nowrap; }
+.skinned .skin-head img { width: 40px; height: 40px; }
+.skinned .skin-head b { display: block; font: 800 18px var(--display); }
+.skinned .skin-head small { color: #d4d4d8; font-size: 12px; }
+body:not(.skinned) .skin, body:not(.skinned) .skin-head { display: none; }
 .mnav, .scrim, .tabbar { display: none; }
 .tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; grid-template-columns: repeat(5, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
 .tabbar a { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); cursor: pointer; position: relative; }
@@ -201,7 +244,7 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
   .featured { grid-template-columns: 1fr 1fr; }
   .featured .fc.big { grid-column: span 2; }
   .th { grid-template-columns: 36px minmax(0, 1fr) 80px; }
-  .th .last { display: none; }
+  .th .last, .th .last.go { display: none; }
 }
 @media (max-width: 720px) {
   .wrap { padding: 0 12px; }
@@ -244,6 +287,22 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
   .phead .d { font-size: 11px; text-align: right; }
   body { padding-bottom: 76px; }
   .tabbar { display: grid; }
+  .skin { display: none; }
+  .skin-head { height: 110px; background: url(../../storage/app/public/games/cover/lineage2.webp) center 30% / cover; }
+  .skinned main.wrap { border-radius: 18px 18px 0 0; margin-top: -14px; }
+  .skinned .skin-head a { padding: 8px 12px 8px 8px; gap: 10px; margin-top: -10px; }
+  .skinned .skin-head img { width: 30px; height: 30px; }
+  .skinned .skin-head b { font-size: 14px; }
+  .ad.wide .adc { aspect-ratio: 320 / 100; padding: 0 14px; gap: 10px; }
+  .ad.wide .adc .tx b { font-size: 15px; }
+  .ad.wide .adc .tx small { font-size: 12px; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .ad.wide .adc .lg { width: 40px; height: 40px; }
+  .ad.wide .adc .lg img { width: 28px; height: 28px; }
+  .ad.wide .adc .btn-hot { display: none; }
+  .ad.wide .adc.empty { gap: 2px; }
+  .adc.empty .pc { display: none; } .adc.empty .mob { display: inline; }
+  .side .sticky-ad { position: relative; top: 0; }
+  .th.adrow { padding: 10px 12px; }
   .hdr .ibtn[aria-label="Особисті повідомлення"] { display: none; }
   .qr { grid-template-columns: 1fr; padding: 12px; }
   .qr > .ava { display: none; }
@@ -261,7 +320,8 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
 }
 </style>
 </head>
-<body data-view="index">
+<body data-view="index" class="skinned">
+<a class="skin" href="#" aria-label="Реклама: Elmorelab Interlude x10"><span class="adl">Реклама · фон</span></a>
 
 <header class="hdr"><div class="wrap row">
   <button class="ibtn burger" data-menu aria-label="Меню">☰</button>
@@ -285,12 +345,14 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
   <h4>Сайт</h4><a>🏆 Рейтинг серверів</a><a>🎮 Ігри</a><a>👥 Учасники</a><a>✨ Бонуси й магазин</a>
 </nav>
 
+<div class="skin-head"><span class="adl">Реклама · фон</span><a href="#"><img src="../../public/images/games/l2.png" alt=""><span><b>Elmorelab Interlude x10</b><small>Старт 20 листопада · натисніть, щоб перейти</small></span></a></div>
 <main class="wrap">
 
 <!-- ========== Головна форуму ========== -->
 <section class="view v-index">
   <div class="crumbs"><a>graj.club</a> › <span>Форум</span></div>
   <div class="ptitle"><div><h1>Форум graj.club</h1><p>Новини серверів, обговорення, гайди й набори в клани для всіх ігор.</p></div><a class="btn-hot" data-new>+ Створити тему</a></div>
+  <div class="ad wide" data-slot="forum_top"><span class="adl">Реклама</span><div class="adc filled"><img src="../../storage/app/public/games/cover/lineage2.webp" alt=""><span class="lg"><img src="../../public/images/games/l2.png" alt=""></span><div class="tx"><b>Elmorelab Interlude x10</b><small><span class="on">● 4 120 онлайн</span> · старт нового світу 20 листопада · без донату в характеристики</small></div><a class="btn-hot">Грати безкоштовно</a></div></div>
   <div class="layout">
     <div>
       <div class="featured">
@@ -306,13 +368,20 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
       </section>
 
       <section class="block">
-        <div class="bhead"><h2>Ігри</h2><small>8 розділів</small></div>
+        <div class="bhead"><h2>Ігри</h2><small>10 ігор</small></div>
         <div class="node unread"><span class="nic"><img src="../../public/images/games/l2.png" alt=""></span><div><h3><a data-go="forum">Lineage 2</a></h3><div class="desc">Interlude, High Five, Essence та інші хроніки</div><div class="subs"><a class="unread">Новини серверів</a><a class="unread">Обговорення</a><a>Гайди</a><a>Клани</a></div></div><div class="nstats"><span><b>2,4K</b>Теми</span><span><b>38K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c5">K</span><div><a data-go="thread">[UA] Valhalla набирає DD й хілів</a><div class="meta">3 год · Kain</div></div></div></div>
         <div class="node unread"><span class="nic"><img src="../../public/images/games/wow.png" alt=""></span><div><h3><a data-go="forum">World of Warcraft</a></h3><div class="desc">Classic, WotLK, Cataclysm — приватні сервери</div><div class="subs"><a class="unread">Новини серверів</a><a>Обговорення</a><a>Гайди</a><a>Клани</a></div></div><div class="nstats"><span><b>1,2K</b>Теми</span><span><b>17K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c3">L</span><div><a data-go="thread">Відкриття Wrath 3.3.5a x5: старт 15…</a><div class="meta">2 год · Lumi</div></div></div></div>
         <div class="node"><span class="nic"><img src="../../public/images/games/mc.png" alt=""></span><div><h3><a data-go="forum">Minecraft</a></h3><div class="desc">Ванільні, модові та міні-ігрові сервери</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a><a>Гайди</a></div></div><div class="nstats"><span><b>904</b>Теми</span><span><b>9,1K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c1">S</span><div><a data-go="thread">Як вибрати сервер з модами без pay-to-win</a><div class="meta">1 день · Steve228</div></div></div></div>
         <div class="node unread"><span class="nic"><img src="../../public/images/games/rust.png" alt=""></span><div><h3><a data-go="forum">Rust</a></h3><div class="desc">Вайпи, модові й ванільні сервери</div><div class="subs"><a class="unread">Вайпи</a><a>Обговорення</a></div></div><div class="nstats"><span><b>512</b>Теми</span><span><b>6,8K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c6">R</span><div><a data-go="thread">Розклад вайпів на листопад</a><div class="meta">5 год · rustacean</div></div></div></div>
         <div class="node"><span class="nic"><img src="../../public/images/games/gta.png" alt=""></span><div><h3><a data-go="forum">GTA</a></h3><div class="desc">RP-сервери GTA V та SA:MP</div></div><div class="nstats"><span><b>377</b>Теми</span><span><b>4,2K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c2">V</span><div><a data-go="thread">Найкращі RP-проєкти українською</a><div class="meta">1 день · Vito</div></div></div></div>
+        <div class="node unread"><span class="nic"><img src="../../public/images/games/dayz.png" alt=""></span><div><h3><a data-go="forum">DayZ</a></h3><div class="desc">PvP, PvE та RP-сервери, моди й вайпи</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a></div></div><div class="nstats"><span><b>298</b>Теми</span><span><b>3,4K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c3">N</span><div><a data-go="thread">Найкращі PvE-сервери з базобудуванням</a><div class="meta">7 год · Nova</div></div></div></div>
+        <div class="node"><span class="nic"><img src="../../public/images/games/cs.png" alt=""></span><div><h3><a data-go="forum">Counter-Strike</a></h3><div class="desc">CS 1.6, CS:S, CS2 — публічні й міксові сервери</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a><a>Конфіги</a></div></div><div class="nstats"><span><b>455</b>Теми</span><span><b>5,7K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c6">G</span><div><a data-go="thread">Конфіг для 1.6 на 2026 рік</a><div class="meta">4 год · Ghost_UA</div></div></div></div>
+        <div class="node"><span class="nic"><img src="../../public/images/games/pw.png" alt=""></span><div><h3><a data-go="forum">Perfect World</a></h3><div class="desc">Класичні й кастомні версії, PvP-сервери</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a></div></div><div class="nstats"><span><b>187</b>Теми</span><span><b>2,2K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c5">K</span><div><a data-go="thread">Який клас обрати на старт 1.3.6?</a><div class="meta">1 день · Kain</div></div></div></div>
+        <div class="node"><span class="nic"><img src="../../public/images/games/aion.png" alt=""></span><div><h3><a data-go="forum">Aion</a></h3><div class="desc">Сервери 2.x–4.x, осади й PvP</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a></div></div><div class="nstats"><span><b>164</b>Теми</span><span><b>1,9K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c2">L</span><div><a data-go="thread">Осади на 4.6: розклад і нагороди</a><div class="meta">2 дні · Lumi</div></div></div></div>
+        <div class="node unread"><span class="nic">⚔️</span><div><h3><a data-go="forum">MU Online</a></h3><div class="desc">Season 6 і новіші, reset- та non-reset сервери</div><div class="subs"><a>Новини серверів</a><a>Обговорення</a></div></div><div class="nstats"><span><b>221</b>Теми</span><span><b>2,6K</b>Повідомл.</span></div><div class="nlast"><span class="ava s c1">O</span><div><a data-go="thread">Reset чи non-reset: що обрати?</a><div class="meta">9 год · Orest</div></div></div></div>
       </section>
+
+      <div class="ad wide" data-slot="forum_between"><span class="adl">Реклама</span><div class="adc empty"><b>Тут може бути ваш сервер</b><small><span class="pc">1200×150</span><span class="mob">320×100</span> · між розділами форуму</small><a>Розмістити рекламу →</a></div></div>
 
       <section class="block">
         <div class="bhead"><h2>Різне</h2></div>
@@ -323,6 +392,7 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
 
     <aside class="side">
       <section class="block"><div class="bhead"><h2>✨ Ваші бали</h2></div><div class="bbody"><div class="pts"><span>Учасник</span><b>650</b></div><div class="bar"><i></i></div><div class="meta">До «Ветерана» — 350 · <a style="color:var(--amber);font-weight:800">Магазин →</a></div></div></section>
+      <div class="ad box" data-slot="forum_side"><span class="adl">Реклама</span><div class="adc filled"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""><span class="lg"><img src="../../public/images/games/wow.png" alt=""></span><div class="tx"><b>Azeroth Legacy</b><small>Classic 1.12 x1 · <span class="on">● 1 830</span></small></div><a class="btn-hot">Почати гру</a></div></div>
       <section class="block"><div class="bhead"><h2>Зараз на форумі</h2></div><div class="bbody">
         <div class="online"><a class="u-admin">Admin</a><a class="u-owner">Dev_Tor</a><a class="u-vet">Lumi</a><a>Kain</a><a>Steve228</a><a class="u-owner">rustacean</a><a>Vito</a><a>Orest</a><a>Nova</a><a>Ghost_UA</a></div>
         <div class="tot">Усього: 214 (учасників: 38, гостей: 176)</div></div></section>
@@ -332,6 +402,7 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
         <a data-go="thread"><span class="ava s c2">A</span><div><b>Відкриття Wrath 3.3.5a x5</b><span class="meta">Admin · 1 год · WoW</span></div></a>
       </div></div></section>
       <section class="block"><div class="bhead"><h2>Статистика форуму</h2></div><div class="bbody"><div class="dl"><div>Теми<b>6 312</b></div><div>Повідомлення<b>104 880</b></div><div>Учасники<b>18 405</b></div><div>Новий учасник<b class="u-vet">Nova</b></div></div></div></section>
+      <div class="ad box sticky-ad" data-slot="forum_side_2"><span class="adl">Реклама</span><div class="adc empty"><b>300×250</b><small>Бічна колонка форуму, липне при прокручуванні</small><a>Розмістити рекламу →</a></div></div>
     </aside>
   </div>
 </section>
@@ -340,6 +411,7 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
 <section class="view v-forum">
   <div class="crumbs"><a data-go="index">Форум</a> › <a data-go="index">Ігри</a> › <span>World of Warcraft</span></div>
   <div class="ptitle"><div><h1>World of Warcraft</h1><p>Classic, WotLK, Cataclysm — приватні сервери. Стежать 412.</p></div><div style="display:flex;gap:8px"><a class="btn-ghost">🔔 Стежити</a><a class="btn-hot" data-new>+ Створити тему</a></div></div>
+  <div class="ad wide" data-slot="forum_game"><span class="adl">Реклама · WoW</span><div class="adc filled"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""><span class="lg"><img src="../../public/images/games/wow.png" alt=""></span><div class="tx"><b>Frostmourne x5 — WotLK 3.3.5a</b><small><span class="on">● 1 412 онлайн</span> · сезон арени 8 · кросфракційні БГ</small></div><a class="btn-hot">Грати безкоштовно</a></div></div>
   <div class="layout">
     <div>
       <section class="block" style="margin-bottom:14px">
@@ -353,16 +425,19 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
       </section>
       <section class="block">
         <div class="bhead"><h2>Теми</h2><small>1 204 теми</small></div>
+        <div class="th sponsored"><span class="ava"><img src="../../public/images/games/wow.png" alt=""></span><div><h3><span class="spn">Реклама</span><a data-go="thread">Azeroth Legacy: старт Wrath x5 15 листопада — забирай стартовий набір</a></h3><div class="meta">Azeroth Legacy · рекламована тема · <span style="color:var(--up);font-weight:800">● 1 830 онлайн</span></div></div><div class="cnt">Відповіді<b>4</b>Перегляди<b>2,3K</b></div><div class="last go"><a class="btn-ghost">Сервер →</a></div></div>
         <div class="th unread"><span class="ava c4">D</span><div><h3><span class="pfx ask">Питання</span><a data-go="thread">Який сервер 3.3.5a обрати новачку у 2026?</a></h3><div class="meta">Dev_Tor · вчора <span class="pg"><a>1</a><a>2</a></span></div></div><div class="cnt">Відповіді<b>23</b>Перегляди<b>1,1K</b></div><div class="last"><div><b>Lumi</b>2 год</div><span class="ava s c3">L</span></div></div>
         <div class="th"><span class="ava c1">S</span><div><h3><span class="pfx guide">Гайд</span><a data-go="thread">Фрост-маг у PvP: таланти, гліфи, ротація</a></h3><div class="meta">Steve228 · 30 жов <span class="pfx ok" style="margin:0">✓ Рішення</span></div></div><div class="cnt">Відповіді<b>9</b>Перегляди<b>840</b></div><div class="last"><div><b>Steve228</b>1 день</div><span class="ava s c1">S</span></div></div>
         <div class="th unread"><span class="ava c3">L</span><div><h3><a data-go="thread">Blizzlike чи кастом: що вам цікавіше?</a></h3><div class="meta">Lumi · 1 лис <span class="pg"><a>1</a><a>2</a><a>3</a></span> <span class="ic">🔥</span></div></div><div class="cnt">Відповіді<b>41</b>Перегляди<b>2,0K</b></div><div class="last"><div><b>Kain</b>3 год</div><span class="ava s c5">K</span></div></div>
         <div class="th"><span class="ava c5">K</span><div><h3><span class="pfx clan">Клан</span><a data-go="thread">«Орда Карпат» набирає на старт Azeroth Legacy</a></h3><div class="meta">Kain · 31 жов</div></div><div class="cnt">Відповіді<b>7</b>Перегляди<b>390</b></div><div class="last"><div><b>Nova</b>5 год</div><span class="ava s c6">N</span></div></div>
+        <div class="th adrow"><div class="ad wide" data-slot="forum_list"><span class="adl">Реклама</span><div class="adc empty"><b>Банер у списку тем</b><small><span class="pc">1200×150</span><span class="mob">320×100</span> · після 5-ї теми в розділі</small><a>Розмістити рекламу →</a></div></div></div>
         <div class="th"><span class="ava c6">R</span><div><h3><a data-go="thread">Скриншоти з вашого першого персонажа</a></h3><div class="meta">rustacean · 29 жов <span class="ic">🖼</span></div></div><div class="cnt">Відповіді<b>18</b>Перегляди<b>720</b></div><div class="last"><div><b>Vito</b>6 год</div><span class="ava s c2">V</span></div></div>
       </section>
       <div class="tools"><span class="meta">Показано 1–20 із 1 204</span><div class="pager"><a aria-current="page">1</a><a>2</a><a>3</a><a>…</a><a>48</a><a class="nx">→</a></div></div>
     </div>
     <aside class="side">
       <section class="block"><div class="bhead"><h2>🏆 Топ серверів WoW</h2></div><div class="bbody"><div class="dl"><div>1. Azeroth Legacy<b style="color:var(--up)">● 1 830</b></div><div>2. Frostmourne x5<b style="color:var(--up)">● 1 412</b></div><div>3. Classic Rebirth<b style="color:var(--up)">● 990</b></div></div></div></section>
+      <div class="ad box" data-slot="forum_game_side"><span class="adl">Реклама · WoW</span><div class="adc empty"><b>300×250</b><small>Бічна колонка розділу гри — бачать лише гравці WoW</small><a>Розмістити рекламу →</a></div></div>
       <section class="block"><div class="bhead"><h2>Префікси</h2></div><div class="bbody" style="display:flex;flex-wrap:wrap;gap:6px"><span class="pfx news">Важливо</span><span class="pfx srv">Сервер</span><span class="pfx ask">Питання</span><span class="pfx guide">Гайд</span><span class="pfx clan">Клан</span></div></section>
       <section class="block"><div class="bhead"><h2>Зараз у розділі</h2></div><div class="bbody"><div class="online"><a class="u-vet">Lumi</a><a class="u-owner">Dev_Tor</a><a>Kain</a><a>Orest</a></div><div class="tot">Учасників: 4, гостей: 31</div></div></section>
     </aside>
@@ -397,6 +472,8 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
         </div>
       </article>
 
+      <div class="ad wide" data-slot="forum_post"><span class="adl">Реклама</span><div class="adc filled"><img src="../../storage/app/public/games/cover/rust.webp" alt=""><span class="lg"><img src="../../public/images/games/rust.png" alt=""></span><div class="tx"><b>RustLand — вайп щочетверга</b><small><span class="on">● 640 онлайн</span> · карта 4500 · x2 збір · без донату</small></div><a class="btn-hot">Підключитися</a></div></div>
+
       <article class="post best" id="p2">
         <div class="pbit"><span class="ava c3">L</span><h4 class="u-vet">Lumi</h4><span class="title">Ветеран</span><span class="banner lvl">✨ Легенда форуму</span>
           <div class="pstats"><div>Повідомлень<b>2 311</b></div><div>Реакцій<b>5 102</b></div><div>Балів<b>4 870</b></div></div></div>
@@ -429,6 +506,8 @@ body[data-view="index"] .v-index, body[data-view="forum"] .v-forum, body[data-vi
           <div class="pfoot"><div class="l"><a>⚑ Поскаржитися</a></div><div class="r"><a class="like">👍 Подобається</a><a>❝ Цитувати</a><a>↩ Відповісти</a></div></div>
         </div>
       </article>
+
+      <div class="ad wide" data-slot="forum_post_2"><span class="adl">Реклама</span><div class="adc empty"><b>Банер у темі</b><small><span class="pc">1200×150</span><span class="mob">320×100</span> · перед формою відповіді</small><a>Розмістити рекламу →</a></div></div>
 
       <div class="qr" id="reply">
         <span class="ava c1">O</span>

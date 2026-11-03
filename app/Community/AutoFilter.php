@@ -45,15 +45,21 @@ final class AutoFilter
         return ! $user->isStaff() && $user->forum_posts_count < (int) config('graj.community.newbie_posts', 5);
     }
 
-    /** Чи відповідь цього користувача йде на перевірку */
-    public static function replyNeedsReview(User $user, string $text): ?string
+    /**
+     * Чи відповідь цього користувача йде на перевірку. $mode — режим розділу (all | newbies | none),
+     * за замовчуванням загальне налаштування; модератор розділу не перевіряється.
+     */
+    public static function replyNeedsReview(User $user, string $text, ?string $mode = null, bool $moderator = false): ?string
     {
+        if ($moderator) {
+            return null;
+        }
         $flag = self::check($user, $text);
         if ($flag) {
             return $flag;
         }
 
-        return match (config('graj.community.moderate_replies', 'newbies')) {
+        return match ($mode ?? config('graj.community.moderate_replies', 'newbies')) {
             'all' => $user->can('community.moderate') ? null : 'Усі відповіді перевіряються',
             'none' => null,
             default => self::isNewbie($user) ? 'Відповідь новачка' : null,

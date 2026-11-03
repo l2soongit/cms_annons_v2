@@ -351,6 +351,78 @@ class CommunityTest extends TestCase
         $this->assertSame(100000 - (int) round($price / 2 * 100), $owner->fresh()->bonus_balance);
     }
 
+    public function test_closed_section_is_hidden_from_everyone_outside_its_audience(): void
+    {
+        $l2 = $this->gameCategory();
+        $l2->update(['view_roles' => ['@owners']]);
+        $talk = ForumCategory::where('slug', 'lineage2-talk')->firstOrFail();
+        $topic = $this->topic($this->user(), extra: ['category_id' => $talk->id, 'title' => 'Секретна тема для власників серверів']);
+
+        // Гість і звичайний гравець: розділ, підрозділ і тема недоступні, у списках і карті сайту їх немає
+        $this->get(route('community.category', $l2))->assertNotFound();
+        $this->get(route('community.category', $talk))->assertNotFound();
+        $this->get(route('community.topic', $topic))->assertNotFound();
+        $this->get(route('community.latest'))->assertOk()->assertDontSee($topic->title);
+        $this->assertStringNotContainsString(route('community.topic', $topic), $this->get(route('seo.sitemap'))->getContent());
+        $player = $this->user();
+        $this->actingAs($player)->get(route('community.topic', $topic))->assertNotFound();
+        $this->actingAs($player)->postJson(route('community.react'), ['target' => 'topic', 'id' => $topic->id, 'value' => 1])->assertNotFound();
+
+        // Власник сервера бачить усе
+        $owner = $this->user();
+        Server::create(['game_id' => $this->l2->id, 'user_id' => $owner->id, 'name' => 'Talking Island', 'slug' => 'talking-island', 'host' => 'ti.example.net', 'status' => ServerStatus::Published]);
+        $this->actingAs($owner)->get(route('community.category', $talk))->assertOk()->assertSee($topic->title);
+        $this->actingAs($owner)->get(route('community.topic', $topic))->assertOk();
+    }
+
+    public function test_reply_roles_and_section_moderation_settings(): void
+    {
+        $talk = ForumCategory::where('slug', 'lineage2-talk')->firstOrFail();
+        $talk->update(['reply_roles' => ['moderator']]);
+        $topic = $this->topic($this->user(), extra: ['category_id' => $talk->id]);
+
+        $this->actingAs($this->user())->post(route('community.reply', $topic), ['body' => 'Можна й мені?'])->assertForbidden();
+        $this->actingAs($this->moderator())->post(route('community.reply', $topic), ['body' => 'Модератор відповідає.'])->assertRedirect();
+
+        // Розділ без перевірки тем: тема публікується одразу; відповіді — усі на перевірку
+        $guides = ForumCategory::where('slug', 'lineage2-guides')->firstOrFail();
+        $guides->update(['moderate_topics' => false, 'moderate_replies' => 'all']);
+        $author = $this->user();
+        $this->actingAs($author)->post(route('community.store'), [
+            'category_id' => $guides->id, 'type' => 'guide',
+            'title' => 'Гайд по квесту на сабклас', 'body' => 'Покроково: де взяти квест, які мобі бити, що нести до NPC.',
+        ])->assertRedirect();
+        $guide = ForumTopic::where('category_id', $guides->id)->latest('id')->firstOrFail();
+        $this->assertSame(ForumTopic::PUBLISHED, $guide->status);
+
+        $this->actingAs($this->user())->post(route('community.reply', $guide), ['body' => 'Дякую за гайд!'])->assertRedirect();
+        $this->assertSame('pending', $guide->posts()->latest('id')->value('status'));
+    }
+
+    public function test_section_moderator_moderates_only_own_sections_on_site(): void
+    {
+        $mod = $this->user();
+        $this->gameCategory()->moderators()->attach($mod->id);
+        $talk = ForumCategory::where('slug', 'lineage2-talk')->firstOrFail();
+        $own = $this->topic($this->user(), ForumTopic::PENDING, ['category_id' => $talk->id, 'title' => 'Тема в розділі модератора']);
+        $other = $this->topic($this->user(), ForumTopic::PENDING, ['category_id' => ForumCategory::where('slug', 'minecraft-talk')->value('id'), 'title' => 'Тема в чужому розділі']);
+
+        $this->actingAs($this->user())->get(route('community.queue'))->assertForbidden();
+        $this->actingAs($mod)->get(route('community.queue'))->assertOk()->assertSee($own->title)->assertDontSee($other->title);
+        $this->actingAs($mod)->get(route('community.topic', $own))->assertOk()->assertSee(__('community.mod.bar'));
+
+        $this->actingAs($mod)->post(route('community.mod.topic', [$own, 'approve']))->assertRedirect();
+        $this->assertSame(ForumTopic::PUBLISHED, $own->fresh()->status);
+        $this->actingAs($mod)->post(route('community.mod.topic', [$own, 'pin']))->assertRedirect();
+        $this->assertTrue($own->fresh()->is_pinned);
+        $this->actingAs($mod)->post(route('community.mod.topic', [$other, 'approve']))->assertForbidden();
+        $this->assertSame(ForumTopic::PENDING, $other->fresh()->status);
+
+        $post = $own->fresh()->posts()->create(['user_id' => $this->user()->id, 'body' => '<p>Відповідь новачка</p>', 'status' => 'pending']);
+        $this->actingAs($mod)->post(route('community.mod.post', [$post, 'approve']))->assertRedirect();
+        $this->assertSame('published', $post->fresh()->status);
+    }
+
     public function test_admin_queue_and_permissions(): void
     {
         $pending = $this->topic($this->user(), ForumTopic::PENDING);

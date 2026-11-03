@@ -32,10 +32,13 @@ class ForumInteractionController extends Controller
     {
         $user = $request->user();
         abort_if($user->isBanned() || ! $topic->isPublished(), 403);
-        abort_if($topic->is_locked && ! $user->can('community.moderate'), 403);
+        $moderator = $topic->moderatedBy($user);
+        abort_if($topic->is_locked && ! $moderator, 403);
+        // Хто відповідає — за правами розділу
+        abort_unless($topic->category->allowsReplying($user), 403);
 
         $limit = (int) config('graj.community.posts_per_hour', 30);
-        if (! $user->can('community.moderate') && ForumPost::where('user_id', $user->id)->where('created_at', '>=', now()->subHour())->count() >= $limit) {
+        if (! $moderator && ForumPost::where('user_id', $user->id)->where('created_at', '>=', now()->subHour())->count() >= $limit) {
             throw ValidationException::withMessages(['body' => __('community.reply.limit')]);
         }
 
@@ -44,7 +47,7 @@ class ForumInteractionController extends Controller
             'quote_id' => ['nullable', 'integer', Rule::exists('forum_posts', 'id')->where('topic_id', $topic->id)],
         ], [], ['body' => __('community.reply.body')]);
 
-        $flag = AutoFilter::replyNeedsReview($user, $data['body']);
+        $flag = AutoFilter::replyNeedsReview($user, $data['body'], $topic->category->replyMode(), $moderator);
         $post = $topic->posts()->create([
             'user_id' => $user->id,
             'quote_id' => $data['quote_id'] ?? null,
@@ -69,11 +72,12 @@ class ForumInteractionController extends Controller
     public function updatePost(Request $request, ForumPost $post): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->id === $post->user_id || $user->can('community.moderate'), 403);
-        abort_if($post->status === 'hidden' && ! $user->can('community.moderate'), 403);
+        $moderator = $post->topic->moderatedBy($user);
+        abort_unless($user->id === $post->user_id || $moderator, 403);
+        abort_if($post->status === 'hidden' && ! $moderator, 403);
 
         $data = $request->validate(['body' => ['required', 'string', 'min:2', 'max:5000']]);
-        $flag = $user->can('community.moderate') ? null : AutoFilter::check($user, $data['body']);
+        $flag = $moderator ? null : AutoFilter::check($user, $data['body']);
 
         $post->update([
             'body' => Markup::toHtml($data['body']),
@@ -103,7 +107,7 @@ class ForumInteractionController extends Controller
 
         $target = $data['target'] === 'topic' ? ForumTopic::findOrFail($data['id']) : ForumPost::findOrFail($data['id']);
         $published = $target instanceof ForumTopic ? $target->isPublished() : $target->status === 'published';
-        abort_unless($published, 404);
+        abort_unless($published && ($target instanceof ForumTopic ? $target : $target->topic)->visibleTo($user), 404);
         if ($target->user_id === $user->id) {
             return $this->reactResponse($request, $target, 0, __('community.react.own'));
         }
@@ -144,7 +148,7 @@ class ForumInteractionController extends Controller
     {
         $user = $request->user();
         $topic = $post->topic;
-        abort_unless($user->id === $topic->user_id || $user->can('community.moderate'), 403);
+        abort_unless($user->id === $topic->user_id || $topic->moderatedBy($user), 403);
         abort_unless($post->status === 'published', 404);
 
         $previous = $topic->bestPost;
@@ -176,6 +180,7 @@ class ForumInteractionController extends Controller
         ]);
 
         $target = $data['target'] === 'topic' ? ForumTopic::findOrFail($data['id']) : ForumPost::findOrFail($data['id']);
+        abort_unless(($target instanceof ForumTopic ? $target : $target->topic)->visibleTo($request->user()), 404);
         $target->reports()->firstOrCreate(
             ['user_id' => $request->user()->id, 'status' => 'open'],
             ['reason' => $data['reason'], 'comment' => $data['comment'] ?? null],
@@ -197,6 +202,9 @@ class ForumInteractionController extends Controller
             default => Server::findOrFail($data['id']),
         };
         $user = $request->user();
+        // Підписатися можна лише на те, що користувач бачить
+        abort_if($target instanceof ForumTopic && ! $target->visibleTo($user), 404);
+        abort_if($target instanceof ForumCategory && ! $target->canView($user), 404);
 
         $on = ! Subscriptions::isSubscribed($user, $target);
         $on ? Subscriptions::subscribe($user, $target) : Subscriptions::unsubscribe($user, $target);
@@ -211,7 +219,7 @@ class ForumInteractionController extends Controller
     public function vote(Request $request, ForumPoll $poll): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($poll->topic->isPublished() && ! $poll->isClosed(), 403);
+        abort_unless($poll->topic->isPublished() && ! $poll->isClosed() && $poll->topic->visibleTo($user), 403);
 
         $count = count($poll->options);
         $data = $request->validate([

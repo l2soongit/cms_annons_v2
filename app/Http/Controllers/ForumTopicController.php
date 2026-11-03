@@ -83,13 +83,21 @@ class ForumTopicController extends Controller
         $this->savePoll($topic, $data);
         Activity::touch($user);
 
+        // Розділ без перевірки або тема модератора розділу — публікується одразу (якщо автофільтр нічого не знайшов)
+        $category = $topic->category;
+        if (! $topic->flag_reason && (! $category->moderate_topics || $category->isModeratedBy($user))) {
+            Moderation::approve($topic);
+
+            return to_route('community.topic', $topic)->with('status', __('community.form.published'));
+        }
+
         return to_route('community.topic', $topic)->with('status', __('community.form.sent'));
     }
 
     public function edit(Request $request, ForumTopic $topic): View
     {
         $user = $request->user();
-        abort_unless($user->id === $topic->user_id || $user->can('community.moderate'), 403);
+        abort_unless($user->id === $topic->user_id || $topic->moderatedBy($user), 403);
 
         $categories = ForumCategory::active()->with('parent')->get()->filter(fn (ForumCategory $c) => $c->typesFor($user) !== [] || $c->id === $topic->category_id)->values();
 
@@ -105,7 +113,7 @@ class ForumTopicController extends Controller
     public function update(Request $request, ForumTopic $topic): RedirectResponse
     {
         $user = $request->user();
-        abort_unless($user->id === $topic->user_id || $user->can('community.moderate'), 403);
+        abort_unless($user->id === $topic->user_id || $topic->moderatedBy($user), 403);
 
         $data = $this->validated($request, $user, $topic);
         $html = Markup::toHtml($data['body']);
@@ -128,8 +136,10 @@ class ForumTopicController extends Controller
         $this->savePoll($topic, $data);
 
         $flag = AutoFilter::check($user, $data['title'].' '.$data['body']);
-        $moderator = $user->can('community.moderate');
-        if ($wasPublished && ! $moderator && (config('graj.community.edit_requires_review', true) || $flag)) {
+        $topic->load('category');
+        $moderator = $topic->moderatedBy($user);
+        $review = config('graj.community.edit_requires_review', true) && $topic->category->moderate_topics;
+        if ($wasPublished && ! $moderator && ($review || $flag)) {
             Moderation::resubmit($topic, $flag);
 
             return to_route('community.topic', $topic)->with('status', __('community.form.resent'));

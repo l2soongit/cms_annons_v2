@@ -46,7 +46,7 @@ class SeoController extends Controller
     {
         // Тестові й локальні копії сайту не індексуються зовсім
         $lines = app()->isProduction()
-            ? ['User-agent: *', 'Disallow: /cabinet', 'Disallow: /community/new', 'Disallow: /community/mine', 'Disallow: /admin', 'Disallow: /billing', 'Disallow: /api/', 'Disallow: /ad/', 'Disallow: /livewire/', 'Disallow: /*?*q=', '', 'Sitemap: '.route('seo.sitemap')]
+            ? ['User-agent: *', 'Disallow: /cabinet', 'Disallow: /community/new', 'Disallow: /community/mine', 'Disallow: /community/mod', 'Disallow: /admin', 'Disallow: /billing', 'Disallow: /api/', 'Disallow: /ad/', 'Disallow: /livewire/', 'Disallow: /*?*q=', '', 'Sitemap: '.route('seo.sitemap')]
             : ['User-agent: *', 'Disallow: /'];
 
         return response(implode("\n", $lines)."\n", 200, ['Content-Type' => 'text/plain; charset=utf-8']);
@@ -93,10 +93,11 @@ class SeoController extends Controller
             yield [route('community'), null, '0.7'];
             yield [route('community.latest'), null, '0.5'];
             yield [route('community.news'), null, '0.6'];
-            foreach (ForumCategory::where('is_active', true)->orderBy('sort')->get() as $category) {
+            $public = ForumCategory::visibleIds(null);
+            foreach (ForumCategory::whereIn('id', $public)->orderBy('sort')->get() as $category) {
                 yield [route('community.category', $category), null, '0.5'];
             }
-            $topics = ForumTopic::published()->whereHas('category', fn ($q) => $q->where('is_active', true))
+            $topics = ForumTopic::published()->whereIn('category_id', $public)
                 ->orderByDesc('last_post_at')->limit(5000)->cursor();
             foreach ($topics as $topic) {
                 yield [route('community.topic', $topic), ($topic->last_post_at ?? $topic->updated_at)?->toAtomString(), $topic->isNews() ? '0.6' : '0.5'];

@@ -9,6 +9,7 @@ use App\Http\Controllers\CommunityController;
 use App\Http\Controllers\CoOwnerController;
 use App\Http\Controllers\DevelopersController;
 use App\Http\Controllers\ForumInteractionController;
+use App\Http\Controllers\ForumModerationController;
 use App\Http\Controllers\ForumTopicController;
 use App\Http\Controllers\GameController;
 use App\Http\Controllers\HomeController;
@@ -114,6 +115,11 @@ Route::prefix('community')->name('community')->middleware(CommunityEnabled::clas
         Route::post('/report', [ForumInteractionController::class, 'report'])->middleware('throttle:10,1')->name('.report');
         Route::post('/subscribe', [ForumInteractionController::class, 'subscribe'])->middleware('throttle:30,1')->name('.subscribe');
         Route::post('/polls/{poll}/vote', [ForumInteractionController::class, 'vote'])->middleware('throttle:20,1')->name('.poll');
+
+        // Модерація на сайті: загальні модератори й модератори розділів (права перевіряє контролер)
+        Route::get('/mod', [ForumModerationController::class, 'queue'])->name('.queue');
+        Route::post('/mod/t/{topic}/{action}', [ForumModerationController::class, 'topic'])->whereIn('action', ForumModerationController::TOPIC_ACTIONS)->middleware('throttle:60,1')->name('.mod.topic');
+        Route::post('/mod/p/{post}/{action}', [ForumModerationController::class, 'post'])->whereIn('action', ForumModerationController::POST_ACTIONS)->middleware('throttle:60,1')->name('.mod.post');
     });
 });
 

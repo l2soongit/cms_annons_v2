@@ -156,10 +156,21 @@ class ForumTopic extends Model
         return $this->status === self::PUBLISHED;
     }
 
-    /** Хто бачить тему: опубліковану — усі; іншу — автор і модератори */
+    /** Хто бачить тему: опубліковану — ті, кому відкритий розділ; іншу — автор і модератори розділу */
     public function visibleTo(?User $user): bool
     {
-        return $this->isPublished() || ($user !== null && ($user->id === $this->user_id || $user->can('community.moderate')));
+        $own = $user !== null && $user->id === $this->user_id;
+        if (! $own && ! $this->category->canView($user)) {
+            return false;
+        }
+
+        return $this->isPublished() || $own || $this->category->isModeratedBy($user);
+    }
+
+    /** Чи може користувач модерувати тему (загальний модератор або модератор її розділу) */
+    public function moderatedBy(?User $user): bool
+    {
+        return $this->category->isModeratedBy($user);
     }
 
     /** Перерахувати лічильники й останню відповідь */

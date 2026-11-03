@@ -58,6 +58,10 @@
     </div>
   @endif
 
+  @if ($canModerate)
+    <div class="f-modbar"><b>🛡 {{ __('community.mod.bar') }} · {{ __('community.status.'.$topic->status) }}</b>@include('community.partials.modtopic', ['topic' => $topic])</div>
+  @endif
+
   <div class="f-tools">
     <nav class="f-acts" aria-label="{{ __('community.forum.sort') }}">
       @foreach (['old', 'best', 'new'] as $o)<a class="f-btn sm" href="{{ request()->fullUrlWithQuery(['order' => $o, 'page' => null]) }}#thread" @if ($sort === $o) style="border-color:var(--amber)" aria-current="page" @endif>{{ __('community.order.'.$o) }}</a>@endforeach
@@ -169,6 +173,10 @@
             <div class="l">
               @auth @if (auth()->id() !== $post->user_id) @include('community.partials.report', ['target' => 'post', 'id' => $post->id]) @endif @endauth
               @if ($canManage)<button type="button" data-edit="{{ $post->id }}">✎ {{ __('community.edit') }}</button>@endif
+              @if ($canModerate)
+                @if ($post->status !== 'published')<form method="post" action="{{ route('community.mod.post', [$post, 'approve']) }}">@csrf<button style="color:var(--up)">✓ {{ __('community.mod.approve') }}</button></form>@endif
+                <form method="post" action="{{ route('community.mod.post', [$post, 'hide']) }}">@csrf<button style="color:#fb7185">{{ __('community.mod.hide') }}</button></form>
+              @endif
               @if ($canChooseBest && $post->status === 'published' && $post->user_id !== $topic->user_id)
                 <form method="post" action="{{ route('community.posts.best', $post) }}">@csrf<button>✓ {{ $isBest ? __('community.best.unmark') : __('community.best.mark') }}</button></form>
               @endif

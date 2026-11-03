@@ -7,6 +7,7 @@ use App\Filament\Support\Localized;
 use App\Models\ForumCategory;
 use App\Models\ForumTopic;
 use App\Models\Game;
+use App\Models\User;
 use BackedEnum;
 use Filament\Actions\EditAction;
 use Filament\Forms\Components\Select;
@@ -23,7 +24,7 @@ use Filament\Tables\Table;
 use Spatie\Permission\Models\Role;
 use UnitEnum;
 
-/** Розділи форуму: блоки, ігри, хто може писати й які типи тем дозволені */
+/** Розділи форуму: блоки, ігри, права (хто бачить, пише, відповідає), модерація розділу й модератори */
 class ForumCategoryResource extends Resource
 {
     protected static ?string $model = ForumCategory::class;
@@ -59,12 +60,27 @@ class ForumCategoryResource extends Resource
                 Select::make('parent_id')->label('Підрозділ у')->options(fn (?ForumCategory $record) => ForumCategory::whereNull('parent_id')
                     ->when($record, fn ($q) => $q->whereKeyNot($record->id))->orderBy('sort')->get()->mapWithKeys(fn (ForumCategory $c) => [$c->id => $c->name])),
                 TextInput::make('sort')->label('Порядок')->numeric()->default(0),
-                Select::make('post_roles')->label('Хто створює теми')->multiple()
-                    ->options(fn () => Role::orderBy('name')->pluck('name', 'name'))
-                    ->helperText('Порожньо — усі зареєстровані. Відповідати можуть усі.'),
                 Select::make('topic_types')->label('Дозволені типи тем')->multiple()->options(ForumTopic::TYPES)
                     ->helperText('Порожньо — усі типи.'),
                 Toggle::make('is_active')->label('Показувати на сайті')->default(true),
+            ]),
+            Section::make('Права')->description('Ролі або «Усі зареєстровані» / «Власники серверів». Адміністратори й модератори розділу мають доступ завжди.')->columns(3)->schema([
+                Select::make('view_roles')->label('Хто бачить розділ')->multiple()->options(fn () => self::audiences())
+                    ->helperText('Порожньо — усі, зокрема гості. Закритий розділ закриває й підрозділи, зникає зі списків, пошуку й карти сайту.'),
+                Select::make('post_roles')->label('Хто створює теми')->multiple()->options(fn () => self::audiences())
+                    ->helperText('Порожньо — усі зареєстровані.'),
+                Select::make('reply_roles')->label('Хто відповідає')->multiple()->options(fn () => self::audiences())
+                    ->helperText('Порожньо — усі зареєстровані.'),
+            ]),
+            Section::make('Модерація розділу')->columns(3)->schema([
+                Toggle::make('moderate_topics')->label('Нові теми — на перевірку')->default(true)
+                    ->helperText('Вимкнено — теми публікуються одразу (якщо автофільтр нічого не знайшов).'),
+                Select::make('moderate_replies')->label('Перевірка відповідей')->options(ForumCategory::REPLY_MODES)
+                    ->placeholder('Як у налаштуваннях спільноти'),
+                Select::make('moderators')->label('Модератори розділу')->multiple()->searchable()
+                    ->relationship('moderators', 'name')
+                    ->getOptionLabelFromRecordUsing(fn (User $u) => trim(($u->nickname ?: $u->name).' · '.$u->email, ' ·'))
+                    ->helperText('Модерують цей розділ і його підрозділи на сайті: черга «Модерація», схвалення, приховування, закріплення, закриття тем.'),
             ]),
         ]);
     }
@@ -76,12 +92,23 @@ class ForumCategoryResource extends Resource
             ->columns([
                 TextColumn::make('name')->label('Розділ')->description(fn (ForumCategory $c) => ForumCategory::GROUPS[$c->group] ?? $c->group),
                 TextColumn::make('slug')->label('Адреса'),
-                TextColumn::make('post_roles')->label('Хто пише')->badge()->placeholder('Усі'),
+                TextColumn::make('view_roles')->label('Бачать')->badge()->placeholder('Усі')
+                    ->formatStateUsing(fn (string $state) => ForumCategory::AUDIENCES[$state] ?? $state),
+                TextColumn::make('post_roles')->label('Хто пише')->badge()->placeholder('Усі')
+                    ->formatStateUsing(fn (string $state) => ForumCategory::AUDIENCES[$state] ?? $state),
+                IconColumn::make('moderate_topics')->label('Перевірка тем')->boolean(),
+                TextColumn::make('moderators.name')->label('Модератори')->badge()->placeholder('—'),
                 TextColumn::make('topics_count')->label('Тем')->numeric(),
                 TextColumn::make('posts_count')->label('Відповідей')->numeric(),
                 IconColumn::make('is_active')->label('На сайті')->boolean(),
             ])
             ->recordActions([EditAction::make()]);
+    }
+
+    /** Аудиторії для прав розділу: особливі групи й ролі */
+    private static function audiences(): array
+    {
+        return ForumCategory::AUDIENCES + Role::orderBy('name')->pluck('name', 'name')->all();
     }
 
     public static function getPages(): array

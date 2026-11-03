@@ -51,7 +51,7 @@ final class Subscriptions
             }
         })->where('user_id', '!=', $topic->user_id)->distinct()->pluck('user_id');
 
-        self::send($ids->all(), new ForumActivity($topic));
+        self::send($ids->all(), new ForumActivity($topic), $topic);
     }
 
     /** Нова відповідь: сповіщення підписникам теми, крім автора відповіді */
@@ -60,16 +60,18 @@ final class Subscriptions
         $ids = ForumSubscription::where('subscribable_type', $post->topic->getMorphClass())->where('subscribable_id', $post->topic_id)
             ->where('user_id', '!=', $post->user_id)->pluck('user_id');
 
-        self::send($ids->all(), new ForumActivity($post->topic, $post));
+        self::send($ids->all(), new ForumActivity($post->topic, $post), $post->topic);
     }
 
     /** @param list<int> $ids */
-    private static function send(array $ids, ForumActivity $notification): void
+    private static function send(array $ids, ForumActivity $notification, ForumTopic $topic): void
     {
         if ($ids === []) {
             return;
         }
+        // Закритий розділ: сповіщення лише тим, хто його бачить
+        $category = $topic->category;
         User::whereIn('id', $ids)->whereNull('banned_until')->orWhere(fn ($q) => $q->whereIn('id', $ids)->where('banned_until', '<', now()))
-            ->chunkById(200, fn ($users) => Notification::send($users, $notification));
+            ->chunkById(200, fn ($users) => Notification::send($users->filter(fn (User $u) => $category->canView($u)), $notification));
     }
 }

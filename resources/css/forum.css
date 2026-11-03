@@ -249,3 +249,20 @@
 }
 .f-thad:not(:has(*)) { display: none; }
 .cm-editform[hidden], .cm-quoting[hidden] { display: none !important; }
+
+/* Модерація на сайті */
+.f-modrow { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 14px; align-items: start; padding: 14px 16px; border-bottom: 1px solid var(--line); }
+.f-modrow:last-child { border-bottom: 0; }
+.f-modrow h3 { font: 700 15px/1.4 var(--font); }
+.f-modrow h3 a:hover { color: var(--amber); }
+.f-modacts { display: flex; gap: 6px; flex-wrap: wrap; align-items: center; justify-content: flex-end; }
+.f-modacts form { display: inline; }
+.f-modacts .cm-report summary.f-btn { padding: 7px 12px; border: 1px solid var(--line-2); border-radius: 10px; font-size: 13px; color: var(--text); }
+.f-modbar { display: flex; justify-content: space-between; align-items: center; gap: 10px; flex-wrap: wrap; margin-bottom: 14px; padding: 10px 14px; border-radius: 12px; border: 1px dashed #fb718566; background: #fb71850a; }
+.f-modbar > b { font-size: 13px; color: #fb7185; }
+.f-sub .mod { color: #fb7185; }
+.f-sub .mod i { font-style: normal; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #fb7185; color: #111; font-size: 11px; }
+@media (max-width: 720px) {
+  .f-modrow { grid-template-columns: 1fr; }
+  .f-modacts { justify-content: flex-start; }
+}

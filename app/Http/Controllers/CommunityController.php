@@ -32,8 +32,9 @@ class CommunityController extends Controller
     /** Головна форуму: новини зверху, блоки розділів (graj.club, ігри, різне) з підрозділами й останньою темою */
     public function index(): View
     {
-        $categories = ForumCategory::active()->whereNull('parent_id')
-            ->with(['game', 'children' => fn ($q) => $q->where('is_active', true)])->get();
+        $visible = ForumCategory::visibleIds(auth()->user());
+        $categories = ForumCategory::active()->whereNull('parent_id')->whereIn('id', $visible)
+            ->with(['game', 'children' => fn ($q) => $q->where('is_active', true)->whereIn('id', $visible)])->get();
         $ids = $categories->pluck('id')->merge($categories->flatMap(fn (ForumCategory $c) => $c->children->pluck('id')));
         $last = $this->lastTopics($ids);
 
@@ -75,8 +76,8 @@ class CommunityController extends Controller
 
     public function category(Request $request, ForumCategory $category): View
     {
-        abort_unless($category->is_active, 404);
         $category->loadMissing(['parent', 'game']);
+        abort_unless($category->canView($request->user()), 404);
 
         return $this->feed($request, $category, 'category');
     }
@@ -91,6 +92,7 @@ class CommunityController extends Controller
     {
         $user = $request->user();
         abort_unless($topic->visibleTo($user) && $topic->category->is_active, 404);
+        $moderator = $topic->moderatedBy($user);
 
         // Перегляд рахуємо раз на сесію
         $seen = (array) $request->session()->get('forum_seen', []);
@@ -104,7 +106,8 @@ class CommunityController extends Controller
 
         $posts = $topic->posts()->with(['user', 'quote.user'])
             ->where(fn (Builder $q) => $q->where('status', 'published')
-                ->when($user, fn ($w) => $w->orWhere(fn ($own) => $own->where('user_id', $user->id)->where('status', 'pending'))))
+                ->when($moderator, fn ($w) => $w->orWhere('status', 'pending'))
+                ->when($user && ! $moderator, fn ($w) => $w->orWhere(fn ($own) => $own->where('user_id', $user->id)->where('status', 'pending'))))
             ->when($sort === 'best', fn ($q) => $q->orderByDesc('score')->orderBy('id'))
             ->when($sort === 'new', fn ($q) => $q->orderByDesc('id'))
             ->when($sort === 'old', fn ($q) => $q->orderBy('id'))
@@ -136,9 +139,10 @@ class CommunityController extends Controller
             'ownerIds' => $ownerIds,
             // Значок «Власник сервера» в картці автора — для всіх, хто має сервер у каталозі
             'serverOwnerIds' => User::whereIn('id', $authorIds)->whereHas('servers')->pluck('id')->all(),
-            'canReply' => $user && ! $user->isBanned() && $topic->isPublished() && (! $topic->is_locked || $user->can('community.moderate')),
-            'canEdit' => $user && ($user->id === $topic->user_id || $user->can('community.moderate')),
-            'canChooseBest' => $user && ($user->id === $topic->user_id || $user->can('community.moderate')),
+            'canReply' => $user && $topic->isPublished() && (! $topic->is_locked || $moderator) && $topic->category->allowsReplying($user),
+            'canEdit' => $user && ($user->id === $topic->user_id || $moderator),
+            'canChooseBest' => $user && ($user->id === $topic->user_id || $moderator),
+            'canModerate' => $moderator,
         ]);
     }
 
@@ -155,7 +159,7 @@ class CommunityController extends Controller
         if ($tab === 'mine') {
             $query->where('user_id', $user?->id);
         } else {
-            $query->published();
+            $query->published()->whereIn('category_id', ForumCategory::visibleIds($user));
         }
         if ($category) {
             $ids = $category->children()->pluck('id')->push($category->id);
@@ -185,7 +189,7 @@ class CommunityController extends Controller
         $topics = $query->paginate(20)->withQueryString();
 
         // Підрозділи розділу — блоком над списком тем
-        $children = $category ? $category->children()->where('is_active', true)->with('game')->get() : collect();
+        $children = $category ? $category->children()->where('is_active', true)->whereIn('id', ForumCategory::visibleIds($user))->with('game')->get() : collect();
 
         return view('community.list', $this->shared() + [
             'topics' => $topics,
@@ -204,17 +208,17 @@ class CommunityController extends Controller
     /** Спільне для сторінок форуму: новини зверху, бічна колонка (бали, хто онлайн, останні повідомлення, статистика) */
     private function shared(): array
     {
-        $news = ForumTopic::published()->news()->with(['user', 'server', 'category.game'])
+        $user = auth()->user();
+        $visible = ForumCategory::visibleIds($user);
+        $news = ForumTopic::published()->news()->whereIn('category_id', $visible)->with(['user', 'server', 'category.game'])
             ->orderByDesc('is_featured')->orderByDesc('published_at')->limit(3)->get();
 
-        $latest = ForumTopic::published()->with(['lastPostUser', 'category.game'])
-            ->whereHas('category', fn ($q) => $q->where('is_active', true))
+        $latest = ForumTopic::published()->with(['lastPostUser', 'category.game'])->whereIn('category_id', $visible)
             ->orderByDesc('last_post_at')->limit(5)->get();
 
         $all = ForumCategory::where('is_active', true)->get(['topics_count', 'posts_count']);
         $online = User::where('updated_at', '>=', now()->subMinutes(15))->where('forum_posts_count', '>', 0)
             ->orderByDesc('updated_at')->limit(30)->get();
-        $user = auth()->user();
 
         return [
             'news' => $news,

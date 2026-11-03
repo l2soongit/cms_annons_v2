@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Enums\ServerStatus;
+use App\Models\ForumCategory;
 use App\Models\ForumTopic;
 use App\Models\Report;
 use App\Models\Server;
@@ -66,6 +67,7 @@ class ServerController extends Controller
             'similar' => $this->similar($server),
             // Новини сервера зі спільноти (опубліковані після модерації)
             'serverNews' => ForumTopic::published()->where('server_id', $server->id)->where('type', 'server_news')
+                ->whereIn('category_id', ForumCategory::visibleIds(null))
                 ->latest('published_at')->limit(3)->get(['id', 'slug', 'title', 'excerpt', 'published_at', 'posts_count']),
         ]);
     }

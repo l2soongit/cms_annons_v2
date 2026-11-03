@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Спільнота — три нові варіанти</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* Вітрина: кожен варіант — у рамці телефона й у вікні ПК (зменшеному). Усе клікабельне всередині. */
+body { padding: 32px 0 64px; }
+.wrap { max-width: 1500px; }
+h1 { font: 800 34px var(--display); }
+.lead { color: var(--muted); margin-top: 6px; }
+.v { margin-top: 48px; }
+.v h2 { font: 700 24px var(--display); }
+.v h2 span { color: var(--amber); }
+.v p { color: var(--muted); margin: 6px 0 18px; max-width: 90ch; }
+.v .open { color: var(--amber); font-weight: 800; margin-left: 10px; font-size: 14px; }
+.pair { display: flex; gap: 32px; align-items: start; }
+.phone { flex: none; width: 390px; height: 800px; border-radius: 44px; padding: 12px; background: #000; box-shadow: 0 0 0 2px #27272a, 0 30px 80px -20px #000; }
+.phone iframe { width: 100%; height: 100%; border: 0; border-radius: 34px; background: var(--bg); }
+.pc { flex: 1; min-width: 0; }
+.pc .win { border-radius: 14px; overflow: hidden; border: 1px solid var(--line-2); box-shadow: 0 30px 80px -20px #000; background: #000; }
+.pc .chrome { height: 30px; display: flex; align-items: center; gap: 6px; padding: 0 12px; background: #18181b; border-bottom: 1px solid var(--line); }
+.pc .chrome i { width: 10px; height: 10px; border-radius: 50%; background: #3f3f46; }
+.pc .chrome span { margin-left: 12px; font-size: 12px; color: var(--faint); }
+.pc .stage { position: relative; height: calc(900px * var(--s)); }
+.pc iframe { position: absolute; top: 0; left: 0; width: 1440px; height: 900px; border: 0; transform: scale(var(--s)); transform-origin: 0 0; }
+.cap { text-align: center; font-size: 12px; font-weight: 800; color: var(--faint); letter-spacing: .08em; text-transform: uppercase; margin-top: 10px; }
+@media (max-width: 900px) { .pc { display: none; } .pair { justify-content: center; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Спільнота: три нові варіанти</h1>
+  <p class="lead">Кожен варіант — і телефон, і ПК. Усередині все клікається: відкрийте тему, натисніть «+», фільтри, вкладки.</p>
+
+  <section class="v">
+    <h2><span>A</span> «Додаток» <a class="open" href="community-v2-a.html" target="_blank">відкрити окремо ↗</a></h2>
+    <p>Як мобільна соцмережа: вкладки «Для вас / Новини / Форум / Підписки / Мої», ігри кружечками, новини каруселлю, картки з панеллю ▲▼ 💬 ↗ 🔖, кнопка «+» відкриває вибір типу теми. На ПК — три колонки (меню й ігри, стрічка, бали й гаряче), тема відкривається панеллю справа, не залишаючи стрічку.</p>
+    <div class="pair">
+      <div><div class="phone"><iframe src="community-v2-a.html" title="A на телефоні"></iframe></div><div class="cap">Телефон</div></div>
+      <div class="pc"><div class="win"><div class="chrome"><i></i><i></i><i></i><span>graj.club/community</span></div><div class="stage"><iframe src="community-v2-a.html" title="A на ПК" tabindex="-1"></iframe></div></div><div class="cap">ПК, 1440 px</div></div>
+    </div>
+  </section>
+
+  <section class="v">
+    <h2><span>B</span> «Чати» <a class="open" href="community-v2-b.html" target="_blank">відкрити окремо ↗</a></h2>
+    <p>Форум як месенджер: теми — це чати з останнім повідомленням і лічильником непрочитаного, тема — розмова з бульбашками, цитатами й реакціями, поле вводу завжди внизу. На ПК — як Discord: ігри іконками зліва, список тем, розмова й панель «Про тему».</p>
+    <div class="pair">
+      <div><div class="phone"><iframe src="community-v2-b.html" title="B на телефоні"></iframe></div><div class="cap">Телефон</div></div>
+      <div class="pc"><div class="win"><div class="chrome"><i></i><i></i><i></i><span>graj.club/community</span></div><div class="stage"><iframe src="community-v2-b.html" title="B на ПК" tabindex="-1"></iframe></div></div><div class="cap">ПК, 1440 px</div></div>
+    </div>
+  </section>
+
+  <section class="v">
+    <h2><span>C</span> «Журнал» <a class="open" href="community-v2-c.html" target="_blank">відкрити окремо ↗</a></h2>
+    <p>Новини як у медіа: головна історія, далі стрічка з мініатюрами й датами «Сьогодні / Вчора». Форум — щільний список (рахунок, заголовок, гра, нові відповіді), фільтри в нижньому аркуші. Тема — режим читання зі смужкою прогресу й панеллю дій унизу. На ПК — журнальна сітка новин, під нею форум таблицею з фільтрами збоку.</p>
+    <div class="pair">
+      <div><div class="phone"><iframe src="community-v2-c.html" title="C на телефоні"></iframe></div><div class="cap">Телефон</div></div>
+      <div class="pc"><div class="win"><div class="chrome"><i></i><i></i><i></i><span>graj.club/community</span></div><div class="stage"><iframe src="community-v2-c.html" title="C на ПК" tabindex="-1"></iframe></div></div><div class="cap">ПК, 1440 px</div></div>
+    </div>
+  </section>
+</div>
+<script>
+// Масштаб вікна ПК під ширину колонки
+const fit = () => document.querySelectorAll('.pc .stage').forEach(s => s.style.setProperty('--s', s.clientWidth / 1440));
+addEventListener('resize', fit); fit();
+</script>
+</body>
+</html>

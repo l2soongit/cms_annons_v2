@@ -1,0 +1,319 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Спільнота — C «Журнал»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* C «Журнал»: новини подані як у медіа (головна історія, стрічка з мініатюрами, дати-розділювачі),
+   форум — щільний список «рахунок · заголовок · гра · відповіді», фільтри — у нижньому аркуші.
+   Тема — режим читання: смужка прогресу вгорі й панель дій внизу. ПК — журнальна сітка новин і класичний форум поруч. */
+body { padding-bottom: 80px; }
+.top { position: sticky; top: 0; z-index: 20; background: #09090be6; backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); }
+.top .in { display: flex; align-items: center; gap: 12px; padding: 10px 16px; max-width: 1240px; margin: 0 auto; }
+.top .in > img { width: auto; height: 22px; }
+.top nav { display: none; }
+.top .sp { flex: 1; }
+.ibtn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: 16px; }
+.btn-hot { display: inline-flex; white-space: nowrap; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px; background: var(--grad); color: #1c1003; font-weight: 800; font-size: 14px; }
+.btn-ghost { display: inline-flex; align-items: center; gap: 6px; padding: 9px 16px; border-radius: 12px; border: 1px solid var(--line-2); font-weight: 800; font-size: 14px; }
+.wrap { padding: 0 16px; }
+
+.head { padding: 22px 0 14px; }
+.head h1 { font: 800 30px/1.1 var(--display); letter-spacing: -.02em; }
+.toggle { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; padding: 4px; margin-top: 16px; border-radius: 14px; background: var(--card); border: 1px solid var(--line); }
+.toggle button { padding: 10px; border-radius: 10px; font-weight: 800; font-size: 15px; color: var(--muted); }
+.toggle button[aria-selected="true"] { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.toggle b { font-size: 11px; margin-left: 4px; padding: 0 6px; border-radius: 999px; background: var(--orange); color: #fff; }
+
+.k { font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; }
+.k.news { color: var(--amber); } .k.srv { color: var(--orange); } .k.ask { color: var(--blue); } .k.guide { color: var(--up); } .k.clan { color: var(--violet); }
+.meta { font-size: 12px; color: var(--faint); }
+
+/* Новини */
+.story { display: block; cursor: pointer; }
+.story .im { border-radius: 18px; overflow: hidden; aspect-ratio: 16 / 10; }
+.story .im img { width: 100%; height: 100%; object-fit: cover; }
+.story h2 { font: 800 22px/1.2 var(--display); margin: 12px 0 6px; letter-spacing: -.01em; }
+.story p { color: var(--muted); font-size: 15px; }
+.story .meta { margin-top: 8px; }
+.day { display: flex; align-items: center; gap: 10px; margin: 22px 0 6px; font: 800 12px var(--font); letter-spacing: .08em; text-transform: uppercase; color: var(--faint); }
+.day::after { content: ''; flex: 1; border-top: 1px solid var(--line); }
+.item { display: grid; grid-template-columns: minmax(0, 1fr) 96px; gap: 14px; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.item h3 { font: 700 16px/1.35 var(--font); margin: 4px 0; }
+.item img, .item .noimg { width: 96px; height: 72px; border-radius: 12px; object-fit: cover; }
+.item .noimg { display: grid; place-items: center; background: var(--card); font-size: 26px; }
+
+/* Форум */
+.fbar { display: flex; gap: 8px; align-items: center; padding: 4px 0 10px; }
+.fbar .now { flex: 1; font-size: 14px; color: var(--muted); }
+.fbar .now b { color: var(--text); }
+.games { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; margin: 0 -16px; padding: 0 16px 12px; }
+.games a { flex: none; display: inline-flex; align-items: center; gap: 6px; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 13px; }
+.games a img { width: 18px; height: 18px; }
+.games a[aria-current] { border-color: var(--amber); background: #fbbf2414; }
+.row { display: grid; grid-template-columns: 44px minmax(0, 1fr); gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--line); cursor: pointer; }
+.score { display: grid; justify-items: center; align-content: start; padding-top: 2px; }
+.score b { font: 700 15px var(--display); }
+.score small { font-size: 10px; color: var(--faint); font-weight: 700; }
+.score.hot b { color: var(--amber); }
+.row h3 { font: 700 15px/1.35 var(--font); }
+.row h3 .ok { color: var(--up); font-size: 12px; margin-left: 4px; }
+.row .meta { display: flex; gap: 6px 10px; flex-wrap: wrap; margin-top: 4px; align-items: center; }
+.row .meta img { width: 14px; height: 14px; vertical-align: -2px; margin-right: 3px; }
+.row .new { color: var(--orange); font-weight: 800; }
+.more { display: block; text-align: center; padding: 14px; margin-top: 8px; border-radius: 12px; border: 1px dashed var(--line-2); color: var(--muted); font-weight: 700; }
+
+/* Нижня панель */
+.tabbar { position: fixed; z-index: 30; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.tabbar a { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); }
+.tabbar span { font-size: 20px; line-height: 1.2; }
+.tabbar a[aria-current] { color: var(--text); }
+.tabbar .plus span { width: 44px; height: 32px; border-radius: 12px; display: grid; place-items: center; background: var(--grad); color: #1c1003; font-weight: 800; }
+.tabbar .plus { color: var(--amber); }
+
+/* Аркуш фільтрів */
+.scrim { position: fixed; inset: 0; z-index: 40; background: #000a; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.sheet { position: fixed; z-index: 41; left: 0; right: 0; bottom: 0; transform: translateY(100%); transition: transform .25s ease; background: var(--card); border-radius: 22px 22px 0 0; padding: 10px 16px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line-2); }
+.sheet::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--line-2); margin: 0 auto 14px; }
+.sheet-open .scrim { opacity: 1; pointer-events: auto; }
+.sheet-open .sheet { transform: none; }
+.sheet h3 { font: 700 18px var(--display); }
+.sheet h4 { font-size: 13px; color: var(--faint); margin: 16px 0 8px; }
+.opts { display: flex; gap: 6px; flex-wrap: wrap; }
+.opts button { padding: 8px 14px; border-radius: 999px; border: 1px solid var(--line-2); font-weight: 700; font-size: 14px; }
+.opts button[aria-pressed="true"] { border-color: var(--amber); background: #fbbf2418; color: var(--amber); }
+.sheet .go { display: flex; gap: 8px; margin-top: 20px; }
+.sheet .go > * { flex: 1; justify-content: center; }
+
+/* Режим читання */
+.reader { position: fixed; inset: 0; z-index: 35; overflow-y: auto; background: var(--bg); transform: translateY(100%); transition: transform .3s ease; padding-bottom: 90px; }
+.reading .reader { transform: none; }
+.progress { position: sticky; top: 0; z-index: 2; height: 3px; background: var(--line); }
+.progress i { display: block; height: 100%; width: 0; background: var(--grad); }
+.rtop { position: sticky; top: 3px; z-index: 2; display: flex; align-items: center; gap: 10px; padding: 8px 16px; background: #09090be6; backdrop-filter: blur(14px); }
+.rtop .crumb { flex: 1; font-size: 13px; color: var(--faint); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.article { max-width: 720px; margin: 0 auto; padding: 8px 16px 0; }
+.article h1 { font: 800 28px/1.15 var(--display); letter-spacing: -.02em; margin: 10px 0 14px; }
+.article .lead { font-size: 18px; color: #e4e4e7; }
+.by { display: flex; align-items: center; gap: 10px; padding: 14px 0; border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); margin: 16px 0; font-size: 13px; color: var(--faint); }
+.by .ava { width: 36px; height: 36px; border-radius: 50%; background: #60a5fa; color: #111; font-weight: 800; display: grid; place-items: center; }
+.by b { color: var(--text); display: block; font-size: 14px; }
+.cover { border-radius: 16px; overflow: hidden; margin: 16px 0; }
+.body { font-size: 17px; line-height: 1.75; color: #e4e4e7; }
+.body > * + * { margin-top: 14px; }
+.body h2 { font: 700 21px var(--display); margin-top: 26px; }
+.body ul { margin-left: 22px; }
+.box-srv { display: flex; gap: 12px; align-items: center; padding: 14px; border-radius: 14px; border: 1px solid #fbbf2455; background: var(--card); margin: 22px 0; }
+.box-srv img { width: 40px; height: 40px; }
+.box-srv div { flex: 1; }
+.box-srv small { color: var(--faint); }
+.comments h2 { font: 700 19px var(--display); margin: 30px 0 6px; }
+.c { padding: 14px 0; border-bottom: 1px solid var(--line); }
+.c .who { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--faint); }
+.c .who span:first-child { width: 26px; height: 26px; border-radius: 50%; display: grid; place-items: center; color: #111; font-weight: 800; font-size: 11px; }
+.c .who b { color: var(--text); }
+.c p { margin: 6px 0 0 34px; }
+.c .ra { margin: 6px 0 0 34px; display: flex; gap: 14px; font-size: 12px; font-weight: 800; color: var(--faint); }
+.c.sub { margin-left: 34px; }
+.c.best { border-left: 3px solid var(--up); padding-left: 12px; }
+.role { font-size: 10px; font-weight: 800; padding: 0 5px; border-radius: 5px; color: var(--orange); border: 1px solid #f9731650; }
+.rbar { position: fixed; z-index: 36; left: 0; right: 0; bottom: 0; display: flex; gap: 8px; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); visibility: hidden; }
+.reading .rbar { visibility: visible; }
+.rbar .vote { display: flex; align-items: center; border-radius: 12px; border: 1px solid var(--line-2); }
+.rbar .vote button { width: 40px; height: 42px; color: var(--faint); }
+.rbar .vote b { font: 700 14px var(--display); }
+.rbar .reply { flex: 1; justify-content: center; }
+.side { display: none; }
+.pc-only { display: none; }
+
+/* ===== ПК: журнальна сітка новин, під нею форум таблицею й бічна колонка; читання — по центру з колонкою змісту ===== */
+@media (min-width: 1024px) {
+  body { padding-bottom: 0; }
+  .top .in { padding: 12px 24px; gap: 28px; }
+  .top nav { display: flex; gap: 22px; font-weight: 700; font-size: 14px; color: var(--muted); }
+  .top nav a[aria-current] { color: var(--text); text-decoration: underline 2px var(--amber); text-underline-offset: 8px; }
+  .tabbar, .toggle, .fbar .ibtn.filters { display: none; }
+  .wrap { max-width: 1240px; margin: 0 auto; padding: 0 24px; }
+  .head { display: flex; justify-content: space-between; align-items: end; padding: 36px 0 22px; }
+  .head h1 { font-size: 44px; }
+  .head p { color: var(--muted); margin-top: 8px; }
+  .pane { display: block !important; }
+  .head p.pc-only { display: block; }
+  .sec-h.pc-only { display: flex; }
+  .mag { display: grid; grid-template-columns: 1.5fr 1fr; gap: 28px; }
+  .story h2 { font-size: 30px; }
+  .story .im { aspect-ratio: 16 / 9; }
+  .newslist .day:first-child { margin-top: 0; }
+  .item { grid-template-columns: minmax(0, 1fr) 120px; }
+  .item img, .item .noimg { width: 120px; height: 84px; }
+  .sec-h { display: flex; justify-content: space-between; align-items: center; margin: 48px 0 14px; }
+  .sec-h h2 { font: 700 22px var(--display); }
+  .forum-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 28px; }
+  .games { margin: 0; padding: 0 0 12px; flex-wrap: wrap; }
+  .table { border: 1px solid var(--line); border-radius: 16px; background: var(--card); overflow: hidden; }
+  .row { grid-template-columns: 56px minmax(0, 1fr) 90px 160px; align-items: center; padding: 12px 18px; }
+  .row:hover { background: var(--card-2); }
+  .row .meta { margin-top: 2px; }
+  .row .cnt, .row .last { display: block !important; }
+  .row .cnt { text-align: center; font: 700 15px var(--display); }
+  .row .cnt small { display: block; font: 500 11px var(--font); color: var(--faint); }
+  .row .last { font-size: 12px; color: var(--faint); }
+  .row .last b { color: var(--text); display: block; font-size: 13px; }
+  .more { margin-top: 0; border: 0; border-top: 1px solid var(--line); border-radius: 0; }
+  .side { display: grid; gap: 16px; align-content: start; position: sticky; top: 84px; }
+  .box { padding: 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+  .box h3 { font: 700 15px var(--display); margin-bottom: 10px; }
+  .box p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+  .box.owner { background: linear-gradient(135deg, #fbbf241f, #f973160d), var(--card); border-color: #fbbf2440; }
+  .box .opts button { font-size: 13px; padding: 6px 12px; }
+  .lvl { display: flex; justify-content: space-between; font-weight: 700; } .lvl b { color: var(--amber); font: 700 20px var(--display); }
+  .barx { height: 8px; border-radius: 999px; background: var(--bg-2); margin: 10px 0 6px; overflow: hidden; } .barx i { display: block; height: 100%; width: 62%; background: var(--grad); }
+  .reader { transform: none; opacity: 0; pointer-events: none; transition: opacity .2s; }
+  .reading .reader { opacity: 1; pointer-events: auto; }
+  .rtop { padding: 12px 24px; }
+  .article { padding-top: 20px; }
+  .article h1 { font-size: 42px; }
+  .rbar { left: 50%; right: auto; bottom: 20px; transform: translateX(-50%); width: 560px; border-radius: 18px; border: 1px solid var(--line-2); box-shadow: 0 20px 50px -10px #000; padding: 8px; }
+  .sheet { left: 50%; right: auto; top: 50%; bottom: auto; width: 520px; border-radius: 22px; transform: translate(-50%, -46%); opacity: 0; pointer-events: none; transition: .2s; }
+  .sheet-open .sheet { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+}
+.row .cnt, .row .last { display: none; }
+</style>
+</head>
+<body>
+
+<header class="top"><div class="in">
+  <img src="../../public/images/brand/logo.svg" alt="graj.club">
+  <nav><a>Рейтинг</a><a>Ігри</a><a aria-current="page">Спільнота</a><a>Власникам</a></nav>
+  <span class="sp"></span>
+  <button class="ibtn" aria-label="Пошук">🔍</button>
+  <button class="ibtn" aria-label="Сповіщення">🔔</button>
+  <a class="btn-hot" data-sheet="new">+ Тема</a>
+</div></header>
+
+<main class="wrap">
+  <section class="head">
+    <div><h1>Новини й <span class="grad">форум</span></h1><p class="pc-only">Новини graj.club і серверів, обговорення, питання й набір у клан.</p></div>
+    <div class="toggle" role="tablist"><button role="tab" aria-selected="true" data-pane="news">📰 Новини</button><button role="tab" aria-selected="false" data-pane="forum">💬 Форум<b>15</b></button></div>
+  </section>
+
+  <section class="pane" id="news">
+    <div class="mag">
+      <a class="story" data-read>
+        <div class="im"><img src="../../storage/app/public/games/cover/lineage2.webp" alt=""></div>
+        <span class="k news">Новина graj.club · Lineage 2</span>
+        <h2>Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну Interlude</h2>
+        <p>Жовтень видався найактивнішим місяцем для Lineage 2 за весь рік: сумарний онлайн Interlude вперше перевищив 20 тисяч.</p>
+        <div class="meta">Admin · 5 год тому · 💬 3 · 4 хв читання</div>
+      </a>
+      <div class="newslist">
+        <div class="day">Сьогодні</div>
+        <a class="item" data-read><div><span class="k srv">Сервер · Azeroth Legacy</span><h3>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h3><div class="meta">8 год · 💬 4</div></div><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""></a>
+        <a class="item" data-read><div><span class="k srv">Сервер · RustLand</span><h3>Глобальний вайп у четвер і нова карта 4500</h3><div class="meta">10 год · 💬 11</div></div><img src="../../storage/app/public/games/cover/rust.webp" alt=""></a>
+        <div class="day">Вчора</div>
+        <a class="item" data-read><div><span class="k news">graj.club</span><h3>Новини й форум, бонусні бали та магазин нагород</h3><div class="meta">1 день · 💬 0</div></div><span class="noimg">📣</span></a>
+        <a class="item" data-read><div><span class="k srv">Сервер · CraftUA</span><h3>Сезон 7: нові моди й економіка без донату</h3><div class="meta">1 день · 💬 2</div></div><img src="../../storage/app/public/games/cover/minecraft.webp" alt=""></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="pane" id="forum" hidden>
+    <div class="sec-h pc-only"><h2>Форум</h2></div>
+    <div class="forum-grid">
+      <div>
+        <div class="fbar"><span class="now">Сортування: <b>🔥 Гаряче</b> · усі типи</span><button class="ibtn filters" data-sheet="filters" aria-label="Фільтри">⚙︎</button></div>
+        <nav class="games" aria-label="Ігри">
+          <a aria-current="page">Усе</a>
+          <a><img src="../../public/images/games/l2.png" alt="">Lineage 2</a>
+          <a><img src="../../public/images/games/wow.png" alt="">WoW</a>
+          <a><img src="../../public/images/games/mc.png" alt="">Minecraft</a>
+          <a><img src="../../public/images/games/rust.png" alt="">Rust</a>
+          <a><img src="../../public/images/games/gta.png" alt="">GTA</a>
+          <a>☕ Флудилка</a>
+          <a>🛠 Власникам</a>
+        </div>
+        <div class="table">
+          <div class="row" data-read><div class="score hot"><b>294</b><small>▲</small></div><div><h3>Якою була ваша перша ММО?</h3><div class="meta"><span>☕ Флудилка</span><span>41 відп.</span><span class="new">+9 нових</span><span>3 год</span></div></div><div class="cnt">41<small>відповідь</small></div><div class="last"><b>Lumi</b>12 хв тому</div></div>
+          <div class="row" data-read><div class="score"><b>37</b><small>▲</small></div><div><h3><span class="k ask">Питання</span> Callback не приходить після голосу — що перевірити?<span class="ok">✓ рішення</span></h3><div class="meta"><span><img src="../../public/images/games/l2.png" alt="">Власникам</span><span>12 відп.</span><span>4 год</span></div></div><div class="cnt">12<small>відповідей</small></div><div class="last"><b>Dev_Tor</b>40 хв тому</div></div>
+          <div class="row" data-read><div class="score"><b>57</b><small>▲</small></div><div><h3><span class="k guide">Гайд</span> Як вибрати сервер Minecraft з модами й не наткнутися на pay-to-win</h3><div class="meta"><span><img src="../../public/images/games/mc.png" alt="">Minecraft</span><span>4 відп.</span><span>2 дні</span></div></div><div class="cnt">4<small>відповіді</small></div><div class="last"><b>Steve228</b>1 день тому</div></div>
+          <div class="row" data-read><div class="score"><b>19</b><small>▲</small></div><div><h3><span class="k clan">Клан</span> [UA] Valhalla набирає DD й хілів на Interlude x50</h3><div class="meta"><span><img src="../../public/images/games/l2.png" alt="">Lineage 2</span><span>7 відп.</span><span class="new">+2</span><span>3 год</span></div></div><div class="cnt">7<small>відповідей</small></div><div class="last"><b>Kain</b>3 год тому</div></div>
+          <div class="row" data-read><div class="score"><b>19</b><small>▲</small></div><div><h3>Розклад вайпів на листопад: хто вайпається в четвер?</h3><div class="meta"><span><img src="../../public/images/games/rust.png" alt="">Rust</span><span>18 відп.</span><span>5 год</span></div></div><div class="cnt">18<small>відповідей</small></div><div class="last"><b>rustacean</b>5 год тому</div></div>
+          <a class="more">Показати ще теми</a>
+        </div>
+      </div>
+      <aside class="side">
+        <div class="box"><h3>Фільтри</h3><div class="opts"><button aria-pressed="true">🔥 Гаряче</button><button>🆕 Нове</button><button>🏆 Топ тижня</button><button>Без відповіді</button><button>Питання</button><button>Гайди</button><button>Клани</button></div></div>
+        <div class="box"><h3>✨ Ваші бали</h3><div class="lvl"><span>Учасник</span><b>650</b></div><div class="barx"><i></i></div><p style="margin:0">До «Ветерана» — 350</p></div>
+        <div class="box owner"><h3>Маєте сервер?</h3><p>Пишіть новини сервера — вони потраплять у журнал і на сторінку сервера.</p><a class="btn-hot">Написати новину</a></div>
+      </aside>
+    </div>
+  </section>
+</main>
+
+<nav class="tabbar">
+  <a aria-current="page"><span>📰</span>Журнал</a>
+  <a><span>💬</span>Форум</a>
+  <a class="plus" data-sheet="new"><span>+</span>Тема</a>
+  <a><span>🔔</span>Сповіщ.</a>
+  <a><span>👤</span>Я</a>
+</nav>
+
+<div class="scrim" data-close></div>
+<div class="sheet" role="dialog" aria-label="Фільтри">
+  <h3>Сортування й фільтри</h3>
+  <h4>Сортувати</h4><div class="opts"><button aria-pressed="true">🔥 Гаряче</button><button>🆕 Нове</button><button>🏆 Топ тижня</button><button>Без відповіді</button></div>
+  <h4>Тип</h4><div class="opts"><button aria-pressed="true">Усі</button><button>Обговорення</button><button>Питання</button><button>Гайди</button><button>Клани</button><button>Новини серверів</button></div>
+  <h4>Мова</h4><div class="opts"><button aria-pressed="true">Усі</button><button>Українська</button><button>English</button><button>Polski</button></div>
+  <div class="go"><button class="btn-ghost" data-close>Скинути</button><button class="btn-hot" data-close>Показати 128 тем</button></div>
+</div>
+
+<section class="reader" aria-label="Читання">
+  <div class="progress"><i></i></div>
+  <div class="rtop"><button class="ibtn" data-back aria-label="Назад">←</button><span class="crumb">Спільнота › World of Warcraft</span><button class="ibtn" aria-label="Стежити">🔔</button><button class="ibtn" aria-label="Поділитися">↗</button></div>
+  <article class="article">
+    <span class="k srv">Новина сервера · World of Warcraft</span>
+    <h1>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h1>
+    <p class="lead">Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+    <div class="by"><span class="ava">A</span><div><b>Admin · власник Azeroth Legacy</b>2 листопада · 1 хв читання · 👁 2 265</div></div>
+    <div class="cover"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""></div>
+    <div class="body">
+      <h2>Що чекає на старті</h2>
+      <ul><li>x5 досвід, x3 золото</li><li>Кросфракційні поля бою</li><li>Без донату в характеристики</li></ul>
+      <p>Перший тиждень кожен голос на graj.club дає подвійну нагороду в грі. Турнір гільдій стартує через два тижні після відкриття.</p>
+      <h2>Як підготуватися</h2>
+      <p>Завантажте клієнт 3.3.5a заздалегідь, створіть акаунт на сайті сервера й приєднуйтеся до Discord, щоб не пропустити старт.</p>
+    </div>
+    <div class="box-srv"><img src="../../public/images/games/wow.png" alt=""><div><b>Azeroth Legacy</b><br><small>онлайн 1830 · Classic 1.12 x1 PvP</small></div><a class="btn-ghost">Сервер →</a></div>
+    <section class="comments">
+      <h2>Обговорення · 4</h2>
+      <div class="c best"><div class="who"><span style="background:#34d399">L</span><b>Lumi</b> · 2 год · <span style="color:var(--up);font-weight:800">✓ найкраща</span></div><p>Турнір гільдій буде 3×3 чи 5×5?</p><div class="ra"><span>▲ 14</span><span>Відповісти</span></div></div>
+      <div class="c sub"><div class="who"><span style="background:#60a5fa">A</span><b>Admin</b><span class="role">Власник</span> · 1 год</div><p>5×5, реєстрація відкриється в день старту.</p><div class="ra"><span>▲ 9</span><span>Відповісти</span></div></div>
+      <div class="c"><div class="who"><span style="background:#f472b6">D</span><b>Dev_Tor</b> · 40 хв</div><p>Буде трансфер персонажів з x1?</p><div class="ra"><span>▲ 2</span><span>Відповісти</span></div></div>
+    </section>
+  </article>
+</section>
+<div class="rbar"><span class="vote"><button>▲</button><b>266</b><button>▼</button></span><a class="btn-hot reply">💬 Відповісти</a><button class="ibtn" aria-label="Зберегти">🔖</button></div>
+
+<script>
+const b = document.body;
+const isPc = () => matchMedia('(min-width: 1024px)').matches;
+document.querySelectorAll('[data-pane]').forEach(t => t.addEventListener('click', () => {
+  document.querySelectorAll('[data-pane]').forEach(x => x.setAttribute('aria-selected', x === t));
+  document.querySelectorAll('.pane').forEach(p => p.hidden = p.id !== t.dataset.pane);
+}));
+const tabs = document.querySelectorAll('.tabbar a');
+tabs[0].addEventListener('click', () => document.querySelector('[data-pane="news"]').click());
+tabs[1].addEventListener('click', () => document.querySelector('[data-pane="forum"]').click());
+tabs.forEach((t, i) => i < 2 && t.addEventListener('click', () => tabs.forEach((x, j) => j < 2 && (j === i ? x.setAttribute('aria-current', 'page') : x.removeAttribute('aria-current')))));
+document.querySelectorAll('[data-sheet="filters"]').forEach(el => el.addEventListener('click', () => b.classList.add('sheet-open')));
+document.querySelectorAll('[data-close]').forEach(el => el.addEventListener('click', () => b.classList.remove('sheet-open')));
+document.querySelectorAll('.opts').forEach(g => g.querySelectorAll('button').forEach(o => o.addEventListener('click', () => g.querySelectorAll('button').forEach(x => x.setAttribute('aria-pressed', x === o)))));
+const reader = document.querySelector('.reader'), bar = document.querySelector('.progress i');
+document.querySelectorAll('[data-read]').forEach(el => el.addEventListener('click', () => { b.classList.add('reading'); reader.scrollTop = 0; }));
+document.querySelector('[data-back]').addEventListener('click', () => b.classList.remove('reading'));
+reader.addEventListener('scroll', () => { bar.style.width = (reader.scrollTop / (reader.scrollHeight - reader.clientHeight) * 100) + '%'; });
+</script>
+</body>
+</html>

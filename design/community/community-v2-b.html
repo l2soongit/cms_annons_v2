@@ -1,0 +1,277 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Спільнота — B «Чати»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* B «Чати»: форум як месенджер. Телефон — список тем як чати (останнє повідомлення, час, лічильник непрочитаного),
+   тема відкривається розмовою з бульбашками й полем вводу внизу. ПК — три панелі: ігри іконками, список тем, розмова + інфо про тему. */
+html, body { height: 100%; }
+body { overflow: hidden; }
+.app { height: 100dvh; display: grid; grid-template-columns: 1fr; }
+.games, .info { display: none; }
+
+/* Список */
+.list { display: flex; flex-direction: column; min-height: 0; background: var(--bg); }
+.lhead { padding: 14px 16px 10px; display: grid; gap: 12px; }
+.lhead .row { display: flex; align-items: center; gap: 10px; }
+.lhead h1 { font: 800 22px var(--display); flex: 1; }
+.ibtn { width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: 16px; position: relative; }
+.ibtn .dot { position: absolute; top: 6px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.search { height: 40px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; gap: 8px; padding: 0 14px; color: var(--faint); font-size: 14px; }
+.filters { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+.filters button { flex: none; padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-weight: 800; font-size: 13px; color: var(--muted); }
+.filters button[aria-pressed="true"] { background: var(--grad); color: #1c1003; border-color: transparent; }
+.filters b { margin-left: 4px; padding: 0 6px; border-radius: 999px; background: #0003; font-size: 11px; }
+.chats { flex: 1; overflow-y: auto; padding-bottom: 80px; }
+.sep { padding: 10px 16px 6px; font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); }
+.chat { display: grid; grid-template-columns: 50px minmax(0, 1fr) auto; gap: 12px; align-items: center; padding: 10px 16px; cursor: pointer; }
+.chat:hover { background: var(--card); }
+.chat[aria-current] { background: var(--card-2); }
+.chat .ic { width: 50px; height: 50px; border-radius: 16px; display: grid; place-items: center; background: var(--card-2); border: 1px solid var(--line-2); font-size: 22px; position: relative; }
+.chat .ic img { width: 30px; height: 30px; }
+.chat .ic.round { border-radius: 50%; }
+.chat .ic .on { position: absolute; right: -2px; bottom: -2px; width: 14px; height: 14px; border-radius: 50%; background: var(--up); border: 3px solid var(--bg); }
+.chat h3 { font: 700 15px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: flex; align-items: center; gap: 6px; }
+.chat h3 .t { overflow: hidden; text-overflow: ellipsis; }
+.chat p { font-size: 14px; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chat p b { color: var(--text); font-weight: 700; }
+.chat .side { display: grid; justify-items: end; gap: 4px; font-size: 12px; color: var(--faint); }
+.badge { min-width: 22px; height: 22px; padding: 0 7px; border-radius: 11px; background: var(--amber); color: #1c1003; font-weight: 800; font-size: 12px; display: grid; place-items: center; }
+.badge.mute { background: var(--line-2); color: var(--text); }
+.tag { font-size: 10px; font-weight: 800; padding: 0 6px; border-radius: 5px; border: 1px solid; flex: none; }
+.tag.news { color: var(--amber); border-color: #fbbf2455; }
+.tag.srv { color: var(--orange); border-color: #f9731655; }
+.tag.ask { color: var(--blue); border-color: #60a5fa55; }
+.tag.clan { color: var(--violet); border-color: #a78bfa55; }
+.tag.ok { color: var(--up); border-color: #34d39955; }
+.fab .lbl { display: none; }
+.fab { position: fixed; right: 16px; bottom: calc(76px + env(safe-area-inset-bottom)); width: 56px; height: 56px; border-radius: 18px; background: var(--grad); color: #1c1003; font-size: 26px; font-weight: 800; box-shadow: 0 12px 30px -10px #f97316; z-index: 5; }
+.tabbar { position: fixed; z-index: 4; left: 0; right: 0; bottom: 0; display: grid; grid-template-columns: repeat(4, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.tabbar a { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); position: relative; }
+.tabbar span { font-size: 20px; line-height: 1.2; }
+.tabbar a[aria-current] { color: var(--text); }
+.tabbar i { position: absolute; top: 0; left: calc(50% + 6px); font-style: normal; font-size: 10px; font-weight: 800; padding: 0 5px; border-radius: 8px; background: var(--orange); color: #fff; }
+
+/* Розмова */
+.conv { position: fixed; inset: 0; z-index: 10; display: flex; flex-direction: column; background: var(--bg); transform: translateX(100%); transition: transform .25s ease; }
+.conv-open .conv { transform: none; }
+.chead { display: flex; align-items: center; gap: 10px; padding: 10px 12px; border-bottom: 1px solid var(--line); background: #0b0b0ff2; }
+.chead .ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; background: var(--card-2); }
+.chead .ic img { width: 24px; height: 24px; }
+.chead div { flex: 1; min-width: 0; }
+.chead b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.chead small { color: var(--faint); font-size: 12px; }
+.chead .back { font-size: 20px; width: 34px; }
+.msgs { flex: 1; overflow-y: auto; padding: 14px 12px 20px; display: flex; flex-direction: column; gap: 10px; background: radial-gradient(600px 400px at 100% 0, #f973160a, transparent), var(--bg); }
+.starter { border-radius: 18px; overflow: hidden; background: var(--card); border: 1px solid #fbbf2440; }
+.starter img { width: 100%; height: 150px; object-fit: cover; }
+.starter .in { padding: 14px; }
+.starter h2 { font: 800 19px/1.25 var(--display); margin: 8px 0; }
+.starter p { color: #e4e4e7; font-size: 15px; }
+.starter ul { margin: 8px 0 0 20px; color: #e4e4e7; font-size: 15px; }
+.starter .srvc { display: flex; align-items: center; gap: 10px; margin-top: 12px; padding: 10px 12px; border-radius: 12px; background: var(--bg-2); font-size: 13px; }
+.starter .srvc i { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 8px var(--up); }
+.starter .srvc b { flex: 1; }
+.starter .srvc a { color: var(--amber); font-weight: 800; }
+.react { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+.react span { padding: 2px 9px; border-radius: 999px; background: var(--card-2); border: 1px solid var(--line-2); font-size: 12px; font-weight: 800; }
+.react span.mine { border-color: #fbbf2488; background: #fbbf2418; }
+.day { align-self: center; font-size: 12px; font-weight: 700; color: var(--faint); padding: 2px 10px; border-radius: 999px; background: var(--card); }
+.m { display: grid; grid-template-columns: 30px minmax(0, 1fr); gap: 8px; max-width: 88%; }
+.m .ava { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #111; font-size: 12px; align-self: end; }
+.bub { padding: 8px 12px 6px; border-radius: 16px 16px 16px 4px; background: var(--card); border: 1px solid var(--line); }
+.bub .who { font-size: 13px; font-weight: 800; }
+.bub p { font-size: 15px; }
+.bub time { display: block; text-align: right; font-size: 11px; color: var(--faint); }
+.bub .q { margin: 4px 0; padding: 4px 10px; border-left: 3px solid var(--amber); background: var(--bg-2); border-radius: 0 8px 8px 0; font-size: 13px; color: var(--muted); }
+.bub .q b { color: var(--amber); display: block; font-size: 12px; }
+.m.best .bub { border-color: #34d39966; background: linear-gradient(180deg, #34d39914, transparent), var(--card); }
+.m.best .flag { font-size: 11px; font-weight: 800; color: var(--up); }
+.m.me { align-self: end; grid-template-columns: minmax(0, 1fr); }
+.m.me .ava { display: none; }
+.m.me .bub { border-radius: 16px 16px 4px 16px; background: linear-gradient(135deg, #fbbf2433, #f9731626); border-color: #fbbf2455; }
+.role { font-size: 10px; font-weight: 800; padding: 0 5px; border-radius: 5px; color: var(--orange); border: 1px solid #f9731650; margin-left: 4px; }
+.input { display: flex; gap: 8px; align-items: end; padding: 8px 10px calc(10px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); background: #0b0b0ff2; }
+.input .quoting { display: none; }
+.input .field { flex: 1; min-height: 42px; border-radius: 21px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; padding: 0 16px; color: var(--faint); font-size: 15px; }
+.input button { width: 42px; height: 42px; border-radius: 50%; display: grid; place-items: center; font-size: 18px; background: var(--card); border: 1px solid var(--line); flex: none; }
+.input .send { background: var(--grad); color: #1c1003; border: 0; font-weight: 800; }
+
+/* Інфо про тему (ПК) */
+.info { padding: 20px; overflow-y: auto; border-left: 1px solid var(--line); background: var(--bg-2); }
+.info h3 { font: 700 14px var(--display); margin: 18px 0 10px; }
+.info .kv { display: grid; gap: 8px; font-size: 14px; }
+.info .kv div { display: flex; justify-content: space-between; color: var(--muted); }
+.info .kv b { color: var(--text); }
+.info .acts { display: grid; gap: 8px; }
+.info .acts button { padding: 10px; border-radius: 12px; border: 1px solid var(--line-2); font-weight: 800; font-size: 14px; background: var(--card); }
+.info .acts .hot { background: var(--grad); color: #1c1003; border: 0; }
+.people { display: flex; flex-wrap: wrap; gap: 6px; }
+.people span { width: 30px; height: 30px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; font-size: 12px; color: #111; }
+.bonus { padding: 14px; border-radius: 14px; background: linear-gradient(135deg, #fbbf241f, #f973160d), var(--card); border: 1px solid #fbbf2440; font-size: 13px; color: var(--muted); }
+.bonus b { display: block; font: 800 22px var(--display); color: var(--amber); }
+
+/* ===== ПК: ігри | список тем | розмова | інфо ===== */
+@media (min-width: 1024px) {
+  .app { grid-template-columns: 76px 360px minmax(0, 1fr) 300px; }
+  .games { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 14px 0; background: #060608; border-right: 1px solid var(--line); overflow-y: auto; }
+  .games a { width: 48px; height: 48px; border-radius: 16px; display: grid; place-items: center; background: var(--card); position: relative; cursor: pointer; transition: border-radius .15s; font-size: 22px; }
+  .games a:hover, .games a[aria-current] { border-radius: 12px; background: var(--card-2); }
+  .games a[aria-current]::before { content: ''; position: absolute; left: -14px; width: 4px; height: 32px; border-radius: 0 4px 4px 0; background: var(--amber); }
+  .games a img { width: 30px; height: 30px; }
+  .games a i { position: absolute; right: -3px; bottom: -3px; min-width: 18px; height: 18px; padding: 0 4px; border-radius: 9px; background: var(--orange); color: #fff; font: 800 10px/18px var(--font); font-style: normal; text-align: center; border: 2px solid #060608; }
+  .games hr { width: 32px; border: 0; border-top: 1px solid var(--line-2); }
+  .games .logo { background: none; }
+  .games .logo img { width: 34px; height: 34px; }
+  .games .add { color: var(--up); border: 1px dashed var(--line-2); background: none; }
+  .list { border-right: 1px solid var(--line); }
+  .chats { padding-bottom: 12px; }
+  .tabbar { display: none; }
+  .fab { position: static; width: auto; height: 42px; margin: 0 16px 14px; border-radius: 12px; font-size: 15px; box-shadow: none; }
+  .conv { position: static; transform: none; min-width: 0; }
+  .chead .back { display: none; }
+  .msgs { padding: 20px 28px; }
+  .starter { max-width: 640px; }
+  .starter img { height: 220px; }
+  .m { max-width: 640px; }
+  .info { display: block; }
+  .fab .lbl { display: inline; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<nav class="games" aria-label="Ігри">
+  <a class="logo" aria-label="graj.club"><img src="../../public/images/brand/icon.svg" alt=""></a>
+  <hr>
+  <a aria-current="page" title="Усе">🏠</a>
+  <a title="Lineage 2"><img src="../../public/images/games/l2.png" alt=""><i>4</i></a>
+  <a title="World of Warcraft"><img src="../../public/images/games/wow.png" alt=""><i>2</i></a>
+  <a title="Minecraft"><img src="../../public/images/games/mc.png" alt=""></a>
+  <a title="Rust"><img src="../../public/images/games/rust.png" alt=""><i>9</i></a>
+  <a title="GTA"><img src="../../public/images/games/gta.png" alt=""></a>
+  <a title="Aion"><img src="../../public/images/games/aion.png" alt=""></a>
+  <a title="Perfect World"><img src="../../public/images/games/pw.png" alt=""></a>
+  <hr>
+  <a title="Флудилка">☕</a>
+  <a class="add" title="Усі розділи">＋</a>
+</nav>
+
+<section class="list" aria-label="Теми">
+  <div class="lhead">
+    <div class="row"><h1>Спільнота</h1><button class="ibtn" aria-label="Сповіщення">🔔<i class="dot"></i></button><button class="ibtn" aria-label="Налаштування">⚙︎</button></div>
+    <div class="search">🔍 Пошук тем і повідомлень</div>
+    <div class="filters">
+      <button aria-pressed="true">Усе</button>
+      <button>Непрочитане<b>15</b></button>
+      <button>Новини</button>
+      <button>Питання</button>
+      <button>Клани</button>
+      <button>Мої</button>
+    </div>
+  </div>
+  <div class="chats">
+    <div class="sep">📌 Закріплене</div>
+    <div class="chat" data-open>
+      <span class="ic round" style="background:linear-gradient(135deg,#fbbf24,#f97316)">📣</span>
+      <div><h3><span class="t">Новини graj.club</span></h3><p><b>Підсумки жовтня:</b> 14 нових серверів Lineage 2 і рекорд онлайну</p></div>
+      <div class="side">5 год<span class="badge">3</span></div>
+    </div>
+    <div class="sep">Активні зараз</div>
+    <div class="chat" data-open aria-current="true">
+      <span class="ic"><img src="../../public/images/games/wow.png" alt=""><i class="on"></i></span>
+      <div><h3><span class="tag srv">Сервер</span><span class="t">Відкриття Wrath 3.3.5a x5</span></h3><p><b>Admin:</b> 5×5, реєстрація відкриється в день старту</p></div>
+      <div class="side">1 хв<span class="badge">2</span></div>
+    </div>
+    <div class="chat" data-open>
+      <span class="ic">☕</span>
+      <div><h3><span class="t">Якою була ваша перша ММО?</span></h3><p><b>Lumi:</b> Lineage 2 C4 на піратці в компʼютерному клубі 😅</p></div>
+      <div class="side">12 хв<span class="badge">9</span></div>
+    </div>
+    <div class="chat" data-open>
+      <span class="ic"><img src="../../public/images/games/l2.png" alt=""></span>
+      <div><h3><span class="tag ask">Питання</span><span class="t">Callback не приходить після голосу</span></h3><p><b>Dev_Tor:</b> Перевір, чи не блокує Cloudflare POST</p></div>
+      <div class="side">40 хв<span class="badge mute">1</span></div>
+    </div>
+    <div class="chat" data-open>
+      <span class="ic"><img src="../../public/images/games/l2.png" alt=""></span>
+      <div><h3><span class="tag clan">Клан</span><span class="t">[UA] Valhalla набирає DD й хілів</span></h3><p><b>Kain:</b> Пиши в Discord, скину інвайт</p></div>
+      <div class="side">3 год</div>
+    </div>
+    <div class="chat" data-open>
+      <span class="ic"><img src="../../public/images/games/rust.png" alt=""></span>
+      <div><h3><span class="t">Розклад вайпів на листопад</span></h3><p><b>rustacean:</b> Наш сервер — четвер, 18:00 за Києвом</p></div>
+      <div class="side">5 год</div>
+    </div>
+    <div class="chat" data-open>
+      <span class="ic"><img src="../../public/images/games/mc.png" alt=""></span>
+      <div><h3><span class="tag ok">✓ Гайд</span><span class="t">Як вибрати сервер з модами без pay-to-win</span></h3><p><b>Steve228:</b> Додав пункт про перевірку правил донату</p></div>
+      <div class="side">2 дні</div>
+    </div>
+  </div>
+  <button class="fab" aria-label="Нова тема">＋<span class="lbl"> Нова тема</span></button>
+</section>
+
+<section class="conv" aria-label="Розмова">
+  <header class="chead">
+    <button class="back" data-back aria-label="Назад">←</button>
+    <span class="ic"><img src="../../public/images/games/wow.png" alt=""></span>
+    <div><b>Відкриття Wrath 3.3.5a x5: старт 15 листопада</b><small>World of Warcraft · 4 відповіді · стежать 12</small></div>
+    <button class="ibtn" aria-label="Стежити">🔔</button>
+  </header>
+  <div class="msgs">
+    <article class="starter">
+      <img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt="">
+      <div class="in">
+        <span class="tag srv">Новина сервера</span>
+        <h2>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h2>
+        <p>Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+        <ul><li>x5 досвід, x3 золото</li><li>Кросфракційні поля бою</li><li>Без донату в характеристики</li></ul>
+        <div class="srvc"><i></i><b>Azeroth Legacy</b><span style="color:var(--faint)">онлайн 1830</span><a>Сервер →</a></div>
+        <div class="react"><span class="mine">▲ 266</span><span>🔥 41</span><span>👍 18</span><span>＋</span></div>
+      </div>
+    </article>
+    <span class="day">Сьогодні</span>
+    <div class="m best"><span class="ava" style="background:#34d399">L</span><div class="bub"><div class="who" style="color:#34d399">Lumi <span class="flag">✓ найкраща відповідь</span></div><p>Турнір гільдій буде 3×3 чи 5×5? Хочемо зібрати склад заздалегідь.</p><time>14:02</time></div></div>
+    <div class="m"><span class="ava" style="background:#60a5fa">A</span><div class="bub"><div class="who" style="color:#60a5fa">Admin<span class="role">Власник</span></div><div class="q"><b>Lumi</b>Турнір гільдій буде 3×3 чи 5×5?</div><p>5×5, реєстрація відкриється в день старту.</p><time>14:20</time></div></div>
+    <div class="m"><span class="ava" style="background:#f472b6">D</span><div class="bub"><div class="who" style="color:#f472b6">Dev_Tor</div><p>Буде трансфер персонажів з x1?</p><time>15:41</time></div></div>
+    <div class="m me"><div class="bub"><p>Чекаю старт, беру з собою всю гільдію 💪</p><time>15:44 ✓✓</time></div></div>
+  </div>
+  <div class="input"><button aria-label="Додати">＋</button><span class="field">Повідомлення…</span><button class="send" aria-label="Надіслати">➤</button></div>
+</section>
+
+<aside class="info" aria-label="Про тему">
+  <div class="acts"><button class="hot">🔔 Стежити за темою</button><button>↗ Поділитися</button><button>⚑ Поскаржитися</button></div>
+  <h3>Про тему</h3>
+  <div class="kv"><div>Розділ<b>World of Warcraft</b></div><div>Автор<b>Admin</b></div><div>Відповідей<b>4</b></div><div>Переглядів<b>2 265</b></div><div>Створено<b>2 листопада</b></div></div>
+  <h3>Учасники</h3>
+  <div class="people"><span style="background:#60a5fa">A</span><span style="background:#34d399">L</span><span style="background:#f472b6">D</span><span style="background:#fbbf24">O</span><span style="background:#a78bfa">K</span></div>
+  <h3>Ваші бали</h3>
+  <div class="bonus"><b>650</b>Учасник · до «Ветерана» 350. За найкращу відповідь — +25.</div>
+</aside>
+
+</div>
+<nav class="tabbar">
+  <a aria-current="page"><span>💬</span>Теми<i>15</i></a>
+  <a><span>📣</span>Новини</a>
+  <a><span>✨</span>Бали</a>
+  <a><span>👤</span>Профіль</a>
+</nav>
+<script>
+const b = document.body;
+document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => {
+  document.querySelectorAll('.chat').forEach(c => c.removeAttribute('aria-current'));
+  el.setAttribute('aria-current', 'true');
+  const badge = el.querySelector('.badge'); if (badge) badge.remove();
+  b.classList.add('conv-open');
+}));
+document.querySelector('[data-back]').addEventListener('click', () => b.classList.remove('conv-open'));
+document.querySelectorAll('.filters button').forEach(f => f.addEventListener('click', () => document.querySelectorAll('.filters button').forEach(x => x.setAttribute('aria-pressed', x === f))));
+document.querySelectorAll('.react span').forEach(r => r.addEventListener('click', () => r.classList.toggle('mine')));
+</script>
+</body>
+</html>

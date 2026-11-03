@@ -1,0 +1,358 @@
+<!doctype html>
+<html lang="uk">
+<head>
+<meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Спільнота — A «Додаток»</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="base.css">
+<style>
+/* A «Додаток»: як у мобільних соцмережах — верхня панель, вкладки, «сторіз» ігор, картки з панеллю дій,
+   нижнє меню з кнопкою «+», яка відкриває аркуш «Що створити?». Тема відкривається окремим екраном з полем відповіді внизу. */
+body { min-height: 100vh; padding-bottom: 84px; }
+@media (max-width: 1023px) { body { max-width: 480px; margin: 0 auto; } }
+.side, .rail, .search, .appbar .write { display: none; }
+.appbar { position: sticky; top: 0; z-index: 20; display: flex; align-items: center; gap: 10px; padding: 10px 16px; background: #09090be6; backdrop-filter: blur(14px); }
+.appbar .logo { width: 28px; height: 28px; }
+.appbar h1 { font: 800 18px var(--display); flex: 1; }
+.ibtn { position: relative; width: 38px; height: 38px; display: grid; place-items: center; border-radius: 12px; background: var(--card); border: 1px solid var(--line); font-size: 17px; }
+.ibtn .dot { position: absolute; top: 6px; right: 7px; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); box-shadow: 0 0 0 2px var(--card); }
+.me { width: 34px; height: 34px; border-radius: 50%; background: var(--amber); color: #111; font-weight: 800; display: grid; place-items: center; box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #fbbf24; }
+
+.seg { position: sticky; top: 58px; z-index: 19; display: flex; gap: 22px; padding: 0 16px; background: #09090be6; backdrop-filter: blur(14px); border-bottom: 1px solid var(--line); overflow-x: auto; scrollbar-width: none; }
+.seg button { padding: 12px 0; font-weight: 800; font-size: 15px; color: var(--faint); border-bottom: 2px solid transparent; white-space: nowrap; }
+.seg button[aria-selected="true"] { color: var(--text); border-color: var(--amber); }
+
+.stories { display: flex; gap: 14px; overflow-x: auto; padding: 14px 16px 6px; scrollbar-width: none; }
+.story { flex: none; display: grid; justify-items: center; gap: 6px; width: 62px; font-size: 11px; font-weight: 700; color: var(--muted); }
+.story i { width: 58px; height: 58px; border-radius: 50%; display: grid; place-items: center; background: var(--card); padding: 3px; box-shadow: 0 0 0 2px var(--line-2); }
+.story.new i { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px #f97316; }
+.story img { width: 34px; height: 34px; }
+.story i.all { font-size: 22px; font-style: normal; }
+
+.news { display: flex; gap: 12px; overflow-x: auto; scroll-snap-type: x mandatory; padding: 12px 16px 4px; scroll-padding: 0 16px; scrollbar-width: none; }
+.ncard { flex: 0 0 82%; scroll-snap-align: start; position: relative; height: 200px; border-radius: 18px; overflow: hidden; display: flex; flex-direction: column; justify-content: end; padding: 14px; isolation: isolate; }
+.ncard img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.ncard::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent 25%, #09090bf2 90%); }
+.ncard h3 { font: 700 17px/1.25 var(--display); margin-top: 8px; }
+.ncard small { color: #d4d4d8; font-size: 12px; margin-top: 6px; }
+.dots { display: flex; justify-content: center; gap: 5px; padding: 8px 0 2px; }
+.dots i { width: 6px; height: 6px; border-radius: 3px; background: var(--line-2); }
+.dots i:first-child { width: 18px; background: var(--amber); }
+
+.chip { display: inline-flex; align-items: center; gap: 4px; padding: 1px 8px; border-radius: 999px; font-size: 11px; font-weight: 800; border: 1px solid var(--line-2); color: var(--muted); background: #09090bb3; white-space: nowrap; }
+.chip.news { color: var(--amber); border-color: #fbbf2455; }
+.chip.srvc { color: var(--orange); border-color: #f9731655; }
+.chip.ask { color: var(--blue); border-color: #60a5fa55; }
+.chip.guide { color: var(--up); border-color: #34d39955; }
+.chip.clan { color: var(--violet); border-color: #a78bfa55; }
+
+.sorter { display: flex; align-items: center; gap: 8px; padding: 14px 16px 8px; }
+.sorter b { font: 700 16px var(--display); flex: 1; }
+.sorter button { padding: 6px 12px; border-radius: 999px; border: 1px solid var(--line); background: var(--card); font-weight: 700; font-size: 13px; }
+
+.post { margin: 0 0 8px; padding: 14px 16px 6px; background: var(--card); border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); }
+.phead { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--faint); }
+.phead img { width: 22px; height: 22px; border-radius: 6px; }
+.phead b { color: var(--text); font-size: 13px; }
+.phead .more { margin-left: auto; font-size: 18px; color: var(--faint); padding: 0 4px; }
+.post h2 { font: 700 17px/1.35 var(--font); margin: 8px 0 4px; }
+.post p { color: var(--muted); font-size: 14px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.post .pimg { margin-top: 10px; border-radius: 14px; overflow: hidden; aspect-ratio: 16 / 9; }
+.post .pimg img { width: 100%; height: 100%; object-fit: cover; }
+.srvc { display: flex; align-items: center; gap: 10px; margin-top: 10px; padding: 10px 12px; border-radius: 12px; background: var(--bg-2); border: 1px solid var(--line); font-size: 13px; }
+.srvc .on { width: 8px; height: 8px; border-radius: 50%; background: var(--up); box-shadow: 0 0 8px var(--up); }
+.srvc b { flex: 1; }
+.srvc a { color: var(--amber); font-weight: 800; }
+.acts { display: flex; align-items: center; gap: 4px; margin-top: 8px; }
+.acts > * { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 10px; border-radius: 999px; font-weight: 800; font-size: 13px; color: var(--muted); }
+.vote { background: var(--bg-2); border: 1px solid var(--line); padding: 0 4px !important; gap: 0 !important; }
+.vote button { width: 34px; height: 38px; color: var(--faint); }
+.vote.up button:first-child, .vote.up b { color: var(--amber); }
+.acts .sp { flex: 1; padding: 0; }
+
+.tabbar { position: fixed; z-index: 30; left: 50%; transform: translateX(-50%); bottom: 0; width: min(480px, 100%); display: grid; grid-template-columns: repeat(5, 1fr); padding: 6px 8px calc(8px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); }
+.tabbar a, .tabbar button { display: grid; justify-items: center; gap: 2px; font-size: 11px; font-weight: 700; color: var(--faint); padding: 4px 0; }
+.tabbar span { font-size: 20px; line-height: 1.2; }
+.tabbar [aria-current] { color: var(--text); }
+.tabbar .plus span { width: 52px; height: 40px; margin-top: -14px; border-radius: 16px; display: grid; place-items: center; background: var(--grad); color: #1c1003; font-size: 24px; font-weight: 800; box-shadow: 0 10px 24px -8px #f97316; }
+
+/* Аркуш «Що створити?» */
+.scrim { position: fixed; inset: 0; z-index: 40; background: #000a; opacity: 0; pointer-events: none; transition: opacity .2s; }
+.sheet { position: fixed; z-index: 41; left: 50%; bottom: 0; width: min(480px, 100%); transform: translate(-50%, 100%); transition: transform .25s ease; background: var(--card); border-radius: 22px 22px 0 0; padding: 10px 16px calc(20px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line-2); }
+.sheet::before { content: ''; display: block; width: 40px; height: 4px; border-radius: 2px; background: var(--line-2); margin: 0 auto 14px; }
+.open .scrim { opacity: 1; pointer-events: auto; }
+.open .sheet { transform: translate(-50%, 0); }
+.sheet h3 { font: 700 18px var(--display); margin-bottom: 12px; }
+.types { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.types a { padding: 14px; border-radius: 14px; background: var(--bg-2); border: 1px solid var(--line); display: grid; gap: 4px; }
+.types a b { font-size: 15px; }
+.types a small { color: var(--faint); font-size: 12px; line-height: 1.35; }
+.types a span { font-size: 22px; }
+.sheet .note { margin-top: 12px; font-size: 12px; color: var(--faint); }
+
+/* Екран теми */
+.screen { position: fixed; inset: 0; z-index: 35; overflow-y: auto; background: var(--bg); transform: translateX(100%); transition: transform .25s ease; padding-bottom: 90px; max-width: 480px; margin: 0 auto; }
+.topic-open .screen { transform: none; }
+.screen .appbar h1 { font: 700 15px var(--font); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.thero { height: 220px; position: relative; isolation: isolate; display: flex; align-items: end; padding: 16px; }
+.thero img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; z-index: -2; }
+.thero::after { content: ''; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, transparent, #09090b 95%); }
+.tbody { padding: 0 16px; }
+.tbody h2 { font: 800 24px/1.2 var(--display); margin: 4px 0 12px; }
+.by { display: flex; align-items: center; gap: 10px; font-size: 13px; color: var(--faint); }
+.by .ava { width: 34px; height: 34px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #111; }
+.by b { color: var(--text); display: block; font-size: 14px; }
+.by .follow { margin-left: auto; padding: 7px 14px; border-radius: 999px; border: 1px solid var(--line-2); font-weight: 800; font-size: 13px; color: var(--text); }
+.text { margin-top: 16px; font-size: 16px; line-height: 1.7; color: #e4e4e7; }
+.text > * + * { margin-top: 12px; }
+.text ul { margin-left: 20px; }
+.rbar { display: flex; gap: 8px; margin: 18px 0; }
+.rbar > * { flex: 1; height: 42px; border-radius: 12px; display: grid; place-items: center; background: var(--card); border: 1px solid var(--line); font-weight: 800; font-size: 14px; }
+.rhead { display: flex; justify-content: space-between; align-items: center; padding: 14px 0 6px; border-top: 1px solid var(--line); }
+.rhead b { font: 700 17px var(--display); }
+.rhead span { font-size: 13px; color: var(--muted); font-weight: 700; }
+.reply { display: grid; grid-template-columns: 32px 1fr; gap: 10px; padding: 12px 0; }
+.reply .ava { width: 32px; height: 32px; border-radius: 50%; display: grid; place-items: center; font-weight: 800; color: #111; font-size: 13px; }
+.reply .who { font-size: 13px; color: var(--faint); }
+.reply .who b { color: var(--text); }
+.role { font-size: 10px; font-weight: 800; padding: 1px 6px; border-radius: 5px; color: var(--orange); border: 1px solid #f9731650; margin-left: 4px; }
+.reply p { margin-top: 2px; font-size: 15px; }
+.reply .ra { display: flex; gap: 16px; margin-top: 6px; font-size: 12px; font-weight: 800; color: var(--faint); }
+.reply.best { background: linear-gradient(90deg, #34d39914, transparent); margin: 0 -16px; padding: 12px 16px; }
+.nested { margin-left: 42px; border-left: 2px solid var(--line); padding-left: 10px; }
+.composer { position: fixed; z-index: 36; left: 50%; transform: translateX(-50%); bottom: 0; width: min(480px, 100%); display: flex; gap: 8px; align-items: center; padding: 8px 12px calc(10px + env(safe-area-inset-bottom)); background: #0b0b0ff2; backdrop-filter: blur(14px); border-top: 1px solid var(--line); visibility: hidden; }
+.topic-open .composer { visibility: visible; }
+.composer .field { flex: 1; height: 42px; border-radius: 21px; background: var(--card); border: 1px solid var(--line); display: flex; align-items: center; padding: 0 16px; color: var(--faint); font-size: 14px; }
+.composer .send { width: 42px; height: 42px; border-radius: 50%; background: var(--grad); color: #1c1003; font-weight: 800; font-size: 18px; }
+
+/* ===== ПК: три колонки — меню й ігри зліва, стрічка по центру, бали й гаряче справа; тема — панель справа ===== */
+.side h4 { font: 800 11px var(--font); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin: 14px 10px 6px; }
+.side a { display: flex; align-items: center; gap: 10px; padding: 9px 10px; border-radius: 10px; font-weight: 700; font-size: 14px; color: var(--muted); cursor: pointer; }
+.side a:hover { background: var(--card); color: var(--text); }
+.side a[aria-current] { background: var(--card-2); color: var(--text); box-shadow: inset 0 0 0 1px var(--line-2); }
+.side a img { width: 22px; height: 22px; border-radius: 6px; }
+.side a .cnt { margin-left: auto; font-size: 12px; color: var(--faint); }
+.side a .new { margin-left: auto; width: 8px; height: 8px; border-radius: 50%; background: var(--orange); }
+.btn-hot { display: flex; justify-content: center; align-items: center; gap: 8px; padding: 11px 16px; border-radius: 12px; background: var(--grad); color: #1c1003; font-weight: 800; font-size: 14px; }
+.box { padding: 18px; border-radius: 16px; background: var(--card); border: 1px solid var(--line); }
+.box h3 { font: 700 15px var(--display); margin-bottom: 12px; }
+.lvl { display: flex; justify-content: space-between; align-items: baseline; font-weight: 700; }
+.lvl b { font: 700 20px var(--display); color: var(--amber); }
+.bar { height: 8px; border-radius: 999px; background: var(--bg-2); border: 1px solid var(--line); margin: 10px 0 6px; overflow: hidden; }
+.bar i { display: block; height: 100%; width: 62%; background: var(--grad); }
+.small { font-size: 13px; color: var(--faint); }
+.hot { display: grid; gap: 12px; counter-reset: h; }
+.hot a { display: grid; grid-template-columns: 22px 1fr; gap: 2px 8px; font-size: 14px; font-weight: 700; line-height: 1.35; cursor: pointer; }
+.hot a::before { counter-increment: h; content: counter(h); font: 800 14px var(--display); color: var(--amber); grid-row: span 2; }
+.hot small { color: var(--faint); font-weight: 500; font-size: 12px; }
+.owner { background: linear-gradient(135deg, #fbbf241f, #f973160d), var(--card); border-color: #fbbf2440; }
+.owner p { color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+@media (min-width: 1024px) {
+  body { padding-bottom: 0; }
+  .appbar { padding: 12px 24px; border-bottom: 1px solid var(--line); gap: 14px; }
+  .appbar h1 { flex: none; width: 196px; }
+  .search { display: flex; align-items: center; gap: 8px; flex: 1; max-width: 520px; height: 40px; padding: 0 14px; border-radius: 12px; background: var(--card); border: 1px solid var(--line); color: var(--faint); font-size: 14px; }
+  .appbar .sp { flex: 1; }
+  .appbar .write { display: inline-flex; padding: 9px 16px; }
+  .appbar .logo { content: url(../../public/images/brand/logo.svg); width: auto; height: 26px; }
+  .appbar h1 { display: none; }
+  .search { margin-left: 140px; }
+  .appbar > .ibtn[aria-label="Пошук"], .seg, .tabbar { display: none; }
+  .shell { display: grid; grid-template-columns: 230px minmax(0, 660px) 300px; gap: 28px; justify-content: center; padding: 24px; }
+  .side, .rail { display: grid; gap: 4px; align-content: start; position: sticky; top: 88px; align-self: start; }
+  .rail { gap: 16px; }
+  .side .btn-hot { margin-top: 14px; }
+  .stories { padding: 0 0 8px; }
+  .news { padding: 10px 0 4px; scroll-padding: 0; }
+  .ncard { flex: 0 0 calc(50% - 6px); height: 250px; cursor: pointer; }
+  .ncard h3 { font-size: 19px; }
+  .dots { display: none; }
+  .sorter { padding: 18px 0 12px; }
+  .post { border: 1px solid var(--line); border-radius: 16px; margin-bottom: 12px; padding: 16px 18px 8px; cursor: pointer; }
+  .post:hover { border-color: var(--line-2); }
+  .post h2 { font-size: 19px; }
+  .post .pimg { aspect-ratio: 21 / 9; }
+  .topic-open .scrim { opacity: 1; pointer-events: auto; }
+  .screen { left: auto; right: 0; width: 760px; max-width: none; margin: 0; border-left: 1px solid var(--line-2); box-shadow: -40px 0 80px #000; }
+  .screen .tbody { padding: 0 32px; }
+  .thero { height: 300px; padding: 24px 32px; }
+  .tbody h2 { font-size: 30px; }
+  .composer { left: auto; right: 0; transform: none; width: 760px; padding: 12px 32px; }
+  .sheet { top: 50%; bottom: auto; width: 560px; padding: 24px; border-radius: 22px; border: 1px solid var(--line-2); transform: translate(-50%, -46%); opacity: 0; pointer-events: none; transition: transform .2s, opacity .2s; }
+  .sheet::before { display: none; }
+  .open .sheet { transform: translate(-50%, -50%); opacity: 1; pointer-events: auto; }
+  .types a { cursor: pointer; }
+  .types a:hover { border-color: var(--amber); }
+}
+</style>
+</head>
+<body>
+
+<header class="appbar">
+  <img class="logo" src="../../public/images/brand/icon.svg" alt="graj.club">
+  <h1>Спільнота</h1>
+  <span class="search">🔍 Пошук тем, серверів, гравців…</span>
+  <span class="sp"></span>
+  <button class="btn-hot write" data-sheet>+ Написати</button>
+  <button class="ibtn" aria-label="Пошук">🔍</button>
+  <button class="ibtn" aria-label="Сповіщення">🔔<i class="dot"></i></button>
+  <span class="me">O</span>
+</header>
+
+<nav class="seg" role="tablist">
+  <button role="tab" aria-selected="true">Для вас</button>
+  <button role="tab">Новини</button>
+  <button role="tab">Форум</button>
+  <button role="tab">Підписки</button>
+  <button role="tab">Мої</button>
+</nav>
+
+<div class="shell">
+<nav class="side" aria-label="Розділи">
+  <a aria-current="page">🏠 Для вас</a><a>📣 Новини</a><a>🗂 Розділи форуму</a><a>🔔 Підписки <span class="cnt">3</span></a><a>⭐ Мої теми</a>
+  <h4>Ігри</h4>
+  <a><img src="../../public/images/games/l2.png" alt="">Lineage 2<i class="new"></i></a>
+  <a><img src="../../public/images/games/wow.png" alt="">World of Warcraft<i class="new"></i></a>
+  <a><img src="../../public/images/games/mc.png" alt="">Minecraft</a>
+  <a><img src="../../public/images/games/rust.png" alt="">Rust<i class="new"></i></a>
+  <a><img src="../../public/images/games/gta.png" alt="">GTA</a>
+  <a><img src="../../public/images/games/aion.png" alt="">Aion</a>
+  <h4>graj.club</h4>
+  <a>📰 Новини й оголошення</a><a>🛠 Власникам серверів</a><a>☕ Флудилка</a>
+  <button class="btn-hot" data-sheet>+ Створити тему</button>
+</nav>
+<main>
+<div class="stories" aria-label="Ігри">
+  <a class="story"><i class="all">🎮</i>Усі</a>
+  <a class="story new"><i><img src="../../public/images/games/l2.png" alt=""></i>Lineage 2</a>
+  <a class="story new"><i><img src="../../public/images/games/wow.png" alt=""></i>WoW</a>
+  <a class="story"><i><img src="../../public/images/games/mc.png" alt=""></i>Minecraft</a>
+  <a class="story new"><i><img src="../../public/images/games/rust.png" alt=""></i>Rust</a>
+  <a class="story"><i><img src="../../public/images/games/gta.png" alt=""></i>GTA</a>
+  <a class="story"><i><img src="../../public/images/games/aion.png" alt=""></i>Aion</a>
+  <a class="story"><i><img src="../../public/images/games/pw.png" alt=""></i>PW</a>
+</div>
+
+<section class="news" aria-label="Новини">
+  <a class="ncard" data-open>
+    <img src="../../storage/app/public/games/cover/lineage2.webp" alt="">
+    <span><span class="chip news">Новина graj.club</span></span>
+    <h3>Підсумки жовтня: 14 нових серверів Lineage 2 і рекорд онлайну</h3>
+    <small>5 год тому · 💬 3</small>
+  </a>
+  <a class="ncard" data-open>
+    <img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt="">
+    <span><span class="chip srv">Новина сервера · Azeroth Legacy</span></span>
+    <h3>Відкриття Wrath 3.3.5a x5: старт 15 листопада</h3>
+    <small>8 год тому · 💬 0</small>
+  </a>
+  <a class="ncard" data-open>
+    <img src="../../storage/app/public/games/cover/rust.webp" alt="">
+    <span><span class="chip news">Новина graj.club</span></span>
+    <h3>Новини й форум, бонусні бали та магазин нагород</h3>
+    <small>1 день тому · 💬 0</small>
+  </a>
+</section>
+<div class="dots" aria-hidden="true"><i></i><i></i><i></i></div>
+
+<div class="sorter"><b>Стрічка</b><button>🔥 Гаряче ▾</button><button aria-label="Фільтри">⚙︎</button></div>
+
+<article class="post" data-open>
+  <div class="phead"><img src="../../public/images/games/l2.png" alt=""><b>Lineage 2</b> · Dev_Tor · 4 год<span class="more">⋯</span></div>
+  <div style="margin-top:8px"><span class="chip ask">Питання</span></div>
+  <h2>Callback не приходить після голосу — що перевірити?</h2>
+  <p>Налаштував адресу callback у кабінеті, але сервер не отримує запит. Логи порожні, IP хостингу в білому списку.</p>
+  <div class="acts"><span class="vote up"><button>▲</button><b>37</b><button>▼</button></span><span>💬 12</span><span class="sp"></span><span>↗</span><span>🔖</span></div>
+</article>
+
+<article class="post" data-open>
+  <div class="phead"><img src="../../public/images/games/wow.png" alt=""><b>WoW</b> · Admin · 8 год<span class="more">⋯</span></div>
+  <div style="margin-top:8px"><span class="chip srv">Новина сервера</span></div>
+  <h2>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h2>
+  <p>Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+  <div class="pimg"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""></div>
+  <div class="srvc"><i class="on"></i><b>Azeroth Legacy</b><span style="color:var(--faint)">онлайн 1830</span><a>Сервер →</a></div>
+  <div class="acts"><span class="vote"><button>▲</button><b>266</b><button>▼</button></span><span>💬 0</span><span class="sp"></span><span>↗</span><span>🔖</span></div>
+</article>
+
+<article class="post" data-open>
+  <div class="phead"><img src="../../public/images/games/mc.png" alt=""><b>Minecraft</b> · Steve228 · 2 дні<span class="more">⋯</span></div>
+  <div style="margin-top:8px"><span class="chip guide">Гайд</span> <span class="chip">✓ Є рішення</span></div>
+  <h2>Як вибрати сервер Minecraft з модами й не наткнутися на pay-to-win</h2>
+  <p>Чекліст на 8 пунктів: що дивитися в описі, правилах донату й відгуках, перш ніж вкладати час.</p>
+  <div class="pimg"><img src="../../storage/app/public/games/cover/minecraft.webp" alt=""></div>
+  <div class="acts"><span class="vote"><button>▲</button><b>57</b><button>▼</button></span><span>💬 4</span><span class="sp"></span><span>↗</span><span>🔖</span></div>
+</article>
+
+<article class="post" data-open>
+  <div class="phead"><img src="../../public/images/games/l2.png" alt=""><b>Lineage 2</b> · Kain · 3 год<span class="more">⋯</span></div>
+  <div style="margin-top:8px"><span class="chip clan">Набір у клан</span></div>
+  <h2>[UA] Valhalla набирає DD й хілів на Interlude x50</h2>
+  <p>Прайм 20:00–00:00, Discord обовʼязковий, 76+ рівень.</p>
+  <div class="acts"><span class="vote"><button>▲</button><b>19</b><button>▼</button></span><span>💬 7</span><span class="sp"></span><span>↗</span><span>🔖</span></div>
+</article>
+
+</main>
+<aside class="rail">
+  <div class="box"><h3>✨ Бонусні бали</h3><div class="lvl"><span>Учасник</span><b>650</b></div><div class="bar"><i></i></div><p class="small">До «Ветерана» — 350 балів</p></div>
+  <div class="box owner"><h3>Маєте сервер?</h3><p>Новина сервера зʼявиться на його сторінці, у розділі гри й у стрічці.</p><a class="btn-hot" data-sheet>Написати новину сервера</a></div>
+  <div class="box"><h3>🔥 Гаряче зараз</h3><div class="hot">
+    <a data-open>Якою була ваша перша ММО?<small>Флудилка · 41 відповідь</small></a>
+    <a data-open>Розклад вайпів на листопад<small>Rust · 18 відповідей</small></a>
+    <a data-open>Callback не приходить після голосу<small>Власникам · 12 відповідей</small></a>
+  </div></div>
+</aside>
+</div>
+
+<nav class="tabbar">
+  <a aria-current="page"><span>🏠</span>Стрічка</a>
+  <a><span>🗂</span>Розділи</a>
+  <button class="plus" data-sheet><span>+</span></button>
+  <a><span>🔔</span>Сповіщ.</a>
+  <a><span>✨</span>650 б.</a>
+</nav>
+
+<div class="scrim" data-close></div>
+<div class="sheet" role="dialog" aria-label="Що створити">
+  <h3>Що створити?</h3>
+  <div class="types">
+    <a><span>💬</span><b>Обговорення</b><small>Тема для розмови з гравцями</small></a>
+    <a><span>❓</span><b>Питання</b><small>Можна позначити найкращу відповідь</small></a>
+    <a><span>📘</span><b>Гайд</b><small>Інструкція з підзаголовками</small></a>
+    <a><span>⚔️</span><b>Набір у клан</b><small>Рівень, прайм, мова, сервер</small></a>
+    <a style="grid-column:span 2"><span>📣</span><b>Новина сервера</b><small>Для власників: зʼявиться на сторінці сервера й у стрічці</small></a>
+  </div>
+  <p class="note">Кожна тема проходить модерацію. За схвалену тему — бонусні бали.</p>
+</div>
+
+<section class="screen" aria-label="Тема">
+  <header class="appbar"><button class="ibtn" data-back aria-label="Назад">←</button><h1>Відкриття Wrath 3.3.5a x5</h1><button class="ibtn" aria-label="Поділитися">↗</button></header>
+  <div class="thero"><img src="../../storage/app/public/games/cover/world-of-warcraft.webp" alt=""><span><span class="chip srv">Новина сервера</span> <span class="chip">WoW</span></span></div>
+  <div class="tbody">
+    <h2>Відкриття Wrath 3.3.5a x5: старт 15 листопада о 19:00</h2>
+    <div class="by"><span class="ava" style="background:#60a5fa">A</span><div><b>Admin</b>2 листопада · 1 хв читання · 👁 2 265</div><button class="follow">Стежити</button></div>
+    <div class="text">
+      <p>Свіжий світ, бонус за перший тиждень голосування й турнір гільдій на 25 тис. золота.</p>
+      <ul><li>x5 досвід, x3 золото</li><li>Кросфракційні поля бою</li><li>Без донату в характеристики</li></ul>
+    </div>
+    <div class="srvc"><i class="on"></i><b>Azeroth Legacy</b><span style="color:var(--faint)">онлайн 1830</span><a>Сервер →</a></div>
+    <div class="rbar"><span>▲ 266 ▼</span><span>🔔 Стежити</span><span>↗ Поділитися</span></div>
+    <div class="rhead"><b>Відповіді · 4</b><span>Найкращі ▾</span></div>
+    <div class="reply best"><span class="ava" style="background:#34d399">L</span><div><div class="who"><b>Lumi</b> · 2 год · <span style="color:var(--up);font-weight:800">✓ Найкраща</span></div><p>Турнір гільдій буде 3×3 чи 5×5? Хочемо зібрати склад заздалегідь.</p><div class="ra"><span>▲ 14</span><span>Відповісти</span><span>⋯</span></div></div></div>
+    <div class="reply nested"><span class="ava" style="background:#60a5fa">A</span><div><div class="who"><b>Admin</b><span class="role">Власник</span> · 1 год</div><p>5×5, реєстрація відкриється в день старту.</p><div class="ra"><span>▲ 9</span><span>Відповісти</span></div></div></div>
+    <div class="reply"><span class="ava" style="background:#f472b6">D</span><div><div class="who"><b>Dev_Tor</b> · 40 хв</div><p>Буде трансфер персонажів з x1?</p><div class="ra"><span>▲ 2</span><span>Відповісти</span><span>⋯</span></div></div></div>
+  </div>
+</section>
+<div class="composer"><span class="field">Написати відповідь…</span><button class="send" aria-label="Надіслати">➤</button></div>
+
+<script>
+const b = document.body;
+document.querySelectorAll('[data-open]').forEach(el => el.addEventListener('click', () => { b.classList.add('topic-open'); document.querySelector('.screen').scrollTop = 0; }));
+document.querySelector('[data-back]').addEventListener('click', () => b.classList.remove('topic-open'));
+document.querySelectorAll('[data-sheet]').forEach(el => el.addEventListener('click', () => b.classList.add('open')));
+document.querySelector('[data-close]').addEventListener('click', () => b.classList.remove('open', 'topic-open'));
+document.querySelectorAll('.seg button').forEach(t => t.addEventListener('click', () => { document.querySelectorAll('.seg button').forEach(x => x.setAttribute('aria-selected', x === t)); }));
+document.querySelectorAll('.vote button').forEach(btn => btn.addEventListener('click', e => { e.stopPropagation(); const v = btn.closest('.vote'); const n = v.querySelector('b'); const up = btn === v.firstElementChild; if (v.classList.contains('up') && up) { v.classList.remove('up'); n.textContent = +n.textContent - 1; } else if (up) { v.classList.add('up'); n.textContent = +n.textContent + 1; } }));
+</script>
+</body>
+</html>

@@ -237,7 +237,7 @@
   .f-phead .d { font-size: 11px; text-align: right; }
   .f-pbody { padding: 12px; }
   .f-pfoot { padding: 8px 12px 12px; }
-  .f-pfoot .l { display: none; }
+  .f-pfoot .l { font-size: 12px; gap: 12px; }
   .f-pfoot .r { width: 100%; justify-content: space-between; }
   .f-poll, .f-edit { margin-left: 12px; margin-right: 12px; }
   .f-qr { grid-template-columns: 1fr; padding: 12px; }
@@ -277,3 +277,13 @@
 .f-sig img { max-width: min(100%, 468px); max-height: 90px; border-radius: 6px; }
 .f-sig a { color: var(--amber); }
 @media (max-width: 720px) { .f-sig { margin: 0 12px; } }
+
+/* Скарга й «Відхилити з причиною»: форма розкривається в рядку під кнопкою, а не випадним вікном,
+   яке обрізала картка повідомлення (overflow: hidden) */
+.f .cm-report[open] { flex-basis: 100%; order: 10; }
+.f .cm-report[open] form { position: static; width: 100%; max-width: 520px; margin-top: 8px; box-shadow: none; }
+.f .f-pfoot .cm-report[open] summary, .f .f-modacts .cm-report[open] summary { color: var(--text); }
+.f .f-pfoot .l { flex-wrap: wrap; }
+.f .f-pfoot .cm-report[open] form { font-weight: 500; }
+.f .f-pfoot .l:has(.cm-report[open]) { flex-basis: 100%; }
+.f .cm-report form button { justify-self: start; padding: 8px 16px !important; border: 1px solid var(--line-2) !important; border-radius: 10px; color: var(--text) !important; font-weight: 800; }

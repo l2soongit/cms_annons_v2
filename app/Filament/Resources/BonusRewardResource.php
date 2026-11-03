@@ -58,7 +58,6 @@ class BonusRewardResource extends Resource
                     'badge' => 'Значок (емодзі)',
                     'title' => 'Текст звання (до 40 символів)',
                     'name_effect' => 'Ефект: rainbow, fire, ice, glow',
-                    'card_bg' => 'Адреса гри (lineage2, world-of-warcraft…) — її обкладинка',
                     default => 'Значення',
                 })->maxLength(40)->required(fn (Get $get) => ! in_array($get('kind'), BonusReward::FLAG_KINDS, true)),
                 TextInput::make('cost')->label('Ціна, балів')->numeric()->minValue(1)->required(),

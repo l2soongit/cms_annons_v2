@@ -28,8 +28,7 @@ return new class extends Migration
             ['name_effect', 'rainbow', ['uk' => 'Веселковий нік', 'en' => 'Rainbow nickname'], 400, 30],
             ['name_effect', 'fire', ['uk' => 'Вогняний нік', 'en' => 'Fire nickname'], 400, 30],
             ['name_effect', 'ice', ['uk' => 'Крижаний нік', 'en' => 'Ice nickname'], 400, 30],
-            ['card_bg', 'lineage2', ['uk' => 'Фон картки автора: Lineage 2', 'en' => 'Author card background: Lineage 2'], 250, 30],
-            ['card_bg', 'world-of-warcraft', ['uk' => 'Фон картки автора: World of Warcraft', 'en' => 'Author card background: World of Warcraft'], 250, 30],
+            ['card_bg', '1', ['uk' => 'Фон картки автора', 'en' => 'Author card background'], 250, 30],
             ['signature_plus', '1', ['uk' => 'Підпис з картинкою й посиланнями', 'en' => 'Signature with image and links'], 200, 30],
             ['gif_avatar', '1', ['uk' => 'Анімований аватар (GIF)', 'en' => 'Animated avatar (GIF)'], 500, 30],
         ];

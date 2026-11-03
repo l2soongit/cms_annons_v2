@@ -27,6 +27,8 @@
         @php
             $sigPlus = \App\Community\Perks::has($user, 'signature_plus');
             $gifOk = \App\Community\Perks::has($user, 'gif_avatar');
+            $bgOk = \App\Community\Perks::has($user, 'card_bg');
+            $shopLink = '<a href="'.route('cabinet.bonus').'" style="color:#fbbf24;font-weight:700">'.e(__('profile.forum.shop')).'</a>';
             $avatarUrl = $user->avatar ? (str_starts_with($user->avatar, 'http') ? $user->avatar : \App\Support\HomePageData::url($user->avatar)) : null;
             $perkKeys = ['title', 'name_effect', 'name_color', 'frame', 'badge', 'card_bg', 'signature_plus', 'gif_avatar'];
             $activePerks = collect($perkKeys)->filter(fn ($k) => \App\Community\Perks::has($user, $k));
@@ -42,7 +44,7 @@
                         @if ($avatarUrl)<img src="{{ $avatarUrl }}" alt="" width="64" height="64" style="width:64px;height:64px;border-radius:50%;object-fit:cover">@endif
                         <input id="avatar" type="file" name="avatar" accept="image/jpeg,image/png,image/webp,image/gif" class="text-sm">
                     </div>
-                    <p class="mt-1.5 text-xs text-moss">{{ $gifOk ? __('profile.forum.avatar_hint_gif') : __('profile.forum.avatar_hint') }}</p>
+                    <p class="mt-1.5 text-xs text-moss">@if ($gifOk){{ __('profile.forum.avatar_hint_gif') }}@else{{ __('profile.forum.avatar_hint') }} 🔒 {!! $shopLink !!}@endif</p>
                     @if ($user->avatar)<label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_avatar" value="1"> {{ __('profile.forum.remove') }}</label>@endif
                     @error('avatar')<p class="mt-1 text-sm text-fade">{{ $message }}</p>@enderror
                 </div>
@@ -52,6 +54,21 @@
                     <p class="mt-1.5 text-xs text-moss">{{ $sigPlus ? __('profile.forum.signature_hint_plus') : __('profile.forum.signature_hint') }}</p>
                     @error('signature')<p class="mt-1 text-sm text-fade">{{ $message }}</p>@enderror
                 </div>
+                <div @if (! $bgOk) style="opacity:.6" @endif>
+                    <label for="card_bg_image" class="mb-1.5 block text-sm font-medium">{{ __('profile.forum.card_bg') }} @unless ($bgOk)🔒@endunless</label>
+                    @if ($user->card_bg_image)<img src="{{ \App\Support\HomePageData::url($user->card_bg_image) }}" alt="" style="max-height:90px;border-radius:8px;margin-bottom:6px">@endif
+                    <input id="card_bg_image" type="file" name="card_bg_image" accept="image/jpeg,image/png,image/webp,image/gif" class="text-sm" @disabled(! $bgOk)>
+                    <p class="mt-1.5 text-xs text-moss">{{ __('profile.forum.card_bg_hint') }}@unless ($bgOk) {!! $shopLink !!}@endunless</p>
+                    @if ($user->card_bg_image)<label class="mt-2 flex items-center gap-2 text-sm"><input type="checkbox" name="remove_card_bg_image" value="1"> {{ __('profile.forum.remove') }}</label>@endif
+                    @error('card_bg_image')<p class="mt-1 text-sm text-fade">{{ $message }}</p>@enderror
+                </div>
+                @if (! $sigPlus)
+                    <div style="opacity:.6">
+                        <label class="mb-1.5 block text-sm font-medium">{{ __('profile.forum.signature_image') }} 🔒</label>
+                        <input type="file" disabled class="text-sm">
+                        <p class="mt-1.5 text-xs text-moss">{{ __('profile.forum.signature_image_hint') }} {!! $shopLink !!}</p>
+                    </div>
+                @endif
                 @if ($sigPlus)
                     <div>
                         <label for="signature_image" class="mb-1.5 block text-sm font-medium">{{ __('profile.forum.signature_image') }}</label>

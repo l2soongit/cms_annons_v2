@@ -16,7 +16,7 @@ final class ImageOptimizer
         'logo' => 512, 'banner' => 1200, 'screenshot' => 1920,
         // Зображення головної з адмінки
         'message' => 1600,
-        'hero' => 2400, 'cover' => 1600, 'icon' => 256, 'avatar' => 256, 'signature' => 936, 'og' => 1200, 'site_logo' => 600,
+        'hero' => 2400, 'cover' => 1600, 'icon' => 256, 'avatar' => 256, 'signature' => 936, 'card_bg' => 720, 'og' => 1200, 'site_logo' => 600,
     ];
 
     /** Більші фото GD розпаковує в сотні МБ пам’яті — такі зберігаємо без обробки */

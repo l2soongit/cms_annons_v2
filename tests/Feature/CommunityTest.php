@@ -436,13 +436,15 @@ class CommunityTest extends TestCase
         $page = $this->get(route('community.topic', $topic))->assertOk();
         $page->assertSee(__('community.ach.talker'))->assertSee(__('community.ach.year'))->assertSee('Граю на [Aden]', false);
 
-        foreach ([['title', 'Мисливець на боса'], ['name_effect', 'fire'], ['card_bg', 'lineage2'], ['signature_plus', '1']] as [$kind, $value]) {
+        foreach ([['title', 'Мисливець на боса'], ['name_effect', 'fire'], ['card_bg', '1'], ['signature_plus', '1']] as [$kind, $value]) {
             $reward = BonusReward::create(['name' => ['uk' => $kind], 'kind' => $kind, 'value' => $value, 'cost' => 100, 'duration_days' => 30]);
             $this->actingAs($author)->post(route('cabinet.bonus.buy', $reward))->assertSessionHasNoErrors();
         }
 
+        // Фон картки — власна картинка автора
+        $author->forceFill(['card_bg_image' => 'card-backgrounds/hero.webp'])->save();
         $page = $this->get(route('community.topic', $topic))->assertOk();
-        $page->assertSee('Мисливець на боса')->assertSee('cm-fx-fire', false)->assertSee('has-bg', false)
+        $page->assertSee('Мисливець на боса')->assertSee('cm-fx-fire', false)->assertSee('has-bg', false)->assertSee('card-backgrounds/hero.webp', false)
             ->assertSee('<a href="https://aden.example.net"', false);
 
         // Прострочена «плюшка» більше не діє
@@ -470,14 +472,20 @@ class CommunityTest extends TestCase
         $this->actingAs($user)->get(route('cabinet.profile'))->assertOk()->assertSee(__('profile.forum.title'));
 
         // З «плюшкою» — анімований аватар приймається, картинка підпису зберігається
-        $user->forceFill(['perks' => ['gif_avatar' => ['value' => '1', 'until' => null], 'signature_plus' => ['value' => '1', 'until' => null]]])->save();
+        // Без «плюшки» власний фон картки не зберігається
+        $this->actingAs($user)->put(route('cabinet.profile.forum'), ['card_bg_image' => UploadedFile::fake()->image('bg.png', 300, 600)])->assertSessionHasNoErrors();
+        $this->assertNull($user->fresh()->card_bg_image);
+
+        $user->forceFill(['perks' => ['gif_avatar' => ['value' => '1', 'until' => null], 'signature_plus' => ['value' => '1', 'until' => null], 'card_bg' => ['value' => '1', 'until' => null]]])->save();
         $this->actingAs($user)->put(route('cabinet.profile.forum'), [
             'avatar' => UploadedFile::fake()->createWithContent('anim.gif', base64_decode('R0lGODlhCAAIAIEAAP8AAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQICgAAACwAAAAACAAIAAAIGAABCAQQoGCAgQQNIjR4cCDDhxAjSoQYEAAh+QQICgAAACwAAAAACAAIAIEA/wAAAAAAAAAAAAAIGAADCBw4EIBBAAQPIix4MGFDghAjSiQYEAAh+QQICgAAACwAAAAACAAIAIEAAP8AAAAAAAAAAAAIGAADCBxIsOBAAAgBEEyo8GDChQ8NSiQYEAA7')),
             'signature_image' => UploadedFile::fake()->image('sig.png', 468, 60),
+            'card_bg_image' => UploadedFile::fake()->image('bg.png', 300, 600),
         ])->assertSessionHasNoErrors();
         $user->refresh();
         $this->assertStringEndsWith('.gif', $user->avatar);
         $this->assertNotNull($user->signature_image);
+        $this->assertNotNull($user->card_bg_image);
     }
 
     public function test_admin_queue_and_permissions(): void

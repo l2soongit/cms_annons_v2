@@ -18,13 +18,13 @@ class BonusReward extends Model
         'service_discount' => 'Знижка на платну послугу, %',
         'title' => 'Звання під ніком',
         'name_effect' => 'Анімований ефект ніку',
-        'card_bg' => 'Фон картки автора на форумі',
+        'card_bg' => 'Фон картки автора (власна картинка)',
         'signature_plus' => 'Підпис з картинкою й посиланнями',
         'gif_avatar' => 'Анімований аватар (GIF)',
     ];
 
     /** Нагороди без значення (сам факт покупки вмикає можливість) */
-    public const FLAG_KINDS = ['pin_clan', 'signature_plus', 'gif_avatar'];
+    public const FLAG_KINDS = ['pin_clan', 'signature_plus', 'gif_avatar', 'card_bg'];
 
     public const AUDIENCES = ['all' => 'Усім', 'players' => 'Гравцям', 'owners' => 'Власникам серверів'];
 

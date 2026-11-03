@@ -36,10 +36,13 @@ class ProfileController extends Controller
             'signature' => ['nullable', 'string', 'max:'.($plus ? 500 : 200)],
             'signature_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:512'],
             'remove_signature_image' => ['nullable', 'boolean'],
+            'card_bg_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'remove_card_bg_image' => ['nullable', 'boolean'],
         ], [], [
             'avatar' => __('profile.forum.avatar'),
             'signature' => __('profile.forum.signature'),
             'signature_image' => __('profile.forum.signature_image'),
+            'card_bg_image' => __('profile.forum.card_bg'),
         ]);
 
         if ($request->hasFile('avatar')) {
@@ -60,6 +63,15 @@ class ProfileController extends Controller
         } elseif ($request->boolean('remove_signature_image')) {
             $this->forget($user->signature_image);
             $user->signature_image = null;
+        }
+
+        // Власний фон картки автора — лише з «плюшкою» «Фон картки автора»
+        if (Perks::has($user, 'card_bg') && $request->hasFile('card_bg_image')) {
+            $this->forget($user->card_bg_image);
+            $user->card_bg_image = ImageOptimizer::store($request->file('card_bg_image'), 'card-backgrounds', 'card_bg');
+        } elseif ($request->boolean('remove_card_bg_image')) {
+            $this->forget($user->card_bg_image);
+            $user->card_bg_image = null;
         }
 
         $user->signature = trim((string) ($data['signature'] ?? '')) ?: null;

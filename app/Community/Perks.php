@@ -2,9 +2,7 @@
 
 namespace App\Community;
 
-use App\Models\Game;
 use App\Models\User;
-use App\Support\GameNav;
 use App\Support\HomePageData;
 
 /**
@@ -37,21 +35,9 @@ final class Perks
         return self::NAME_EFFECTS[self::active($user, 'name_effect') ?? ''] ?? null;
     }
 
-    /** Обкладинка гри для фону картки автора (значення — slug гри) */
+    /** Фон картки автора: власна картинка користувача, поки діє «плюшка» «Фон картки автора» */
     public static function cardBackground(?User $user): ?string
     {
-        $slug = self::active($user, 'card_bg');
-        if (! $slug) {
-            return null;
-        }
-        $bag = request()->attributes;
-        $key = 'perk_cover:'.$slug;
-        if (! $bag->has($key)) {
-            $game = Game::where('slug', $slug)->first();
-            // Обкладинка гри, якщо її немає — вбудований логотип
-            $bag->set($key, $game ? (HomePageData::url($game->cover) ?? GameNav::builtinLogo($game)) : null);
-        }
-
-        return $bag->get($key);
+        return $user?->card_bg_image && self::has($user, 'card_bg') ? HomePageData::url($user->card_bg_image) : null;
     }
 }

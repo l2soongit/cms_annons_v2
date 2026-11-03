@@ -92,6 +92,8 @@ return [
         'avatar_hint' => 'JPG, PNG or WebP up to 2 MB. Animated GIF is a points shop perk.',
         'avatar_hint_gif' => 'JPG, PNG, WebP or animated GIF up to 2 MB.',
         'gif_needs_perk' => 'Animated avatars need the “Animated avatar (GIF)” perk from the points shop.',
+        'card_bg' => 'Author card background',
+        'card_bg_hint' => 'Your image behind the avatar in topics (JPG, PNG, WebP or GIF up to 2 MB, portrait works best). Needs the “Author card background” perk.',
         'remove' => 'Remove',
         'signature' => 'Post signature',
         'signature_hint' => 'Up to 200 characters, text only. Images and links are a points shop perk.',

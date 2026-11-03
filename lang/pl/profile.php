@@ -92,6 +92,8 @@ return [
         'avatar_hint' => 'JPG, PNG lub WebP do 2 MB. Animowany GIF — bonus w sklepie z punktami.',
         'avatar_hint_gif' => 'JPG, PNG, WebP lub animowany GIF do 2 MB.',
         'gif_needs_perk' => 'Animowany awatar wymaga bonusu „Animowany awatar (GIF)” ze sklepu z punktami.',
+        'card_bg' => 'Tło karty autora',
+        'card_bg_hint' => 'Twój obrazek za awatarem w tematach (JPG, PNG, WebP lub GIF do 2 MB, najlepiej pionowy). Działa z bonusem „Tło karty autora”.',
         'remove' => 'Usuń',
         'signature' => 'Podpis pod postami',
         'signature_hint' => 'Do 200 znaków, tylko tekst. Obrazek i linki — bonus w sklepie z punktami.',

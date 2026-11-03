@@ -248,3 +248,4 @@
   .f-skinhead + .f { border-radius: 18px; margin: -14px -8px 24px; padding: 4px 12px 0; }
 }
 .f-thad:not(:has(*)) { display: none; }
+.cm-editform[hidden], .cm-quoting[hidden] { display: none !important; }

@@ -35,6 +35,7 @@
                     <form method="post" action="{{ route('cabinet.bonus.buy', $reward) }}" style="display:grid;gap:8px;align-content:start;padding:16px;border-radius:14px;border:1px solid var(--c-line)">
                         @csrf
                         <b style="font-size:16px">@if ($reward->kind === 'name_color')<span style="color:{{ preg_match('/^#[0-9a-f]{3,8}$/i', (string) $reward->value) ? $reward->value : 'inherit' }}">●</span> @elseif ($reward->kind === 'badge'){{ $reward->value }} @endif{{ $reward->name }}</b>
+                        @if ($reward->kind === 'title')<span style="justify-self:start;padding:1px 8px;border-radius:6px;font-size:12px;font-weight:800;color:#fbbf24;background:#fbbf2414;border:1px solid #fbbf2440">{{ $reward->value }}</span>@endif
                         @if ($reward->description)<span class="c-muted" style="font-size:13px">{{ $reward->description }}</span>@endif
                         <span class="c-muted" style="font-size:13px">{{ $reward->duration_days ? trans_choice('community.bonus.for_days', $reward->duration_days, ['n' => $reward->duration_days]) : __('community.bonus.forever') }}</span>
                         @if ($reward->kind === 'pin_clan')

@@ -345,4 +345,12 @@ return [
         'in_topic' => 'in topic',
         'open' => 'Open',
     ],
+    'ach' => [
+        'talker' => 'Talker: 100+ posts',
+        'orator' => 'Orator: 1000+ posts',
+        'helper' => 'Helper: has a best answer',
+        'expert' => 'Expert: 10+ best answers',
+        'author' => 'Author: 10+ topics',
+        'year' => 'One year with us',
+    ],
 ];

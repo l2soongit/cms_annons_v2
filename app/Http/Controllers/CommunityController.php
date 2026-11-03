@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Community\Achievements;
 use App\Community\Bonus;
 use App\Community\Markup;
 use App\Community\Subscriptions;
@@ -137,6 +138,7 @@ class CommunityController extends Controller
             'subscribers' => Subscriptions::count($topic),
             'staffIds' => User::whereIn('id', $authorIds)->get()->filter->isStaff()->pluck('id')->all(),
             'ownerIds' => $ownerIds,
+            'authorStats' => Achievements::stats($authorIds),
             // Значок «Власник сервера» в картці автора — для всіх, хто має сервер у каталозі
             'serverOwnerIds' => User::whereIn('id', $authorIds)->whereHas('servers')->pluck('id')->all(),
             'canReply' => $user && $topic->isPublished() && (! $topic->is_locked || $moderator) && $topic->category->allowsReplying($user),

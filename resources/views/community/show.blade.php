@@ -97,6 +97,8 @@
         @endif
       </div>
 
+      @include('community.partials.signature', ['author' => $topic->user])
+
       @if ($poll)
         @php $total = array_sum($pollVotes); $voted = $myPollVotes !== []; $showResults = $voted || $poll->isClosed() || ! auth()->check(); @endphp
         <form class="cm-card cm-poll f-poll" id="poll" method="post" action="{{ route('community.poll', $poll) }}">
@@ -161,6 +163,7 @@
             @endif
             {!! $post->body !!}
           </div>
+          @include('community.partials.signature', ['author' => $post->user])
           @if ($canManage)
             <form class="cm-editform f-edit" id="edit-{{ $post->id }}" method="post" action="{{ route('community.posts.update', $post) }}" hidden>
               @csrf @method('put')

@@ -82,6 +82,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
         Route::get('/profile', [ProfileController::class, 'edit'])->name('.profile');
         Route::delete('/profile', [ProfileController::class, 'destroy'])->name('.profile.destroy');
+        Route::put('/profile/forum', [ProfileController::class, 'updateForum'])->middleware('throttle:20,1')->name('.profile.forum');
         Route::get('/security', [ProfileController::class, 'security'])->middleware('password.confirm')->name('.security');
         Route::get('/notifications', [ProfileController::class, 'notifications'])->name('.notifications');
         Route::put('/notifications', [ProfileController::class, 'updateNotifications'])->name('.notifications.update');

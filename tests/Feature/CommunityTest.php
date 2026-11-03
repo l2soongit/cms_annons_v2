@@ -26,7 +26,9 @@ use Database\Seeders\RoleSeeder;
 use Database\Seeders\TariffSeeder;
 use Filament\Facades\Filament;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Illuminate\Http\UploadedFile;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 use Tests\TestCase;
 
@@ -421,6 +423,61 @@ class CommunityTest extends TestCase
         $post = $own->fresh()->posts()->create(['user_id' => $this->user()->id, 'body' => '<p>Відповідь новачка</p>', 'status' => 'pending']);
         $this->actingAs($mod)->post(route('community.mod.post', [$post, 'approve']))->assertRedirect();
         $this->assertSame('published', $post->fresh()->status);
+    }
+
+    public function test_profile_perks_title_effect_card_badges_and_signature_show_in_topic(): void
+    {
+        $author = $this->user(400);
+        $author->forceFill(['forum_posts_count' => 150, 'signature' => 'Граю на [Aden](https://aden.example.net) з 2009'])->save();
+        $topic = $this->topic($author);
+        Bonus::adjust($author, 2000, 'Тест');
+
+        // Без «плюшок»: значки за досягнення, підпис лише текстом (посилання не клікабельне)
+        $page = $this->get(route('community.topic', $topic))->assertOk();
+        $page->assertSee(__('community.ach.talker'))->assertSee(__('community.ach.year'))->assertSee('Граю на [Aden]', false);
+
+        foreach ([['title', 'Мисливець на боса'], ['name_effect', 'fire'], ['card_bg', 'lineage2'], ['signature_plus', '1']] as [$kind, $value]) {
+            $reward = BonusReward::create(['name' => ['uk' => $kind], 'kind' => $kind, 'value' => $value, 'cost' => 100, 'duration_days' => 30]);
+            $this->actingAs($author)->post(route('cabinet.bonus.buy', $reward))->assertSessionHasNoErrors();
+        }
+
+        $page = $this->get(route('community.topic', $topic))->assertOk();
+        $page->assertSee('Мисливець на боса')->assertSee('cm-fx-fire', false)->assertSee('has-bg', false)
+            ->assertSee('<a href="https://aden.example.net"', false);
+
+        // Прострочена «плюшка» більше не діє
+        $perks = $author->fresh()->perks;
+        $perks['title']['until'] = now()->subDay()->toIso8601String();
+        $author->forceFill(['perks' => $perks])->save();
+        $this->get(route('community.topic', $topic))->assertOk()->assertDontSee('Мисливець на боса');
+    }
+
+    public function test_forum_profile_avatar_signature_and_gif_needs_perk(): void
+    {
+        Storage::fake('public');
+        $user = $this->user();
+        $gif = UploadedFile::fake()->createWithContent('anim.gif', base64_decode('R0lGODlhCAAIAIEAAP8AAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQICgAAACwAAAAACAAIAAAIGAABCAQQoGCAgQQNIjR4cCDDhxAjSoQYEAAh+QQICgAAACwAAAAACAAIAIEA/wAAAAAAAAAAAAAIGAADCBw4EIBBAAQPIix4MGFDghAjSiQYEAAh+QQICgAAACwAAAAACAAIAIEAAP8AAAAAAAAAAAAIGAADCBxIsOBAAAgBEEyo8GDChQ8NSiQYEAA7'));
+
+        $this->actingAs($user)->put(route('cabinet.profile.forum'), ['avatar' => $gif, 'signature' => 'Привіт усім'])
+            ->assertSessionHasErrors('avatar');
+
+        $this->actingAs($user)->put(route('cabinet.profile.forum'), [
+            'avatar' => UploadedFile::fake()->image('me.png', 300, 300), 'signature' => 'Привіт усім',
+        ])->assertSessionHasNoErrors();
+        $user->refresh();
+        $this->assertNotNull($user->avatar);
+        $this->assertSame('Привіт усім', $user->signature);
+        $this->actingAs($user)->get(route('cabinet.profile'))->assertOk()->assertSee(__('profile.forum.title'));
+
+        // З «плюшкою» — анімований аватар приймається, картинка підпису зберігається
+        $user->forceFill(['perks' => ['gif_avatar' => ['value' => '1', 'until' => null], 'signature_plus' => ['value' => '1', 'until' => null]]])->save();
+        $this->actingAs($user)->put(route('cabinet.profile.forum'), [
+            'avatar' => UploadedFile::fake()->createWithContent('anim.gif', base64_decode('R0lGODlhCAAIAIEAAP8AAAAAAAAAAAAAACH/C05FVFNDQVBFMi4wAwEAAAAh+QQICgAAACwAAAAACAAIAAAIGAABCAQQoGCAgQQNIjR4cCDDhxAjSoQYEAAh+QQICgAAACwAAAAACAAIAIEA/wAAAAAAAAAAAAAIGAADCBw4EIBBAAQPIix4MGFDghAjSiQYEAAh+QQICgAAACwAAAAACAAIAIEAAP8AAAAAAAAAAAAIGAADCBxIsOBAAAgBEEyo8GDChQ8NSiQYEAA7')),
+            'signature_image' => UploadedFile::fake()->image('sig.png', 468, 60),
+        ])->assertSessionHasNoErrors();
+        $user->refresh();
+        $this->assertStringEndsWith('.gif', $user->avatar);
+        $this->assertNotNull($user->signature_image);
     }
 
     public function test_admin_queue_and_permissions(): void

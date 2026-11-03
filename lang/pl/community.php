@@ -345,4 +345,12 @@ return [
         'in_topic' => 'w temacie',
         'open' => 'Otwórz',
     ],
+    'ach' => [
+        'talker' => 'Rozmówca: 100+ postów',
+        'orator' => 'Mówca: 1000+ postów',
+        'helper' => 'Pomocnik: ma najlepszą odpowiedź',
+        'expert' => 'Znawca: 10+ najlepszych odpowiedzi',
+        'author' => 'Autor: 10+ tematów',
+        'year' => 'Rok z nami',
+    ],
 ];

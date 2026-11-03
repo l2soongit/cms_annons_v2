@@ -266,3 +266,14 @@
   .f-modrow { grid-template-columns: 1fr; }
   .f-modacts { justify-content: flex-start; }
 }
+
+/* Вигляд профілю з магазину балів: звання, фон картки автора, значки досягнень, підпис */
+.f-ctitle { font-size: 12px; font-weight: 800; color: var(--amber); padding: 1px 8px; border-radius: 6px; background: #fbbf2414; border: 1px solid #fbbf2440; }
+.f-pbit.has-bg { position: relative; isolation: isolate; }
+.f-pbit.has-bg::before { content: ""; position: absolute; inset: 0; z-index: -1; background: linear-gradient(180deg, #0f0f1233 0, #0f0f12cc 150px, #0f0f12 260px), var(--pbit-bg) center top / 100% auto no-repeat; }
+.f-ach { display: flex; gap: 4px; justify-content: center; flex-wrap: wrap; font-size: 16px; line-height: 1; }
+.f-ach span { cursor: help; }
+.f-sig { display: grid; gap: 6px; justify-items: start; margin: 0 18px; padding: 10px 0; border-top: 1px dashed var(--line-2); font-size: 12px; color: var(--faint); overflow-wrap: anywhere; }
+.f-sig img { max-width: min(100%, 468px); max-height: 90px; border-radius: 6px; }
+.f-sig a { color: var(--amber); }
+@media (max-width: 720px) { .f-sig { margin: 0 12px; } }

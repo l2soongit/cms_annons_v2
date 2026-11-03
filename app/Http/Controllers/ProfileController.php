@@ -2,13 +2,17 @@
 
 namespace App\Http\Controllers;
 
+use App\Community\Perks;
 use App\Notifications\Channels\DiscordChannel;
 use App\Notifications\Channels\TelegramChannel;
+use App\Support\ImageOptimizer;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
 use Illuminate\Validation\Rule;
+use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
 
 class ProfileController extends Controller
@@ -16,6 +20,60 @@ class ProfileController extends Controller
     public function edit(Request $request): View
     {
         return view('cabinet.profile', ['user' => $request->user()]);
+    }
+
+    /**
+     * Профіль на форумі: аватар (анімований GIF — з «плюшкою» магазину балів), підпис під повідомленнями
+     * (текст — усім, картинка й посилання — з «плюшкою» «Підпис з картинкою»).
+     */
+    public function updateForum(Request $request): RedirectResponse
+    {
+        $user = $request->user();
+        $plus = Perks::has($user, 'signature_plus');
+        $data = $request->validate([
+            'avatar' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:2048'],
+            'remove_avatar' => ['nullable', 'boolean'],
+            'signature' => ['nullable', 'string', 'max:'.($plus ? 500 : 200)],
+            'signature_image' => ['nullable', 'image', 'mimes:jpg,jpeg,png,webp,gif', 'max:512'],
+            'remove_signature_image' => ['nullable', 'boolean'],
+        ], [], [
+            'avatar' => __('profile.forum.avatar'),
+            'signature' => __('profile.forum.signature'),
+            'signature_image' => __('profile.forum.signature_image'),
+        ]);
+
+        if ($request->hasFile('avatar')) {
+            $file = $request->file('avatar');
+            if (ImageOptimizer::isAnimatedGif($file) && ! Perks::has($user, 'gif_avatar')) {
+                throw ValidationException::withMessages(['avatar' => __('profile.forum.gif_needs_perk')]);
+            }
+            $this->forget($user->avatar);
+            $user->avatar = ImageOptimizer::store($file, 'avatars', 'avatar');
+        } elseif ($request->boolean('remove_avatar')) {
+            $this->forget($user->avatar);
+            $user->avatar = null;
+        }
+
+        if ($plus && $request->hasFile('signature_image')) {
+            $this->forget($user->signature_image);
+            $user->signature_image = ImageOptimizer::store($request->file('signature_image'), 'signatures', 'signature');
+        } elseif ($request->boolean('remove_signature_image')) {
+            $this->forget($user->signature_image);
+            $user->signature_image = null;
+        }
+
+        $user->signature = trim((string) ($data['signature'] ?? '')) ?: null;
+        $user->save();
+
+        return back()->with('status', __('profile.forum.saved'));
+    }
+
+    /** Видалити власний файл (не зовнішнє посилання, напр. аватар із соцмережі) */
+    private function forget(?string $path): void
+    {
+        if ($path && ! str_starts_with($path, 'http')) {
+            Storage::disk('public')->delete($path);
+        }
     }
 
     public function security(Request $request): View

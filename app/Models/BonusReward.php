@@ -16,7 +16,15 @@ class BonusReward extends Model
         'badge' => 'Значок у профілі',
         'pin_clan' => 'Закріплення оголошення «Набір у клан»',
         'service_discount' => 'Знижка на платну послугу, %',
+        'title' => 'Звання під ніком',
+        'name_effect' => 'Анімований ефект ніку',
+        'card_bg' => 'Фон картки автора на форумі',
+        'signature_plus' => 'Підпис з картинкою й посиланнями',
+        'gif_avatar' => 'Анімований аватар (GIF)',
     ];
+
+    /** Нагороди без значення (сам факт покупки вмикає можливість) */
+    public const FLAG_KINDS = ['pin_clan', 'signature_plus', 'gif_avatar'];
 
     public const AUDIENCES = ['all' => 'Усім', 'players' => 'Гравцям', 'owners' => 'Власникам серверів'];
 
